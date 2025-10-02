@@ -1,5 +1,3 @@
-import React from 'react';
-
 export const ProfilePage: React.FC = () => {
   return (
     <div className="min-h-screen p-8">
