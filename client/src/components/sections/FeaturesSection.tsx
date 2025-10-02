@@ -1,118 +1,107 @@
-import { motion } from 'framer-motion';
-import { Code2, Zap, Trophy, Users, Globe, Shield, Rocket, Brain } from 'lucide-react';
+import { Code2, Zap, Trophy, Users, Globe, Shield } from 'lucide-react';
 
 const FeaturesSection = () => {
-  const features = [
-    {
-      icon: Code2,
-      title: 'Multi-Language Support',
-      description: 'Master Z-- and 5 other popular programming languages including C++, Python, Java, JavaScript, and Rust.',
-      gradient: 'from-blue-500 to-cyan-500'
-    },
-    {
-      icon: Zap,
-      title: 'Real-time Execution',
-      description: 'Get instant feedback with our lightning-fast code execution engine and detailed performance metrics.',
-      gradient: 'from-yellow-500 to-orange-500'
-    },
-    {
-      icon: Trophy,
-      title: 'Competitive Rankings',
-      description: 'Climb leaderboards, earn achievements, and compete with developers worldwide in coding mastery.',
-      gradient: 'from-purple-500 to-pink-500'
-    },
-    {
-      icon: Brain,
-      title: 'Adaptive Learning',
-      description: 'Progressive difficulty levels with hints, tutorials, and personalized learning paths for every skill level.',
-      gradient: 'from-green-500 to-emerald-500'
-    },
-    {
-      icon: Users,
-      title: 'Community Driven',
-      description: 'Join a vibrant community of developers, share solutions, and learn from coding experts.',
-      gradient: 'from-indigo-500 to-purple-500'
-    },
-    {
-      icon: Shield,
-      title: 'Secure & Reliable',
-      description: 'Enterprise-grade security with sandboxed code execution and robust infrastructure.',
-      gradient: 'from-red-500 to-rose-500'
-    }
-  ];
+    const features = [
+        {
+        icon: Code2,
+        title: 'Multi-Language Support',
+        description: 'Execute challenges in Z--, C++, Python, Java, JavaScript, and Rust',
+        command: 'z-lang --list',
+        output: '6 languages loaded ✓'
+        },
+        {
+        icon: Zap,
+        title: 'Lightning Execution',
+        description: 'Sub-second code compilation and execution with detailed metrics',
+        command: 'z-exec --benchmark',
+        output: 'avg: 0.12s | 99th: 0.45s'
+        },
+        {
+        icon: Trophy,
+        title: 'Global Leaderboards',
+        description: 'Real-time ranking system with competitive scoring algorithms',
+        command: 'z-rank --global',
+        output: 'your_rank: #247 📈'
+        },
+        {
+        icon: Users,
+        title: 'Community Solutions',
+        description: 'Browse optimized solutions and learn from top performers',
+        command: 'z-solutions --top',
+        output: '1.2M solutions shared'
+        },
+        {
+        icon: Shield,
+        title: 'Secure Sandbox',
+        description: 'Isolated execution environment with resource limits and monitoring',
+        command: 'z-security --status',
+        output: 'sandbox: active 🛡️'
+        },
+        {
+        icon: Globe,
+        title: 'Open Platform',
+        description: 'Community-driven development with transparent algorithms',
+        command: 'z-contrib --stats',
+        output: '47 contributors active'
+        }
+    ];
 
-  return (
-    <section className="py-24 bg-[var(--background-secondary)]">
-      <div className="max-w-7xl mx-auto px-4">
-        {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-20"
-        >
-          <h2 className="font-heading text-4xl md:text-6xl font-bold text-white mb-6">
-            Why Choose{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent-purple)] to-[var(--accent-cyan)]">
-              Z-Challenge?
-            </span>
-          </h2>
-          <p className="font-body text-xl text-[var(--text-secondary)] max-w-3xl mx-auto leading-relaxed">
-            Experience competitive programming like never before with our comprehensive platform designed for modern developers
-          </p>
-        </motion.div>
+    return (
+        <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4">
+            <div className="text-center mb-16">
+            {/* <div className="inline-block rounded-lg px-4 py-2 mb-6">
+                <span className="text-gray-400 font-mono text-sm">$ z-platform --features</span>
+            </div> */}
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                Platform Capabilities
+            </h2>
+            <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+                Built with performance, security, and developer experience in mind
+            </p>
+            </div>
 
-        {/* Features Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {features.map((feature, index) => (
-            <motion.div
-              key={feature.title}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              whileHover={{ y: -10, scale: 1.02 }}
-              className="group bg-[var(--background-primary)] p-8 rounded-2xl border border-[var(--border-primary)] hover:border-[var(--accent-purple)]/50 transition-all duration-300 relative overflow-hidden"
-            >
-              {/* Background Glow Effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent-purple)]/5 to-[var(--accent-cyan)]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              
-              {/* Icon */}
-              <div className={`w-14 h-14 bg-gradient-to-r ${feature.gradient} rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
-                <feature.icon className="w-7 h-7 text-white" />
-              </div>
-
-              {/* Content */}
-              <div className="relative z-10">
-                <h3 className="font-heading text-2xl font-bold text-white mb-4 group-hover:text-[var(--accent-cyan)] transition-colors">
-                  {feature.title}
-                </h3>
-                <p className="font-body text-[var(--text-secondary)] leading-relaxed group-hover:text-white/80 transition-colors">
-                  {feature.description}
-                </p>
-              </div>
-
-              {/* Decorative Elements */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[var(--accent-purple)]/10 to-transparent rounded-full -translate-y-16 translate-x-16 group-hover:scale-150 transition-transform duration-500" />
-            </motion.div>
-          ))}
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {features.map((feature) => (
+                <div
+                key={feature.title}
+                className="group border border-gray-700 rounded-lg overflow-hidden hover:border-gray-600 transition-all duration-200"
+                >
+                <div className="border-b border-gray-700 px-4 py-3 flex items-center gap-2">
+                    <div className="flex gap-1">
+                    <div className="w-2 h-2 bg-red-500 rounded-full" />
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full" />
+                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                    </div>
+                    <feature.icon className="w-4 h-4 text-gray-400 ml-2" />
+                    <span className="text-gray-400 text-sm font-mono">{feature.title.toLowerCase().replace(/\s+/g, '-')}.sh</span>
+                </div>
+                
+                <div className="p-6">
+                    <h3 className="text-xl font-bold text-white mb-2">
+                    {feature.title}
+                    </h3>
+                    
+                    <p className="text-gray-400 text-sm mb-4 leading-relaxed">
+                    {feature.description}
+                    </p>
+                    
+                    <div className="bg-black rounded-md p-3 font-mono text-sm">
+                    <div className="flex items-center gap-2 mb-1">
+                        <span className="text-green-400">$</span>
+                        <span className="text-gray-300">{feature.command}</span>
+                    </div>
+                    <div className="text-yellow-400 ml-4">
+                        {feature.output}
+                    </div>
+                    </div>
+                </div>
+                </div>
+            ))}
+            </div>
         </div>
-
-        {/* Bottom CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
-          className="text-center mt-16"
-        >
-          <div className="inline-flex items-center space-x-2 bg-[var(--background-primary)] px-6 py-3 rounded-full border border-[var(--border-primary)]">
-            <Rocket className="w-5 h-5 text-[var(--accent-purple)]" />
-            <span className="text-white font-medium">And many more features coming soon!</span>
-            <Globe className="w-5 h-5 text-[var(--accent-cyan)]" />
-          </div>
-        </motion.div>
-      </div>
-    </section>
-  );
+        </section>
+    );
 };
 
 export default FeaturesSection;

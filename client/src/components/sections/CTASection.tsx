@@ -1,99 +1,66 @@
-import { motion } from 'framer-motion';
 import { ArrowRight, Users, Code, Trophy, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const CTASection = () => {
-  const navigate = useNavigate();
+    const navigate = useNavigate();
 
-  return (
-    <section className="py-24 bg-gradient-to-br from-[var(--accent-purple)]/10 via-[var(--background-primary)] to-[var(--accent-cyan)]/10">
-      <div className="max-w-6xl mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8 }}
-          className="relative bg-gradient-to-r from-[var(--accent-purple)] to-[var(--accent-cyan)] rounded-3xl p-12 md:p-16 text-center overflow-hidden"
-        >
-          {/* Background Pattern */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-0 left-0 w-32 h-32 bg-white rounded-full -translate-x-16 -translate-y-16" />
-            <div className="absolute bottom-0 right-0 w-48 h-48 bg-white rounded-full translate-x-24 translate-y-24" />
-            <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-white rounded-full" />
-          </div>
+    return (
+        <section className="py-20 border-t border-gray-800">
+        <div className="max-w-6xl mx-auto px-4">
+            <div className="rounded-lg overflow-hidden">
 
-          <div className="relative z-10">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-            >
-              <h2 className="font-heading text-4xl md:text-6xl font-bold text-white mb-6">
-                Ready to Start Your
-                <br />
-                <span className="text-yellow-300">Coding Journey?</span>
-              </h2>
-              <p className="font-body text-xl md:text-2xl text-white/90 mb-12 max-w-3xl mx-auto leading-relaxed">
-                Join thousands of developers mastering Z-- and competing in challenges that matter
-              </p>
-            </motion.div>
+            <div className="p-8 font-mono text-sm">
 
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-12"
-            >
-              <motion.button
-                onClick={() => navigate('/challenges')}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="group bg-white text-[var(--accent-purple)] px-10 py-5 rounded-xl font-bold text-xl shadow-2xl hover:shadow-white/20 transition-all duration-300"
-              >
-                <div className="flex items-center">
-                  <Users className="w-6 h-6 mr-3" />
-                  Join the Challenge
-                  <ArrowRight className="w-6 h-6 ml-3 group-hover:translate-x-1 transition-transform" />
+                <div className="text-center py-8">
+                <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+                    <span className="text-yellow-400">&gt;</span> Ready to Level Up?
+                </h2>
+                <p className="text-gray-400 text-lg mb-8 max-w-2xl mx-auto font-sans">
+                    Join the competitive programming revolution. Master algorithms, compete globally, climb leaderboards.
+                </p>
+                
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-8">
+                    <button
+                    onClick={() => navigate('/challenges')}
+                    className="group bg-yellow-400 text-black px-8 py-4 rounded-lg font-bold text-lg hover:bg-yellow-300 transform hover:scale-105 transition-all duration-200 flex items-center gap-3"
+                    >
+                    <Users className="w-5 h-5" />
+                    Accept Challenge
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                    
+                    <button
+                    onClick={() => navigate('/leaderboard')}
+                    className="group border-2 border-gray-600 text-gray-300 px-8 py-4 rounded-lg font-bold text-lg hover:border-gray-400 hover:text-white transition-all duration-200 flex items-center gap-3"
+                    >
+                    <Trophy className="w-5 h-5" />
+                    View Leaderboard
+                    </button>
                 </div>
-              </motion.button>
-
-              <motion.button
-                onClick={() => navigate('/leaderboard')}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="group border-2 border-white text-white px-10 py-5 rounded-xl font-bold text-xl hover:bg-white hover:text-[var(--accent-purple)] transition-all duration-300"
-              >
-                <div className="flex items-center">
-                  <Trophy className="w-6 h-6 mr-3" />
-                  View Rankings
                 </div>
-              </motion.button>
-            </motion.div>
+            </div>
+            </div>
 
-            {/* Trust Indicators */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-              className="flex flex-wrap justify-center gap-8 text-white/80 text-sm"
-            >
-              <div className="flex items-center">
-                <Code className="w-4 h-4 mr-2" />
-                <span>No Setup Required</span>
-              </div>
-              <div className="flex items-center">
-                <Zap className="w-4 h-4 mr-2" />
-                <span>Instant Feedback</span>
-              </div>
-              <div className="flex items-center">
-                <Trophy className="w-4 h-4 mr-2" />
-                <span>Global Rankings</span>
-              </div>
-            </motion.div>
-          </div>
-        </motion.div>
-      </div>
-    </section>
-  );
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+            <div className="text-center">
+                <Code className="w-8 h-8 text-blue-400 mx-auto mb-3" />
+                <div className="text-white font-semibold mb-1">Instant Setup</div>
+                <div className="text-gray-400 text-sm">No downloads, no configs</div>
+            </div>
+            <div className="text-center">
+                <Zap className="w-8 h-8 text-yellow-400 mx-auto mb-3" />
+                <div className="text-white font-semibold mb-1">Real-time Judging</div>
+                <div className="text-gray-400 text-sm">Sub-second feedback</div>
+            </div>
+            <div className="text-center">
+                <Trophy className="w-8 h-8 text-purple-400 mx-auto mb-3" />
+                <div className="text-white font-semibold mb-1">Global Competition</div>
+                <div className="text-gray-400 text-sm">Compete worldwide</div>
+            </div>
+            </div>
+        </div>
+        </section>
+    );
 };
 
 export default CTASection;

@@ -1,174 +1,97 @@
-import { motion } from 'framer-motion';
-import { ArrowRight, Play, Code, Trophy, Zap } from 'lucide-react';
+import { Terminal, Play, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const HeroSection = () => {
-  const navigate = useNavigate();
+    const navigate = useNavigate();
 
-  return (
-    <section className="relative min-h-screen overflow-hidden bg-[var(--background-primary)]">
-      {/* Animated Background */}
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-[var(--accent-purple)]/5 via-transparent to-[var(--accent-cyan)]/5" />
+    return (
+        <section className="min-h-screen bg-black flex items-center justify-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:50px_50px]" />
         
-        {/* Floating Code Snippets */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.1 }}
-          transition={{ duration: 2 }}
-          className="absolute inset-0 overflow-hidden"
-        >
-          {Array.from({ length: 6 }).map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute text-[var(--text-secondary)] text-sm font-mono"
-              style={{
-                left: `${20 + (i * 15)}%`,
-                top: `${10 + (i * 12)}%`,
-              }}
-              animate={{
-                y: [-20, 20, -20],
-                opacity: [0.1, 0.3, 0.1],
-              }}
-              transition={{
-                duration: 4 + i,
-                repeat: Infinity,
-                delay: i * 0.5,
-              }}
-            >
-              {i % 3 === 0 && 'start ... end'}
-              {i % 3 === 1 && 'let x = 42'}
-              {i % 3 === 2 && 'print("Z--")'}
-            </motion.div>
-          ))}
-        </motion.div>
-      </div>
+        <div className="container mx-auto px-4 relative z-10 p-6">
+            <div className="max-w-6xl mx-auto">
+            <div className=" rounded-t-xl p-4">
+            </div>
 
-      {/* Main Content */}
-      <div className="relative z-10 min-h-screen flex items-center">
-        <div className="max-w-7xl mx-auto px-4 py-20">
-          <div className="text-center">
-            {/* Animated Logo/Icon */}
-            <motion.div
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ duration: 0.8, type: "spring", bounce: 0.3 }}
-              className="mb-8"
-            >
-              <div className="w-20 h-20 mx-auto bg-gradient-to-r from-[var(--accent-purple)] to-[var(--accent-cyan)] rounded-2xl flex items-center justify-center mb-6 shadow-2xl shadow-[var(--accent-purple)]/20">
-                <Code className="w-10 h-10 text-white" />
-              </div>
-            </motion.div>
+            <div className="rounded-b-xl p-8 font-mono text-sm">
+                <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                </div>
+                <div className="mt-8 text-center">
+                    <div className="text-5xl md:text-7xl font-bold tracking-tight">
+                    <span className="text-yellow-400">CODE</span>
+                    <span className="text-gray-600 mx-3">•</span>
+                    <span className="text-orange-400">COMPETE</span>
+                    <span className="text-gray-600 mx-3">•</span>
+                    <span className="text-red-400">CONQUER</span>
+                    </div>
+                    <div className="text-lg text-gray-400 mt-4 font-sans">
+                    The ultimate competitive programming platform
+                    </div>
+                </div>
+                <div className="text-center mt-8">
+                    <span className="text-green-400">$</span>
+                    <span className="text-white ml-2">Ready to dominate the leaderboards? </span>
+                    <span className="animate-pulse text-yellow-400">█</span>
+                </div>
+                </div>
+            </div>
+            </div>
 
-            {/* Main Title */}
-            <motion.div
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="mb-8"
-            >
-              <h1 className="font-heading text-5xl md:text-7xl lg:text-8xl font-bold mb-4">
-                <span className="block text-white mb-2">Master</span>
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-[var(--accent-purple)] via-[var(--accent-cyan)] to-[var(--accent-purple)] animate-pulse">
-                  Z-Challenge
-                </span>
-              </h1>
-              
-              {/* Tagline */}
-              <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.8, delay: 0.6 }}
-                className="font-body text-xl md:text-2xl text-[var(--text-secondary)] max-w-4xl mx-auto leading-relaxed"
-              >
-                Compete in <span className="font-accent text-[var(--accent-cyan)] font-semibold">Z--</span> programming challenges,
-                <br className="hidden md:block" />
-                climb leaderboards, and become a coding champion
-              </motion.p>
-            </motion.div>
-
-            {/* Stats */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.8 }}
-              className="flex flex-wrap justify-center gap-6 mb-12"
-            >
-              {[
-                { icon: Code, label: '4+ Challenges', value: 'Growing Daily' },
-                { icon: Trophy, label: '6 Languages', value: 'Multi-Platform' },
-                { icon: Zap, label: 'Real-time', value: 'Instant Feedback' },
-              ].map((stat) => (
-                <motion.div
-                  key={stat.label}
-                  whileHover={{ scale: 1.05, y: -5 }}
-                  className="bg-[var(--background-secondary)]/50 backdrop-blur-sm border border-[var(--border-primary)] rounded-xl p-4 min-w-[140px]"
-                >
-                  <stat.icon className="w-6 h-6 text-[var(--accent-purple)] mx-auto mb-2" />
-                  <div className="text-white font-semibold text-sm">{stat.label}</div>
-                  <div className="text-[var(--text-secondary)] text-xs">{stat.value}</div>
-                </motion.div>
-              ))}
-            </motion.div>
-
-            {/* CTA Buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 1.0 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4"
-            >
-              <motion.button
+            <div className="flex flex-col sm:flex-row gap-6 justify-center mt-12">
+            <button 
                 onClick={() => navigate('/challenges')}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="group relative bg-gradient-to-r from-[var(--accent-purple)] to-[var(--accent-cyan)] text-white px-8 py-4 rounded-xl font-semibold text-lg overflow-hidden shadow-2xl shadow-[var(--accent-purple)]/30"
-              >
-                <div className="flex items-center relative z-10">
-                  <Play className="w-5 h-5 mr-2" />
-                  Start Coding Now
-                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-r from-[var(--accent-cyan)] to-[var(--accent-purple)] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </motion.button>
-
-              <motion.button
-                onClick={() => navigate('/leaderboard')}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="group border-2 border-[var(--accent-purple)] text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-[var(--accent-purple)]/10 transition-all duration-300"
-              >
-                <div className="flex items-center">
-                  <Trophy className="w-5 h-5 mr-2" />
-                  View Leaderboard
-                </div>
-              </motion.button>
-            </motion.div>
-
-            {/* Scroll Indicator */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 1.5 }}
-              className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+                className="group px-10 py-4 bg-yellow-400 text-black font-bold rounded-lg hover:bg-yellow-300 transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-3 shadow-lg shadow-yellow-400/20"
             >
-              <motion.div
-                animate={{ y: [0, 10, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="w-6 h-10 border-2 border-[var(--accent-purple)] rounded-full flex justify-center"
-              >
-                <motion.div
-                  animate={{ y: [0, 12, 0] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  className="w-1 h-3 bg-[var(--accent-purple)] rounded-full mt-2"
-                />
-              </motion.div>
-            </motion.div>
-          </div>
+                <Play className="h-5 w-5" />
+                Launch Challenge Mode
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            </button>
+            <button className="px-10 py-4 bg-transparent border-2 border-gray-600 text-gray-300 font-semibold rounded-lg hover:border-gray-400 hover:text-white transition-all duration-200 flex items-center justify-center gap-3">
+                <Terminal className="h-5 w-5" />
+                Browse Languages
+            </button>
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-3 mt-12 max-w-5xl mx-auto">
+            {[
+                { name: 'Z--', color: 'border-yellow-400 text-yellow-400' },
+                { name: 'C++', color: 'border-blue-400 text-blue-400' },
+                { name: 'Python', color: 'border-green-400 text-green-400' },
+                { name: 'Java', color: 'border-orange-400 text-orange-400' },
+                { name: 'JavaScript', color: 'border-purple-400 text-purple-400' },
+                { name: 'Rust', color: 'border-red-400 text-red-400' }
+            ].map((lang) => (
+                <span 
+                key={lang.name} 
+                className={`px-4 py-2 bg-gray-800 border ${lang.color} rounded-full text-sm font-mono hover:bg-gray-700 transition-colors cursor-pointer`}
+                >
+                {lang.name}
+                </span>
+            ))}
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16 max-w-4xl mx-auto">
+            <div className="text-center">
+                <div className="text-3xl font-bold text-yellow-400">100+</div>
+                <div className="text-gray-400 text-sm">Active Challenges</div>
+            </div>
+            <div className="text-center">
+                <div className="text-3xl font-bold text-green-400">6</div>
+                <div className="text-gray-400 text-sm">Languages</div>
+            </div>
+            <div className="text-center">
+                <div className="text-3xl font-bold text-blue-400">0.1s</div>
+                <div className="text-gray-400 text-sm">Avg Runtime</div>
+            </div>
+            <div className="text-center">
+                <div className="text-3xl font-bold text-purple-400">Live</div>
+                <div className="text-gray-400 text-sm">Execution</div>
+            </div>
+            </div>
         </div>
-      </div>
-    </section>
-  );
+        </section>
+    );
 };
 
 export default HeroSection;

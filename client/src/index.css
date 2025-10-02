@@ -136,16 +136,34 @@
   }
 }
 
-/* Z-Challenge Platform Theme Variables */
+/* Z-Challenge Theme Variables */
 :root {
-  --background-primary: #060111;
-  --background-secondary: #0f0f17;
-  --background-tertiary: #1a1a24;
-  --border-primary: #2a2a34;
-  --text-primary: #ffffff;
-  --text-secondary: #b4b4b8;
-  --text-tertiary: #8b8b8b;
-  --accent-purple: #8b5cf6;
-  --accent-cyan: #06b6d4;
-  --accent-gradient: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
+  /* Background Colors */
+  --background-primary: #000000;     /* Pure black */
+  --background-secondary: #0a0a0a;   /* Very dark gray */
+  --background-tertiary: #141414;    /* Dark gray */
+  --background-card: #1a1a1a;        /* Card background */
+  
+  /* Accent Colors */
+  --accent-primary: #ffffff;         /* Pure white for primary accent */
+  --accent-secondary: #a3a3a3;       /* Light gray for secondary */
+  --accent-gold: #fbbf24;            /* Gold for highlights */
+  --accent-green: #22c55e;           /* Green for success */
+  
+  /* Text Colors */
+  --text-primary: #ffffff;           /* Pure white */
+  --text-secondary: #a3a3a3;         /* Light gray */
+  --text-tertiary: #737373;          /* Medium gray */
+  --text-muted: #525252;             /* Dark gray */
+  
+  /* Border Colors */
+  --border-primary: #262626;         /* Dark border */
+  --border-secondary: #404040;       /* Medium border */
+  --border-accent: #525252;          /* Light border */
+  
+  /* Status Colors */
+  --success: #22c55e;                /* Green */
+  --warning: #f59e0b;                /* Amber */
+  --error: #ef4444;                  /* Red */
+  --info: #3b82f6;                   /* Blue */
 }
