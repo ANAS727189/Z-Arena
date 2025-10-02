@@ -1,4 +1,3 @@
-// Page exports
 export { LandingPage } from './LandingPage';
 export { ChallengesPage } from './ChallengesPage';
 export { ChallengePage } from './ChallengePage';

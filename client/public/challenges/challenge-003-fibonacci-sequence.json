@@ -1,0 +1,150 @@
+{
+  "id": "fibonacci-sequence",
+  "metadata": {
+    "title": "Fibonacci Number Generator",
+    "description": "Generate the nth Fibonacci number using different approaches.\n\n## Learning Objectives\n- Understanding recursive and iterative approaches\n- Loop constructs and optimization\n- Mathematical sequence implementation\n\n## Background\nThe Fibonacci sequence is: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\nWhere each number is the sum of the two preceding ones.",
+    "difficulty": "easy",
+    "points": 30,
+    "timeLimit": 10,
+    "tags": ["loops", "math", "sequences", "optimization"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-02T20:15:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["z--", "cpp", "python", "java", "javascript"]
+  },
+  "problem": {
+    "statement": "Given a non-negative integer n, return the nth Fibonacci number. The Fibonacci sequence starts with F(0) = 0 and F(1) = 1, where F(n) = F(n-1) + F(n-2) for n > 1.",
+    "inputFormat": "A single integer n (0 ≤ n ≤ 40)",
+    "outputFormat": "A single integer representing the nth Fibonacci number",
+    "constraints": "0 ≤ n ≤ 40\nTime limit: 1 second per test case",
+    "examples": [
+      {
+        "input": "0",
+        "output": "0",
+        "explanation": "F(0) = 0 by definition"
+      },
+      {
+        "input": "1", 
+        "output": "1",
+        "explanation": "F(1) = 1 by definition"
+      },
+      {
+        "input": "5",
+        "output": "5",
+        "explanation": "F(5) = F(4) + F(3) = 3 + 2 = 5"
+      },
+      {
+        "input": "10",
+        "output": "55",
+        "explanation": "F(10) = 55 (sequence: 0,1,1,2,3,5,8,13,21,34,55)"
+      }
+    ]
+  },
+  "languages": {
+    "z--": {
+      "starterCode": "start\n  let n = 0\n  // Read n\n  \n  // Calculate nth Fibonacci number\n  // Your code here\n  \n  // Print the result\n  \nend",
+      "solutionCode": "start\n  let n = 0\n  // Read n\n  \n  if n == 0\n    print(0)\n    return\n  end\n  \n  if n == 1\n    print(1)\n    return\n  end\n  \n  let prev = 0\n  let curr = 1\n  let i = 2\n  \n  while i <= n\n    let next = prev + curr\n    prev = curr\n    curr = next\n    i = i + 1\n  end\n  \n  print(curr)\nend",
+      "hints": [
+        "Handle base cases n=0 and n=1 first",
+        "Use two variables to track previous two Fibonacci numbers",
+        "Iterate from 2 to n, updating the variables each time"
+      ],
+      "judge0Id": null,
+      "compilerType": "z-studio"
+    },
+    "cpp": {
+      "starterCode": "#include <iostream>\nusing namespace std;\n\nint main() {\n    int n;\n    cin >> n;\n    \n    // Calculate nth Fibonacci number\n    // Your code here\n    \n    return 0;\n}",
+      "solutionCode": "#include <iostream>\nusing namespace std;\n\nint main() {\n    int n;\n    cin >> n;\n    \n    if(n == 0) {\n        cout << 0 << endl;\n        return 0;\n    }\n    \n    if(n == 1) {\n        cout << 1 << endl;\n        return 0;\n    }\n    \n    long long prev = 0, curr = 1;\n    \n    for(int i = 2; i <= n; i++) {\n        long long next = prev + curr;\n        prev = curr;\n        curr = next;\n    }\n    \n    cout << curr << endl;\n    return 0;\n}",
+      "hints": [
+        "Use long long to handle larger Fibonacci numbers",
+        "Handle base cases separately",
+        "Use iterative approach for better time complexity"
+      ],
+      "judge0Id": 54,
+      "compilerType": "judge0"
+    },
+    "python": {
+      "starterCode": "n = int(input())\n\n# Calculate nth Fibonacci number\n# Your code here",
+      "solutionCode": "n = int(input())\n\nif n == 0:\n    print(0)\nelif n == 1:\n    print(1)\nelse:\n    prev, curr = 0, 1\n    for i in range(2, n + 1):\n        prev, curr = curr, prev + curr\n    print(curr)",
+      "hints": [
+        "Python handles big integers automatically",
+        "Use tuple unpacking for clean variable swapping",
+        "Range function: range(2, n+1) goes from 2 to n inclusive"
+      ],
+      "judge0Id": 71,
+      "compilerType": "judge0"
+    },
+    "java": {
+      "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int n = sc.nextInt();\n        \n        // Calculate nth Fibonacci number\n        // Your code here\n    }\n}",
+      "solutionCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int n = sc.nextInt();\n        \n        if(n == 0) {\n            System.out.println(0);\n            return;\n        }\n        \n        if(n == 1) {\n            System.out.println(1);\n            return;\n        }\n        \n        long prev = 0, curr = 1;\n        \n        for(int i = 2; i <= n; i++) {\n            long next = prev + curr;\n            prev = curr;\n            curr = next;\n        }\n        \n        System.out.println(curr);\n    }\n}",
+      "hints": [
+        "Use long data type for larger numbers",
+        "Handle edge cases first",
+        "Iterative solution is more efficient than recursive"
+      ],
+      "judge0Id": 62,
+      "compilerType": "judge0"
+    },
+    "javascript": {
+      "starterCode": "const readline = require('readline');\nconst rl = readline.createInterface({\n    input: process.stdin,\n    output: process.stdout\n});\n\nrl.on('line', (line) => {\n    const n = parseInt(line);\n    \n    // Calculate nth Fibonacci number\n    // Your code here\n    \n    rl.close();\n});",
+      "solutionCode": "const readline = require('readline');\nconst rl = readline.createInterface({\n    input: process.stdin,\n    output: process.stdout\n});\n\nrl.on('line', (line) => {\n    const n = parseInt(line);\n    \n    if(n === 0) {\n        console.log(0);\n    } else if(n === 1) {\n        console.log(1);\n    } else {\n        let prev = 0, curr = 1;\n        \n        for(let i = 2; i <= n; i++) {\n            let next = prev + curr;\n            prev = curr;\n            curr = next;\n        }\n        \n        console.log(curr);\n    }\n    \n    rl.close();\n});",
+      "hints": [
+        "JavaScript numbers can handle Fibonacci numbers up to F(78)",
+        "Use readline module for input handling",
+        "Remember to close the readline interface"
+      ],
+      "judge0Id": 63,
+      "compilerType": "judge0"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-base-0",
+      "input": "0",
+      "output": "0",
+      "points": 15,
+      "isHidden": false,
+      "timeout": 1000
+    },
+    {
+      "id": "test-base-1",
+      "input": "1", 
+      "output": "1",
+      "points": 15,
+      "isHidden": false,
+      "timeout": 1000
+    },
+    {
+      "id": "test-small",
+      "input": "5",
+      "output": "5",
+      "points": 20,
+      "isHidden": false,
+      "timeout": 1000
+    },
+    {
+      "id": "test-medium",
+      "input": "10",
+      "output": "55",
+      "points": 25,
+      "isHidden": true,
+      "timeout": 1000
+    },
+    {
+      "id": "test-large",
+      "input": "20",
+      "output": "6765",
+      "points": 25,
+      "isHidden": true,
+      "timeout": 1000
+    }
+  ],
+  "editorial": {
+    "approach": "The most efficient approach is iterative, using two variables to track the previous two Fibonacci numbers. This avoids the exponential time complexity of naive recursion while maintaining O(1) space complexity.",
+    "complexity": {
+      "time": "O(n)",
+      "space": "O(1)"
+    },
+    "keywords": ["iteration", "dynamic-programming", "mathematical-sequences", "optimization"]
+  }
+}
