@@ -10,9 +10,6 @@ const HeroSection = () => {
         
         <div className="container mx-auto px-4 relative z-10 p-6">
             <div className="max-w-6xl mx-auto">
-            <div className=" rounded-t-xl p-4">
-            </div>
-
             <div className="rounded-b-xl p-8 font-mono text-sm">
                 <div className="space-y-3">
                 <div className="flex items-center gap-2">

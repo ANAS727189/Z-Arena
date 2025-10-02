@@ -13,34 +13,35 @@ const ShowcaseSection = () => {
         { name: 'Rust', color: 'text-red-400', challenges: 18 }
     ];
 
-    const sampleChallenges = [
-        {
-        title: 'Hello World',
-        difficulty: 'Easy',
-        points: 20,
-        description: 'Get started with Z-- basics and syntax fundamentals',
-        solved: 1247,
-        difficultyColor: 'text-green-400 bg-green-400/10'
-        },
-        {
-        title: 'Two Sum Array',
-        difficulty: 'Medium', 
-        points: 50,
-        description: 'Master array manipulation and hash table optimization',
-        solved: 823,
-        difficultyColor: 'text-yellow-400 bg-yellow-400/10'
-        },
-        {
-        title: 'String Reversal',
-        difficulty: 'Easy',
-        points: 25,
-        description: 'Learn string manipulation and algorithmic thinking',
-        solved: 956,
-        difficultyColor: 'text-green-400 bg-green-400/10'
-        }
-    ];
-
-    return (
+  const sampleChallenges = [
+    {
+      id: 'hello-world-z',
+      title: 'Hello Z-- World',
+      difficulty: 'Easy',
+      points: 10,
+      description: 'Welcome to Z--! Learn basic syntax and program structure.',
+      solved: 1247,
+      difficultyColor: 'text-green-400 bg-green-400/10'
+    },
+    {
+      id: 'two-sum-array',
+      title: 'Two Sum Problem',
+      difficulty: 'Medium', 
+      points: 50,
+      description: 'Find two numbers in array that add up to target sum.',
+      solved: 823,
+      difficultyColor: 'text-yellow-400 bg-yellow-400/10'
+    },
+    {
+      id: 'reverse-string',
+      title: 'Reverse String',
+      difficulty: 'Easy',
+      points: 20,
+      description: 'Reverse a string using Z-- language features.',
+      solved: 956,
+      difficultyColor: 'text-green-400 bg-green-400/10'
+    }
+  ];    return (
         <section className="py-20">
         <div className="max-w-7xl mx-auto px-4">
             <div className="text-center mb-16">

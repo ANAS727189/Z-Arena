@@ -1,11 +1,17 @@
 import { motion } from 'framer-motion';
-import { Code2 } from 'lucide-react';
+import { Code2, User, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
+import { useState } from 'react';
+import { AuthModal } from '../AuthModal';
 
 const Navigation = () => {
     const navigate = useNavigate();
+    const { user, logout } = useAuth();
+    const [showAuthModal, setShowAuthModal] = useState(false);
 
     return (
+        <>
         <motion.nav
         initial={{ y: -100 }}
         animate={{ y: 0 }}
@@ -44,16 +50,48 @@ const Navigation = () => {
             >
                 Leaderboard
             </motion.button>
-            <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-gradient-to-r from-[var(--accent-purple)] to-[var(--accent-cyan)] text-white px-6 py-2 rounded-lg hover:shadow-lg hover:shadow-[var(--accent-purple)]/20 transition-all duration-300 font-medium"
-            >
-                Sign In
-            </motion.button>
+            {user ? (
+                <div className="flex items-center space-x-4">
+                    <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => navigate('/profile')}
+                        className="flex items-center space-x-2 text-[var(--text-secondary)] hover:text-white transition-colors font-medium"
+                    >
+                        <User className="w-4 h-4" />
+                        <span>{user.name || user.email}</span>
+                    </motion.button>
+                    <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={logout}
+                        className="flex items-center space-x-2 text-[var(--text-secondary)] hover:text-red-400 transition-colors font-medium"
+                    >
+                        <LogOut className="w-4 h-4" />
+                        <span>Sign Out</span>
+                    </motion.button>
+                </div>
+            ) : (
+                <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setShowAuthModal(true)}
+                    className="bg-gradient-to-r from-[var(--accent-purple)] to-[var(--accent-cyan)] text-white px-6 py-2 rounded-lg hover:shadow-lg hover:shadow-[var(--accent-purple)]/20 transition-all duration-300 font-medium"
+                >
+                    Sign In
+                </motion.button>
+            )}
             </div>
         </div>
         </motion.nav>
+        
+        {/* Auth Modal */}
+        {/* Auth Modal */}
+        <AuthModal 
+            isOpen={showAuthModal}
+            onClose={() => setShowAuthModal(false)}
+        />
+        </>
     );
 };
 

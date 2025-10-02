@@ -10,7 +10,7 @@ export interface Challenge {
     author: string;
     createdAt: string;
     version: string;
-    supportedLanguages: string[];
+    supportedLanguages?: string[]; // Optional for backward compatibility
   };
   problem: {
     statement: string;
@@ -23,13 +23,20 @@ export interface Challenge {
       explanation: string;
     }>;
   };
-  languages: Record<string, {
+  // Legacy languages structure (for backward compatibility)
+  languages?: Record<string, {
     starterCode: string;
     solutionCode: string;
     hints: string[];
     judge0Id: number | null;
     compilerType: 'z-studio' | 'judge0';
   }>;
+  // New simplified code structure
+  code?: {
+    starterCode: string;
+    solutionCode: string;
+    hints: string[];
+  };
   testCases: TestCase[];
   editorial: {
     approach: string;

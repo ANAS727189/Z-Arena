@@ -84,7 +84,7 @@ export function filterChallenges(
     
     // Language filter
     if (filters.language && filters.language !== 'all') {
-      if (!challenge.metadata.supportedLanguages.includes(filters.language)) return false;
+      if (!challenge.metadata.supportedLanguages?.includes(filters.language)) return false;
     }
     
     // Tags filter

@@ -1,25 +1,42 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, Clock, Users, Trophy, Code2, ArrowRight, Loader2 } from 'lucide-react';
-import { loadChallenges, filterChallenges, getSupportedLanguages } from '@/utils/challengeLoader';
+import { Search, Filter, Clock, Users, Trophy, Code2, ArrowRight, Loader2, Database, LogOut } from 'lucide-react';
+import { challengeService } from '@/services/challengeService';
+import { useAuth } from '@/hooks/useAuth';
+import { seedChallenges } from '@/utils/seedChallenges';
+import { AuthModal } from '@/components/AuthModal';
 import type { Challenge } from '../types';
 
 export const ChallengesPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState<Challenge['metadata']['difficulty'] | 'all'>('all');
   const [selectedLanguage, setSelectedLanguage] = useState<string>('all');
+  const [seeding, setSeeding] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
-  // Load challenges on component mount
+  // Load challenges from Appwrite
   useEffect(() => {
     async function fetchChallenges() {
       try {
-        const loadedChallenges = await loadChallenges();
+        const loadedChallenges = await challengeService.getChallenges();
         setChallenges(loadedChallenges);
-      } catch (error) {
-        console.error('Failed to load challenges:', error);
+        setError(null);
+      } catch (error: any) {
+        console.error('Failed to load challenges from database:', error);
+        
+        // Set user-friendly error message
+        if (error.message?.includes('not authorized') || error.message?.includes('401')) {
+          setError('⚠️ Permission error: Please check Appwrite collection permissions. Challenges collection needs "any" read permission.');
+        } else if (error.message?.includes('not found')) {
+          setError('❌ Database or collection not found. Please check your Appwrite configuration.');
+        } else {
+          setError(`🚨 Failed to load challenges: ${error.message || 'Unknown error'}`);
+        }
       } finally {
         setLoading(false);
       }
@@ -29,13 +46,46 @@ export const ChallengesPage: React.FC = () => {
   }, []);
 
   // Filter challenges based on search criteria
-  const filteredChallenges = filterChallenges(challenges, {
-    search: searchTerm,
-    difficulty: selectedDifficulty,
-    language: selectedLanguage
+  const filteredChallenges = challenges.filter(challenge => {
+    // Search filter
+    if (searchTerm && !challenge.metadata.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        !challenge.metadata.description.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        !challenge.metadata.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))) {
+      return false;
+    }
+    
+    // Difficulty filter
+    if (selectedDifficulty !== 'all' && challenge.metadata.difficulty !== selectedDifficulty) {
+      return false;
+    }
+    
+    // Language filter
+    if (selectedLanguage !== 'all' && !challenge.metadata.supportedLanguages?.includes(selectedLanguage)) {
+      return false;
+    }
+    
+    return true;
   });
 
-  const supportedLanguages = getSupportedLanguages(challenges);
+  // Get supported languages from all challenges
+  const supportedLanguages = Array.from(
+    new Set(challenges.flatMap(c => c.metadata.supportedLanguages || ['z--']))
+  ).sort();
+
+  // Seed challenges function
+  const handleSeedChallenges = async () => {
+    setSeeding(true);
+    try {
+      await seedChallenges();
+      // Refresh challenges after seeding
+      const loadedChallenges = await challengeService.getChallenges();
+      setChallenges(loadedChallenges);
+    } catch (error) {
+      console.error('Failed to seed challenges:', error);
+    } finally {
+      setSeeding(false);
+    }
+  };
 
   const getSuccessRate = (challenge: Challenge) => {
     if (!challenge.stats || challenge.stats.totalSubmissions === 0) {
@@ -87,9 +137,28 @@ export const ChallengesPage: React.FC = () => {
             >
               Leaderboard
             </button>
-            <button className="bg-gradient-to-r from-[var(--accent-purple)] to-[var(--accent-cyan)] text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity">
-              Sign In
-            </button>
+            
+            {user ? (
+              <div className="flex items-center space-x-4">
+                <span className="text-gray-300">
+                  Welcome, {user.name}
+                </span>
+                <button
+                  onClick={logout}
+                  className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <button 
+                onClick={() => setShowAuthModal(true)}
+                className="bg-yellow-400 text-black px-4 py-2 rounded-lg hover:bg-yellow-300 transition-colors font-semibold"
+              >
+                Sign In
+              </button>
+            )}
           </div>
         </div>
       </nav>
@@ -97,11 +166,33 @@ export const ChallengesPage: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="font-heading text-4xl md:text-5xl font-bold text-white mb-4">
-            Code Challenges
-          </h1>
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="font-heading text-4xl md:text-5xl font-bold text-white">
+              Code Challenges
+            </h1>
+            {/* Development Seeding Button */}
+            {import.meta.env.DEV && (
+              <button
+                onClick={handleSeedChallenges}
+                disabled={seeding}
+                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              >
+                {seeding ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Seeding...
+                  </>
+                ) : (
+                  <>
+                    <Database className="w-4 h-4" />
+                    Seed DB
+                  </>
+                )}
+              </button>
+            )}
+          </div>
           <p className="font-body text-xl text-[var(--text-secondary)] mb-6">
-            Master the Z-- programming language through hands-on challenges
+            Master programming through hands-on challenges across multiple languages
           </p>
 
           {/* Search and Filters */}
@@ -161,8 +252,26 @@ export const ChallengesPage: React.FC = () => {
           </div>
         )}
 
+        {/* Error State */}
+        {!loading && error && (
+          <div className="max-w-2xl mx-auto mt-12 p-6 bg-red-900/20 border border-red-500/30 rounded-lg">
+            <div className="flex items-start space-x-4">
+              <div className="flex-shrink-0">
+                ⚠️
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-red-400 mb-2">Configuration Error</h3>
+                <p className="text-red-200 text-sm leading-relaxed mb-4">{error}</p>
+                <div className="bg-red-950/50 p-3 rounded text-xs text-red-300">
+                  <strong>Quick Fix:</strong> Go to Appwrite Console → Databases → challenges collection → Settings → Update Permissions → Set Read permission to "any"
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Challenge Grid */}
-        {!loading && (
+        {!loading && !error && (
           <div className="grid gap-6">
             {filteredChallenges.map((challenge) => (
             <div
@@ -245,6 +354,12 @@ export const ChallengesPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Authentication Modal */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+      />
     </div>
   );
 };
