@@ -1,0 +1,161 @@
+{
+  "id": "reverse-string",
+  "metadata": {
+    "title": "Reverse String",
+    "description": "Implement a function to reverse a string efficiently.\n\n## Learning Objectives\n- String manipulation and character operations\n- In-place vs. new string approaches\n- Algorithm optimization techniques\n\n## Approach\nYou can solve this using:\n1. **Two Pointers**: Swap characters from both ends (in-place)\n2. **Stack**: Push all characters and pop them (LIFO)\n3. **Built-in Functions**: Use language-specific reverse methods",
+    "difficulty": "easy",
+    "points": 25,
+    "timeLimit": 8,
+    "tags": ["strings", "two-pointers", "algorithms", "basic"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-02T20:30:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["z--", "cpp", "python", "java", "javascript", "rust"]
+  },
+  "problem": {
+    "statement": "Write a function that reverses a string. The input string is given as an array of characters s, and you must do this by modifying the input array in-place with O(1) extra memory.",
+    "inputFormat": "A single line containing a string s (1 ≤ length ≤ 1000)",
+    "outputFormat": "The reversed string",
+    "constraints": "1 ≤ s.length ≤ 1000\ns consists of printable ASCII characters",
+    "examples": [
+      {
+        "input": "hello",
+        "output": "olleh",
+        "explanation": "The string 'hello' becomes 'olleh' when reversed"
+      },
+      {
+        "input": "world",
+        "output": "dlrow", 
+        "explanation": "The string 'world' becomes 'dlrow' when reversed"
+      },
+      {
+        "input": "a",
+        "output": "a",
+        "explanation": "A single character remains the same when reversed"
+      },
+      {
+        "input": "racecar",
+        "output": "racecar",
+        "explanation": "A palindrome reads the same forwards and backwards"
+      }
+    ]
+  },
+  "languages": {
+    "z--": {
+      "starterCode": "start\n  // Read the input string\n  // Your code here\n  \n  // Reverse the string and print it\n  \nend",
+      "solutionCode": "start\n  // Note: Z-- doesn't have built-in string type\n  // We'll work with character arrays\n  \n  let str[1000]\n  let len = 0\n  \n  // Read string character by character (simplified)\n  // In real implementation, you'd read the entire line\n  \n  // Reverse using two pointers\n  let left = 0\n  let right = len - 1\n  \n  while left < right\n    let temp = str[left]\n    str[left] = str[right]\n    str[right] = temp\n    left = left + 1\n    right = right - 1\n  end\n  \n  // Print reversed string\n  let i = 0\n  while i < len\n    print(str[i])\n    i = i + 1\n  end\nend",
+      "hints": [
+        "Use two pointers from start and end of the string",
+        "Swap characters at left and right positions",
+        "Continue until pointers meet in the middle"
+      ],
+      "judge0Id": null,
+      "compilerType": "z-studio"
+    },
+    "cpp": {
+      "starterCode": "#include <iostream>\n#include <string>\n#include <algorithm>\nusing namespace std;\n\nint main() {\n    string s;\n    getline(cin, s);\n    \n    // Your code here\n    // Reverse the string and print it\n    \n    return 0;\n}",
+      "solutionCode": "#include <iostream>\n#include <string>\n#include <algorithm>\nusing namespace std;\n\nint main() {\n    string s;\n    getline(cin, s);\n    \n    // Method 1: Using two pointers\n    int left = 0, right = s.length() - 1;\n    while(left < right) {\n        swap(s[left], s[right]);\n        left++;\n        right--;\n    }\n    \n    // Method 2: Using STL (alternative)\n    // reverse(s.begin(), s.end());\n    \n    cout << s << endl;\n    return 0;\n}",
+      "hints": [
+        "Use two pointers approach for O(1) space complexity",
+        "swap() function can exchange two characters",
+        "Alternatively, use reverse() from <algorithm> header"
+      ],
+      "judge0Id": 54,
+      "compilerType": "judge0"
+    },
+    "python": {
+      "starterCode": "s = input().strip()\n\n# Your code here\n# Reverse the string and print it",
+      "solutionCode": "s = input().strip()\n\n# Method 1: Using slicing (Pythonic way)\nreversed_s = s[::-1]\n\n# Method 2: Using two pointers (more explicit)\n# s_list = list(s)\n# left, right = 0, len(s_list) - 1\n# while left < right:\n#     s_list[left], s_list[right] = s_list[right], s_list[left]\n#     left += 1\n#     right -= 1\n# reversed_s = ''.join(s_list)\n\nprint(reversed_s)",
+      "hints": [
+        "Python strings are immutable, convert to list for in-place modification",
+        "Use slicing s[::-1] for the most Pythonic solution",
+        "Two pointers approach: swap characters from both ends"
+      ],
+      "judge0Id": 71,
+      "compilerType": "judge0"
+    },
+    "java": {
+      "starterCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        String s = sc.nextLine();\n        \n        // Your code here\n        // Reverse the string and print it\n    }\n}",
+      "solutionCode": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        String s = sc.nextLine();\n        \n        // Method 1: Using StringBuilder\n        StringBuilder sb = new StringBuilder(s);\n        String reversed = sb.reverse().toString();\n        \n        // Method 2: Using two pointers (more manual)\n        // char[] chars = s.toCharArray();\n        // int left = 0, right = chars.length - 1;\n        // while(left < right) {\n        //     char temp = chars[left];\n        //     chars[left] = chars[right];\n        //     chars[right] = temp;\n        //     left++;\n        //     right--;\n        // }\n        // String reversed = new String(chars);\n        \n        System.out.println(reversed);\n    }\n}",
+      "hints": [
+        "StringBuilder has a built-in reverse() method",
+        "Convert string to char array for manual reversal",
+        "Use two pointers to swap characters from both ends"
+      ],
+      "judge0Id": 62,
+      "compilerType": "judge0"
+    },
+    "javascript": {
+      "starterCode": "const readline = require('readline');\nconst rl = readline.createInterface({\n    input: process.stdin,\n    output: process.stdout\n});\n\nrl.on('line', (line) => {\n    const s = line.trim();\n    \n    // Your code here\n    // Reverse the string and print it\n    \n    rl.close();\n});",
+      "solutionCode": "const readline = require('readline');\nconst rl = readline.createInterface({\n    input: process.stdin,\n    output: process.stdout\n});\n\nrl.on('line', (line) => {\n    const s = line.trim();\n    \n    // Method 1: Using built-in methods\n    const reversed = s.split('').reverse().join('');\n    \n    // Method 2: Using two pointers\n    // const chars = s.split('');\n    // let left = 0, right = chars.length - 1;\n    // while(left < right) {\n    //     [chars[left], chars[right]] = [chars[right], chars[left]];\n    //     left++;\n    //     right--;\n    // }\n    // const reversed = chars.join('');\n    \n    console.log(reversed);\n    rl.close();\n});",
+      "hints": [
+        "Use split(''), reverse(), join('') for simplest solution",
+        "Array destructuring makes swapping elements easy: [a, b] = [b, a]",
+        "Two pointers approach works well for in-place reversal"
+      ],
+      "judge0Id": 63,
+      "compilerType": "judge0"
+    },
+    "rust": {
+      "starterCode": "use std::io;\n\nfn main() {\n    let mut input = String::new();\n    io::stdin().read_line(&mut input).expect(\"Failed to read line\");\n    let s = input.trim();\n    \n    // Your code here\n    // Reverse the string and print it\n}",
+      "solutionCode": "use std::io;\n\nfn main() {\n    let mut input = String::new();\n    io::stdin().read_line(&mut input).expect(\"Failed to read line\");\n    let s = input.trim();\n    \n    // Method 1: Using iterator and collect\n    let reversed: String = s.chars().rev().collect();\n    \n    // Method 2: Using bytes for in-place reversal\n    // let mut bytes = s.as_bytes().to_vec();\n    // bytes.reverse();\n    // let reversed = String::from_utf8(bytes).unwrap();\n    \n    println!(\"{}\", reversed);\n}",
+      "hints": [
+        "Use chars().rev().collect() for iterator-based reversal",
+        "String slices can be converted to bytes for manipulation", 
+        "reverse() method works on Vec<u8> (bytes)"
+      ],
+      "judge0Id": 73,
+      "compilerType": "judge0"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-simple",
+      "input": "hello",
+      "output": "olleh",
+      "points": 20,
+      "isHidden": false,
+      "timeout": 1000
+    },
+    {
+      "id": "test-world",
+      "input": "world",
+      "output": "dlrow",
+      "points": 20,
+      "isHidden": false,
+      "timeout": 1000
+    },
+    {
+      "id": "test-single-char",
+      "input": "a",
+      "output": "a",
+      "points": 20,
+      "isHidden": true,
+      "timeout": 1000
+    },
+    {
+      "id": "test-palindrome",
+      "input": "racecar",
+      "output": "racecar",
+      "points": 20,
+      "isHidden": true,
+      "timeout": 1000
+    },
+    {
+      "id": "test-mixed",
+      "input": "Python123",
+      "output": "321nohtyP",
+      "points": 20,
+      "isHidden": true,
+      "timeout": 1000
+    }
+  ],
+  "editorial": {
+    "approach": "The most efficient approach uses two pointers starting from both ends of the string. We swap characters at these positions and move the pointers towards the center until they meet. This achieves O(n) time complexity with O(1) extra space.",
+    "complexity": {
+      "time": "O(n)",
+      "space": "O(1)"
+    },
+    "keywords": ["two-pointers", "string-manipulation", "in-place-algorithm", "character-swapping"]
+  }
+}
