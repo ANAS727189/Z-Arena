@@ -1,9 +1,9 @@
-// Z-- Language syntax highlighting configuration for Monaco Editor
+// Define Z-- language configuration and syntax highlighting
 export const defineZLanguage = (monaco: any) => {
   // Register the Z-- language
   monaco.languages.register({ id: 'z--' });
 
-  // Define the language configuration
+  // Configure language properties
   monaco.languages.setLanguageConfiguration('z--', {
     comments: {
       lineComment: '//',
@@ -28,185 +28,61 @@ export const defineZLanguage = (monaco: any) => {
       { open: '"', close: '"' },
       { open: "'", close: "'" },
     ],
-    folding: {
-      markers: {
-        start: new RegExp('^\\s*//\\s*#?region\\b'),
-        end: new RegExp('^\\s*//\\s*#?endregion\\b'),
-      },
-    },
   });
 
-  // Define the language tokens
-  monaco.languages.setMonarchTokenizer('z--', {
-    // Set default token
-    defaultToken: 'invalid',
-
-    // Keywords
-    keywords: [
-      'function',
-      'if',
-      'else',
-      'while',
-      'for',
-      'return',
-      'var',
-      'let',
-      'const',
-      'true',
-      'false',
-      'null',
-      'undefined',
-      'main',
-      'print',
-      'input',
-      'int',
-      'float',
-      'string',
-      'bool',
-      'array',
-      'object',
-      'class',
-      'new',
-      'this',
-      'extends',
-      'implements',
-      'public',
-      'private',
-      'protected',
-      'static',
-      'final',
-      'abstract',
-      'interface',
-      'enum',
-      'try',
-      'catch',
-      'finally',
-      'throw',
-      'throws',
-      'import',
-      'export',
-      'module',
-      'package',
-      'namespace',
-      'using',
-      'include',
-      'require',
-    ],
-
-    // Operators
-    operators: [
-      '=',
-      '>',
-      '<',
-      '!',
-      '~',
-      '?',
-      ':',
-      '==',
-      '<=',
-      '>=',
-      '!=',
-      '&&',
-      '||',
-      '++',
-      '--',
-      '+',
-      '-',
-      '*',
-      '/',
-      '&',
-      '|',
-      '^',
-      '%',
-      '<<',
-      '>>',
-      '>>>',
-      '+=',
-      '-=',
-      '*=',
-      '/=',
-      '&=',
-      '|=',
-      '^=',
-      '%=',
-      '<<=',
-      '>>=',
-      '>>>=',
-    ],
-
-    // Symbols
-    symbols: /[=><!~?:&|+\-*\/\^%]+/,
-
-    // The main tokenizer
+  // Define syntax highlighting for Z-- language using the same approach as main Z Studio
+  monaco.languages.setMonarchTokensProvider('z--', {
     tokenizer: {
       root: [
-        // Identifiers and keywords
-        [
-          /[a-z_$][\w$]*/,
-          {
-            cases: {
-              '@keywords': 'keyword',
-              '@default': 'identifier',
-            },
-          },
-        ],
-        [/[A-Z][\w\$]*/, 'type.identifier'], // Class names
-
-        // Whitespace
-        { include: '@whitespace' },
-
-        // Delimiters and operators
-        [/[{}()\[\]]/, '@brackets'],
-        [/[<>](?!@symbols)/, '@brackets'],
-        [
-          /@symbols/,
-          {
-            cases: {
-              '@operators': 'operator',
-              '@default': '',
-            },
-          },
-        ],
-
+        // Keywords
+        [/(function|if|else|while|for|return|var|let|const|main|print|input|true|false|null|int|float|string|bool|void)/, 'keyword'],
+        
+        // Comments
+        [/\/\/.*$/, 'comment'],
+        [/\/\*/, 'comment', '@comment'],
+        
+        // Strings
+        [/"([^"\\]|\\.)*$/, 'string.invalid'],
+        [/"/, 'string', '@string'],
+        [/'([^'\\]|\\.)*$/, 'string.invalid'],
+        [/'/, 'string', '@stringSingle'],
+        
         // Numbers
         [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
-        [/0[xX][0-9a-fA-F]+/, 'number.hex'],
         [/\d+/, 'number'],
-
-        // Delimiter: after number because of .\d floats
+        
+        // Identifiers
+        [/[a-zA-Z_$][\w$]*/, 'identifier'],
+        
+        // Operators
+        [/[=><!~?:&|+\-*\/\^%]+/, 'operator'],
+        
+        // Brackets and delimiters
+        [/[{}()\[\]]/, 'delimiter.bracket'],
         [/[;,.]/, 'delimiter'],
-
-        // Strings
-        [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-terminated string
-        [/"/, { token: 'string.quote', bracket: '@open', next: '@string' }],
-        [/'[^\\']'/, 'string'],
-        [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
-        [/'/, 'string.invalid'],
+        
+        // Whitespace
+        [/[ \t\r\n]+/, 'white'],
       ],
-
+      
       comment: [
         [/[^\/*]+/, 'comment'],
-        [/\/\*/, 'comment', '@push'], // nested comment
-        ['\\*/', 'comment', '@pop'],
-        [/[\/*]/, 'comment'],
+        [/\*\//, 'comment', '@pop'],
+        [/[\/*]/, 'comment']
       ],
-
+      
       string: [
         [/[^\\"]+/, 'string'],
-        [/@escapes/, 'string.escape'],
-        [/\\./, 'string.escape.invalid'],
-        [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
+        [/\\./, 'string.escape'],
+        [/"/, 'string', '@pop']
       ],
-
-      whitespace: [
-        [/[ \t\r\n]+/, 'white'],
-        [/\/\*/, 'comment', '@comment'],
-        [/\/\/.*$/, 'comment'],
+      
+      stringSingle: [
+        [/[^\\']+/, 'string'],
+        [/\\./, 'string.escape'],
+        [/'/, 'string', '@pop']
       ],
     },
-
-    escapes:
-      /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
   });
 
   // Define the theme for Z-- language
@@ -214,17 +90,13 @@ export const defineZLanguage = (monaco: any) => {
     base: 'vs-dark',
     inherit: true,
     rules: [
-      { token: 'comment', foreground: '6A9955' },
-      { token: 'keyword', foreground: '569CD6', fontStyle: 'bold' },
-      { token: 'identifier', foreground: '9CDCFE' },
-      { token: 'type.identifier', foreground: '4EC9B0' },
-      { token: 'number', foreground: 'B5CEA8' },
-      { token: 'number.float', foreground: 'B5CEA8' },
-      { token: 'number.hex', foreground: 'B5CEA8' },
-      { token: 'string', foreground: 'CE9178' },
-      { token: 'string.escape', foreground: 'D7BA7D' },
-      { token: 'operator', foreground: 'D4D4D4' },
-      { token: 'delimiter', foreground: 'D4D4D4' },
+      { token: 'comment.z--', foreground: '6A9955' },
+      { token: 'keyword.z--', foreground: '569CD6', fontStyle: 'bold' },
+      { token: 'identifier.z--', foreground: '9CDCFE' },
+      { token: 'number.z--', foreground: 'B5CEA8' },
+      { token: 'string.z--', foreground: 'CE9178' },
+      { token: 'operator.z--', foreground: 'D4D4D4' },
+      { token: 'delimiter.z--', foreground: 'D4D4D4' },
     ],
     colors: {
       'editor.background': '#1e1e1e',
@@ -246,64 +118,123 @@ export const defineZLanguageCompletionProvider = (monaco: any) => {
         {
           label: 'function',
           kind: monaco.languages.CompletionItemKind.Keyword,
-          insertText:
-            'function ${1:functionName}() {\n\t${2:// function body}\n}',
-          insertTextRules:
-            monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          insertText: 'function',
           documentation: 'Define a function',
         },
         {
           label: 'if',
           kind: monaco.languages.CompletionItemKind.Keyword,
-          insertText: 'if (${1:condition}) {\n\t${2:// if body}\n}',
-          insertTextRules:
-            monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          insertText: 'if',
           documentation: 'If statement',
+        },
+        {
+          label: 'else',
+          kind: monaco.languages.CompletionItemKind.Keyword,
+          insertText: 'else',
+          documentation: 'Else statement',
         },
         {
           label: 'while',
           kind: monaco.languages.CompletionItemKind.Keyword,
-          insertText: 'while (${1:condition}) {\n\t${2:// while body}\n}',
-          insertTextRules:
-            monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          insertText: 'while',
           documentation: 'While loop',
         },
         {
           label: 'for',
           kind: monaco.languages.CompletionItemKind.Keyword,
-          insertText:
-            'for (${1:i} = ${2:0}; ${1:i} < ${3:length}; ${1:i}++) {\n\t${4:// for body}\n}',
-          insertTextRules:
-            monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          insertText: 'for',
           documentation: 'For loop',
+        },
+        {
+          label: 'return',
+          kind: monaco.languages.CompletionItemKind.Keyword,
+          insertText: 'return',
+          documentation: 'Return statement',
+        },
+        {
+          label: 'var',
+          kind: monaco.languages.CompletionItemKind.Keyword,
+          insertText: 'var',
+          documentation: 'Variable declaration',
+        },
+        {
+          label: 'let',
+          kind: monaco.languages.CompletionItemKind.Keyword,
+          insertText: 'let',
+          documentation: 'Let declaration',
+        },
+        {
+          label: 'const',
+          kind: monaco.languages.CompletionItemKind.Keyword,
+          insertText: 'const',
+          documentation: 'Constant declaration',
         },
         {
           label: 'main',
           kind: monaco.languages.CompletionItemKind.Function,
-          insertText: 'function main() {\n\t${1:// main function body}\n}',
-          insertTextRules:
-            monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          insertText: 'main',
           documentation: 'Main function',
         },
         {
           label: 'print',
           kind: monaco.languages.CompletionItemKind.Function,
-          insertText: 'print(${1:value});',
-          insertTextRules:
-            monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          insertText: 'print',
           documentation: 'Print function',
         },
         {
           label: 'input',
           kind: monaco.languages.CompletionItemKind.Function,
-          insertText: 'input(${1:"prompt"})',
-          insertTextRules:
-            monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          insertText: 'input',
           documentation: 'Input function',
         },
       ];
-
       return { suggestions };
+    },
+  });
+};
+
+// Hover provider for Z--
+export const defineZLanguageHoverProvider = (monaco: any) => {
+  monaco.languages.registerHoverProvider('z--', {
+    provideHover: (model: any, position: any) => {
+      const word = model.getWordAtPosition(position);
+      if (!word) return;
+
+      const hoverMap: { [key: string]: string } = {
+        function: 'Defines a function in Z--',
+        if: 'Conditional statement',
+        else: 'Alternative branch for if statement',
+        while: 'Loop that continues while condition is true',
+        for: 'Loop with initialization, condition, and increment',
+        return: 'Returns a value from a function',
+        var: 'Declares a variable',
+        let: 'Declares a block-scoped variable',
+        const: 'Declares a constant',
+        main: 'Entry point of the program',
+        print: 'Outputs text to console',
+        input: 'Reads input from user',
+        true: 'Boolean true value',
+        false: 'Boolean false value',
+        null: 'Null value',
+        int: 'Integer data type',
+        float: 'Floating-point data type',
+        string: 'String data type',
+        bool: 'Boolean data type',
+        void: 'Void return type',
+      };
+
+      const hover = hoverMap[word.word];
+      if (hover) {
+        return {
+          range: new monaco.Range(
+            position.lineNumber,
+            word.startColumn,
+            position.lineNumber,
+            word.endColumn
+          ),
+          contents: [{ value: hover }],
+        };
+      }
     },
   });
 };

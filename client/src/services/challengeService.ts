@@ -288,7 +288,7 @@ class ChallengeService {
     testCases: TestCase[]
   ): Promise<ExecutionResult> {
     const serverUrl =
-      import.meta.env.VITE_Z_COMPILER_URL || 'http://localhost:3000';
+      import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
     const testResults: TestResult[] = [];
     let totalScore = 0;
     let totalExecutionTime = 0;
@@ -318,7 +318,7 @@ class ChallengeService {
             passed: false,
             actualOutput: '',
             executionTime,
-            error: errorData.message || 'Compilation failed',
+            error: errorData.error || errorData.message || 'Compilation failed',
           });
           continue;
         }
@@ -378,7 +378,7 @@ class ChallengeService {
     testCases: TestCase[]
   ): Promise<ExecutionResult> {
     const serverUrl =
-      import.meta.env.VITE_JUDGE0_PROXY_URL || 'http://localhost:3001';
+      import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
     const languageId =
       JUDGE0_LANGUAGE_IDS[language as keyof typeof JUDGE0_LANGUAGE_IDS];
 
@@ -417,7 +417,8 @@ class ChallengeService {
             passed: false,
             actualOutput: '',
             executionTime,
-            error: errorData.message || 'Judge0 request failed',
+            error:
+              errorData.error || errorData.message || 'Judge0 request failed',
           });
           continue;
         }

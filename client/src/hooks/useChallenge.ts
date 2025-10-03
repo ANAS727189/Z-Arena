@@ -26,7 +26,7 @@ export const useChallenge = () => {
     'description' | 'editorial' | 'submissions'
   >('description');
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [editorTheme, setEditorTheme] = useState('z-studio-dark');
+  const [editorTheme, setEditorTheme] = useState('vs-dark');
   const [fontSize, setFontSize] = useState(14);
   const [showMinimap, setShowMinimap] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
@@ -128,7 +128,17 @@ export const useChallenge = () => {
   };
 
   const handleTestCode = async () => {
-    if (!challenge || !code.trim()) {
+    if (!challenge) {
+      alert('Challenge not loaded. Please refresh the page.');
+      return;
+    }
+
+    if (!challenge.id) {
+      alert('Challenge ID is missing. Please refresh the page.');
+      return;
+    }
+
+    if (!code.trim()) {
       alert('Please write some code before testing!');
       return;
     }
@@ -173,7 +183,17 @@ export const useChallenge = () => {
       return;
     }
 
-    if (!challenge || !code.trim()) {
+    if (!challenge) {
+      alert('Challenge not loaded. Please refresh the page.');
+      return;
+    }
+
+    if (!challenge.id) {
+      alert('Challenge ID is missing. Please refresh the page.');
+      return;
+    }
+
+    if (!code.trim()) {
       alert('Please write some code before submitting!');
       return;
     }

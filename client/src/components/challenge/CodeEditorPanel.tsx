@@ -15,14 +15,17 @@ import {
 } from 'lucide-react';
 import type { Challenge } from '@/types';
 import { getLanguageDisplayName } from '@/utils/starterCodes';
+
 import {
-  defineZLanguage,
-  defineZLanguageCompletionProvider,
-} from '@/utils/zLanguageDefinition';
-import {
-  defineAllThemes,
-  getAvailableThemes,
-} from '@/utils/editorThemes';
+  draculaTheme,
+  githubDarkTheme,
+  githubLightTheme,
+  solarizedDarkTheme,
+  solarizedLightTheme,
+  monokaiTheme,
+  nightOwlTheme
+} from '../../themes/page';
+import type { editor as MonacoEditor } from 'monaco-editor';
 
 interface CodeEditorPanelProps {
   challenge: Challenge;
@@ -68,22 +71,79 @@ export const CodeEditorPanel: React.FC<CodeEditorPanelProps> = ({
   const [showSettings, setShowSettings] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
 
-  // Enhanced editor mount handler with Z-- language support
+  // Enhanced editor mount handler with Z-- language support - using same approach as main Z Studio
   const handleEditorMount: OnMount = (editor, monaco) => {
-    // Define all themes first
-    defineAllThemes(monaco);
+    try {
+      // Register Z-- language exactly like main Z Studio
+      monaco.languages.register({ id: 'z--' });
+      monaco.languages.setMonarchTokensProvider('z--', {
+        tokenizer: {
+          root: [
+            // Keywords
+            [/(function|if|else|while|for|return|var|let|const|main|print|input|true|false|null|int|float|string|bool|void)/, 'keyword'],
+            
+            // Comments
+            [/\/\/.*$/, 'comment'],
+            [/\/\*/, 'comment', '@comment'],
+            
+            // Strings
+            [/"([^"\\]|\\.)*$/, 'string.invalid'],
+            [/"/, 'string', '@string'],
+            [/'([^'\\]|\\.)*$/, 'string.invalid'],
+            [/'/, 'string', '@stringSingle'],
+            
+            // Numbers
+            [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
+            [/\d+/, 'number'],
+            
+            // Identifiers
+            [/[a-zA-Z_$][\w$]*/, 'identifier'],
+            
+            // Operators
+            [/[=><!~?:&|+\-*\/\^%]+/, 'operator'],
+            
+            // Brackets and delimiters
+            [/[{}()\[\]]/, 'delimiter.bracket'],
+            [/[;,.]/, 'delimiter'],
+            
+            // Whitespace
+            [/[ \t\r\n]+/, 'white'],
+          ],
+          
+          comment: [
+            [/[^\/*]+/, 'comment'],
+            [/\*\//, 'comment', '@pop'],
+            [/[\/*]/, 'comment']
+          ],
+          
+          string: [
+            [/[^\\"]+/, 'string'],
+            [/\\./, 'string.escape'],
+            [/"/, 'string', '@pop']
+          ],
+          
+          stringSingle: [
+            [/[^\\']+/, 'string'],
+            [/\\./, 'string.escape'],
+            [/'/, 'string', '@pop']
+          ],
+        },
+      });
 
-    // Define Z-- language if not already defined
-    const languages = monaco.languages.getLanguages();
-    const hasZLanguage = languages.some(lang => lang.id === 'z--');
-
-    if (!hasZLanguage) {
-      defineZLanguage(monaco);
-      defineZLanguageCompletionProvider(monaco);
+      // Define themes exactly like main Z Studio
+      monaco.editor.defineTheme('dracula', draculaTheme as MonacoEditor.IStandaloneThemeData);
+      monaco.editor.defineTheme('github-dark', githubDarkTheme as MonacoEditor.IStandaloneThemeData);
+      monaco.editor.defineTheme('github-light', githubLightTheme as MonacoEditor.IStandaloneThemeData);
+      monaco.editor.defineTheme('solarized-dark', solarizedDarkTheme as MonacoEditor.IStandaloneThemeData);
+      monaco.editor.defineTheme('solarized-light', solarizedLightTheme as MonacoEditor.IStandaloneThemeData);
+      monaco.editor.defineTheme('monokai', monokaiTheme as MonacoEditor.IStandaloneThemeData);
+      monaco.editor.defineTheme('night-owl', nightOwlTheme as MonacoEditor.IStandaloneThemeData);
+      
+      // Set the current theme
+      monaco.editor.setTheme(editorTheme);
+    } catch (error) {
+      console.error('Monaco Editor error:', error);
     }
-
-    // Set the current theme
-    monaco.editor.setTheme(editorTheme);
 
     // Call the original handler
     handleEditorDidMount(editor, monaco);
@@ -107,7 +167,17 @@ export const CodeEditorPanel: React.FC<CodeEditorPanelProps> = ({
     }
   }, [showSettings]);
 
-  const availableThemes = getAvailableThemes();
+  const availableThemes = [
+    { id: 'vs-dark', name: 'Dark' },
+    { id: 'vs-light', name: 'Light' },
+    { id: 'dracula', name: 'Dracula' },
+    { id: 'github-dark', name: 'GitHub Dark' },
+    { id: 'github-light', name: 'GitHub Light' },
+    { id: 'solarized-dark', name: 'Solarized Dark' },
+    { id: 'solarized-light', name: 'Solarized Light' },
+    { id: 'monokai', name: 'Monokai' },
+    { id: 'night-owl', name: 'Night Owl' },
+  ];
 
   return (
     <div
