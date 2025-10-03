@@ -25,6 +25,7 @@ export const ChallengePage: React.FC = () => {
   const [selectedLanguage, setSelectedLanguage] = useState<string>('z--');
   const [code, setCode] = useState<string>('');
   const [submitting, setSubmitting] = useState(false);
+  const [testing, setTesting] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   useEffect(() => {
@@ -71,6 +72,41 @@ export const ChallengePage: React.FC = () => {
     }
   };
 
+  const handleTestCode = async () => {
+    if (!challenge || !code.trim()) {
+      alert('Please write some code before testing!');
+      return;
+    }
+
+    setTesting(true);
+    try {
+      const result = await challengeService.executeCode({
+        code,
+        language: selectedLanguage,
+        testCases: challenge.testCases.slice(0, 3), // Test only first 3 cases for preview
+        timeLimit: challenge.metadata.timeLimit * 60 * 1000
+      });
+      
+      const passedTests = result.testResults.filter(r => r.passed).length;
+      const totalTests = result.testResults.length;
+      
+      if (result.success) {
+        const details = result.testResults.map((test, i) => 
+          `Test ${i + 1}: ${test.passed ? '✅ Passed' : '❌ Failed'} (${test.executionTime}ms)`
+        ).join('\n');
+        
+        alert(`🧪 Test Results:\n${details}\n\nPassed: ${passedTests}/${totalTests} tests\nScore: ${result.totalScore} points`);
+      } else {
+        alert(`❌ Test failed: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('Failed to test code:', error);
+      alert('Failed to test code. Please check your syntax and try again.');
+    } finally {
+      setTesting(false);
+    }
+  };
+
   const handleSubmit = async () => {
     if (!user) {
       setShowAuthModal(true);
@@ -78,23 +114,33 @@ export const ChallengePage: React.FC = () => {
     }
 
     if (!challenge || !code.trim()) {
+      alert('Please write some code before submitting!');
       return;
     }
 
     setSubmitting(true);
     try {
-      await challengeService.submitSolution(
-        user.$id,
+      const submission = await challengeService.submitSolution(
         challenge.id,
-        selectedLanguage,
-        code
+        user.$id,
+        code,
+        selectedLanguage
       );
       
-      // TODO: Show submission result/feedback
-      alert('Solution submitted successfully!');
+      // Show detailed feedback based on execution results
+      const passedTests = submission.testResults.filter(result => result.passed).length;
+      const totalTests = submission.testResults.length;
+      
+      if (submission.status === 'success') {
+        alert(`🎉 Success! Passed ${passedTests}/${totalTests} tests. Score: ${submission.score} points`);
+      } else {
+        const firstFailedTest = submission.testResults.find(result => !result.passed);
+        const errorMessage = firstFailedTest?.error || 'Some tests failed';
+        alert(`❌ Submission failed: ${errorMessage}\nPassed ${passedTests}/${totalTests} tests.`);
+      }
     } catch (error) {
       console.error('Failed to submit solution:', error);
-      alert('Failed to submit solution. Please try again.');
+      alert('Failed to submit solution. Please check your code and try again.');
     } finally {
       setSubmitting(false);
     }
@@ -275,23 +321,43 @@ export const ChallengePage: React.FC = () => {
                 </div>
               </div>
               
-              <button
-                onClick={handleSubmit}
-                disabled={submitting || !code.trim()}
-                className="flex items-center gap-2 bg-yellow-400 text-black px-6 py-3 rounded-lg font-semibold hover:bg-yellow-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {submitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Submitting...
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-4 h-4" />
-                    Submit Solution
-                  </>
-                )}
-              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleTestCode}
+                  disabled={testing || !code.trim()}
+                  className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {testing ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Testing...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-4 h-4" />
+                      Test Code
+                    </>
+                  )}
+                </button>
+                
+                <button
+                  onClick={handleSubmit}
+                  disabled={submitting || !code.trim()}
+                  className="flex items-center gap-2 bg-yellow-400 text-black px-6 py-3 rounded-lg font-semibold hover:bg-yellow-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-4 h-4" />
+                      Submit Solution
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
