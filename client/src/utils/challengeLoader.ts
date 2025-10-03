@@ -7,38 +7,39 @@ import type { Challenge } from '@/types';
  */
 export async function loadChallenges(): Promise<Challenge[]> {
   const challenges: Challenge[] = [];
-  
+
   try {
     // For development, we'll manually import our JSON files
     // In production, this would fetch from Appwrite database
     const challengeFiles = [
       'challenge-001-hello-world.json',
-      'challenge-002-two-sum-array.json', 
+      'challenge-002-two-sum-array.json',
       'challenge-003-fibonacci-sequence.json',
-      'challenge-004-reverse-string.json'
+      'challenge-004-reverse-string.json',
     ];
-    
+
     for (const filename of challengeFiles) {
       try {
         const response = await fetch(`/challenges/${filename}`);
         if (response.ok) {
-          const challenge = await response.json() as Challenge;
+          const challenge = (await response.json()) as Challenge;
           challenges.push(challenge);
         }
       } catch (error) {
         console.error(`Failed to load challenge ${filename}:`, error);
       }
     }
-    
+
     // Sort challenges by creation date (newest first)
-    challenges.sort((a, b) => 
-      new Date(b.metadata.createdAt).getTime() - new Date(a.metadata.createdAt).getTime()
+    challenges.sort(
+      (a, b) =>
+        new Date(b.metadata.createdAt).getTime() -
+        new Date(a.metadata.createdAt).getTime()
     );
-    
   } catch (error) {
     console.error('Failed to load challenges:', error);
   }
-  
+
   return challenges;
 }
 
@@ -60,7 +61,7 @@ export async function loadChallenge(id: string): Promise<Challenge | null> {
  * Filters challenges based on search criteria
  */
 export function filterChallenges(
-  challenges: Challenge[], 
+  challenges: Challenge[],
   filters: {
     search?: string;
     difficulty?: string;
@@ -72,29 +73,34 @@ export function filterChallenges(
     // Search filter
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
-      const matchesTitle = challenge.metadata.title.toLowerCase().includes(searchLower);
-      const matchesDescription = challenge.metadata.description.toLowerCase().includes(searchLower);
+      const matchesTitle = challenge.metadata.title
+        .toLowerCase()
+        .includes(searchLower);
+      const matchesDescription = challenge.metadata.description
+        .toLowerCase()
+        .includes(searchLower);
       if (!matchesTitle && !matchesDescription) return false;
     }
-    
+
     // Difficulty filter
     if (filters.difficulty && filters.difficulty !== 'all') {
       if (challenge.metadata.difficulty !== filters.difficulty) return false;
     }
-    
+
     // Language filter
     if (filters.language && filters.language !== 'all') {
-      if (!challenge.metadata.supportedLanguages?.includes(filters.language)) return false;
+      if (!challenge.metadata.supportedLanguages?.includes(filters.language))
+        return false;
     }
-    
+
     // Tags filter
     if (filters.tags && filters.tags.length > 0) {
-      const hasMatchingTag = filters.tags.some(tag => 
+      const hasMatchingTag = filters.tags.some(tag =>
         challenge.metadata.tags.includes(tag)
       );
       if (!hasMatchingTag) return false;
     }
-    
+
     return true;
   });
 }
@@ -117,13 +123,13 @@ export function getDifficultyStats(challenges: Challenge[]) {
   const stats = {
     easy: 0,
     medium: 0,
-    hard: 0
+    hard: 0,
   };
-  
+
   challenges?.forEach(challenge => {
     stats[challenge.metadata.difficulty]++;
   });
-  
+
   return stats;
 }
 
@@ -131,7 +137,10 @@ export function getDifficultyStats(challenges: Challenge[]) {
  * Calculates total points available
  */
 export function getTotalPoints(challenges: Challenge[]): number {
-  return challenges.reduce((total, challenge) => total + challenge.metadata.points, 0);
+  return challenges.reduce(
+    (total, challenge) => total + challenge.metadata.points,
+    0
+  );
 }
 
 /**
@@ -140,7 +149,9 @@ export function getTotalPoints(challenges: Challenge[]): number {
 export function getSupportedLanguages(challenges: Challenge[]): string[] {
   const languageSet = new Set<string>();
   challenges?.forEach(challenge => {
-    challenge.metadata.supportedLanguages?.forEach(lang => languageSet.add(lang));
+    challenge.metadata.supportedLanguages?.forEach(lang =>
+      languageSet.add(lang)
+    );
   });
   return Array.from(languageSet).sort();
 }

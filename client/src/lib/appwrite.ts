@@ -1,12 +1,18 @@
 import { Client, Account, Databases, Storage, Query } from 'appwrite';
 
 // Appwrite configuration - Replace with your actual values
-const APPWRITE_ENDPOINT = import.meta.env.VITE_APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1';
-const APPWRITE_PROJECT_ID = import.meta.env.VITE_APPWRITE_PROJECT_ID || 'your-project-id';
-const APPWRITE_DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID || 'z-challenge-db';
-const APPWRITE_CHALLENGES_COLLECTION_ID = import.meta.env.VITE_APPWRITE_CHALLENGES_COLLECTION_ID || 'challenges';
-const APPWRITE_SUBMISSIONS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_SUBMISSIONS_COLLECTION_ID || 'submissions';
-const APPWRITE_USERS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_USERS_COLLECTION_ID || 'users';
+const APPWRITE_ENDPOINT =
+  import.meta.env.VITE_APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1';
+const APPWRITE_PROJECT_ID =
+  import.meta.env.VITE_APPWRITE_PROJECT_ID || 'your-project-id';
+const APPWRITE_DATABASE_ID =
+  import.meta.env.VITE_APPWRITE_DATABASE_ID || 'z-challenge-db';
+const APPWRITE_CHALLENGES_COLLECTION_ID =
+  import.meta.env.VITE_APPWRITE_CHALLENGES_COLLECTION_ID || 'challenges';
+const APPWRITE_SUBMISSIONS_COLLECTION_ID =
+  import.meta.env.VITE_APPWRITE_SUBMISSIONS_COLLECTION_ID || 'submissions';
+const APPWRITE_USERS_COLLECTION_ID =
+  import.meta.env.VITE_APPWRITE_USERS_COLLECTION_ID || 'users';
 
 // Initialize Appwrite client
 const client = new Client()

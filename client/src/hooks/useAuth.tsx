@@ -14,7 +14,9 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<Models.User<Models.Preferences> | null>(null);
+  const [user, setUser] = useState<Models.User<Models.Preferences> | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

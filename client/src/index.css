@@ -1,8 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@300;400;500;600;700;800;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&display=swap');
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -121,16 +121,16 @@
     @apply bg-background text-foreground;
     font-family: 'Inter', sans-serif;
   }
-  
+
   /* Custom Font Classes */
   .font-heading {
     font-family: 'Darker Grotesque', sans-serif;
   }
-  
+
   .font-body {
     font-family: 'Inter', sans-serif;
   }
-  
+
   .font-accent {
     font-family: 'Kalam', cursive;
   }
@@ -139,31 +139,31 @@
 /* Z-Challenge Theme Variables */
 :root {
   /* Background Colors */
-  --background-primary: #000000;     /* Pure black */
-  --background-secondary: #0a0a0a;   /* Very dark gray */
-  --background-tertiary: #141414;    /* Dark gray */
-  --background-card: #1a1a1a;        /* Card background */
-  
+  --background-primary: #000000; /* Pure black */
+  --background-secondary: #0a0a0a; /* Very dark gray */
+  --background-tertiary: #141414; /* Dark gray */
+  --background-card: #1a1a1a; /* Card background */
+
   /* Accent Colors */
-  --accent-primary: #ffffff;         /* Pure white for primary accent */
-  --accent-secondary: #a3a3a3;       /* Light gray for secondary */
-  --accent-gold: #fbbf24;            /* Gold for highlights */
-  --accent-green: #22c55e;           /* Green for success */
-  
+  --accent-primary: #ffffff; /* Pure white for primary accent */
+  --accent-secondary: #a3a3a3; /* Light gray for secondary */
+  --accent-gold: #fbbf24; /* Gold for highlights */
+  --accent-green: #22c55e; /* Green for success */
+
   /* Text Colors */
-  --text-primary: #ffffff;           /* Pure white */
-  --text-secondary: #a3a3a3;         /* Light gray */
-  --text-tertiary: #737373;          /* Medium gray */
-  --text-muted: #525252;             /* Dark gray */
-  
+  --text-primary: #ffffff; /* Pure white */
+  --text-secondary: #a3a3a3; /* Light gray */
+  --text-tertiary: #737373; /* Medium gray */
+  --text-muted: #525252; /* Dark gray */
+
   /* Border Colors */
-  --border-primary: #262626;         /* Dark border */
-  --border-secondary: #404040;       /* Medium border */
-  --border-accent: #525252;          /* Light border */
-  
+  --border-primary: #262626; /* Dark border */
+  --border-secondary: #404040; /* Medium border */
+  --border-accent: #525252; /* Light border */
+
   /* Status Colors */
-  --success: #22c55e;                /* Green */
-  --warning: #f59e0b;                /* Amber */
-  --error: #ef4444;                  /* Red */
-  --info: #3b82f6;                   /* Blue */
+  --success: #22c55e; /* Green */
+  --warning: #f59e0b; /* Amber */
+  --error: #ef4444; /* Red */
+  --info: #3b82f6; /* Blue */
 }

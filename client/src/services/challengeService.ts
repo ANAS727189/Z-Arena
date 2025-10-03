@@ -91,14 +91,14 @@ export interface ZLangResponse {
 
 // Language ID mappings for Judge0
 export const JUDGE0_LANGUAGE_IDS = {
-  'javascript': 63,
-  'python': 71,
-  'java': 62,
-  'cpp': 54,
-  'c': 50,
-  'go': 60,
-  'rust': 73,
-  'typescript': 74,
+  javascript: 63,
+  python: 71,
+  java: 62,
+  cpp: 54,
+  c: 50,
+  go: 60,
+  rust: 73,
+  typescript: 74,
 } as const;
 
 class ChallengeService {
@@ -112,23 +112,23 @@ class ChallengeService {
   }): Promise<Challenge[]> {
     try {
       const queries = [Query.equal('isActive', true)];
-      
+
       if (filters?.difficulty && filters.difficulty !== 'all') {
         queries.push(Query.equal('difficulty', filters.difficulty));
       }
-      
+
       if (filters?.language && filters.language !== 'all') {
         queries.push(Query.contains('supportedLanguages', filters.language));
       }
-      
+
       if (filters?.tags && filters.tags.length > 0) {
         queries.push(Query.contains('tags', filters.tags));
       }
-      
+
       if (filters?.limit) {
         queries.push(Query.limit(filters.limit));
       }
-      
+
       if (filters?.offset) {
         queries.push(Query.offset(filters.offset));
       }
@@ -173,8 +173,8 @@ class ChallengeService {
           Query.or([
             Query.search('title', query),
             Query.search('description', query),
-            Query.contains('tags', query)
-          ])
+            Query.contains('tags', query),
+          ]),
         ]
       );
 
@@ -185,17 +185,18 @@ class ChallengeService {
     }
   }
 
-
-
   // Get user submissions
-  async getUserSubmissions(userId: string, challengeId?: string): Promise<SubmissionDocument[]> {
+  async getUserSubmissions(
+    userId: string,
+    challengeId?: string
+  ): Promise<SubmissionDocument[]> {
     try {
       const queries = [Query.equal('userId', userId)];
-      
+
       if (challengeId) {
         queries.push(Query.equal('challengeId', challengeId));
       }
-      
+
       queries.push(Query.orderDesc('submittedAt'));
 
       const response = await databases.listDocuments<SubmissionDocument>(
@@ -227,8 +228,6 @@ class ChallengeService {
     }
   }
 
-
-
   // Helper method to map Appwrite document to Challenge type
   private mapDocumentToChallenge(doc: ChallengeDocument): Challenge {
     return {
@@ -255,7 +254,10 @@ class ChallengeService {
       languages: JSON.parse(doc.starterCodes || '{}'),
       testCases: JSON.parse(doc.testCases || '[]'),
       editorial: JSON.parse(doc.editorial || '{}'),
-      stats: JSON.parse(doc.stats || '{"totalSubmissions":0,"successfulSubmissions":0,"averageScore":0}'),
+      stats: JSON.parse(
+        doc.stats ||
+          '{"totalSubmissions":0,"successfulSubmissions":0,"averageScore":0}'
+      ),
     };
   }
 
@@ -276,13 +278,17 @@ class ChallengeService {
         testResults: [],
         totalScore: 0,
         executionTime: 0,
-        error: error.message || 'Code execution failed'
+        error: error.message || 'Code execution failed',
       };
     }
   }
 
-  private async executeZLangCode(code: string, testCases: TestCase[]): Promise<ExecutionResult> {
-    const serverUrl = import.meta.env.VITE_Z_COMPILER_URL || 'http://localhost:3000';
+  private async executeZLangCode(
+    code: string,
+    testCases: TestCase[]
+  ): Promise<ExecutionResult> {
+    const serverUrl =
+      import.meta.env.VITE_Z_COMPILER_URL || 'http://localhost:3000';
     const testResults: TestResult[] = [];
     let totalScore = 0;
     let totalExecutionTime = 0;
@@ -290,10 +296,10 @@ class ChallengeService {
     try {
       for (const testCase of testCases) {
         const startTime = Date.now();
-        
+
         // For Z--, we need to modify code to include input handling if needed
         const modifiedCode = this.injectInputIntoZCode(code, testCase.input);
-        
+
         const response = await fetch(`${serverUrl}/api/zlang/compile`, {
           method: 'POST',
           headers: {
@@ -312,20 +318,20 @@ class ChallengeService {
             passed: false,
             actualOutput: '',
             executionTime,
-            error: errorData.message || 'Compilation failed'
+            error: errorData.message || 'Compilation failed',
           });
           continue;
         }
 
         const result: ZLangResponse = await response.json();
-        
+
         if (!result.success) {
           testResults.push({
             testCaseId: testCase.id,
             passed: false,
             actualOutput: '',
             executionTime,
-            error: result.error || 'Execution failed'
+            error: result.error || 'Execution failed',
           });
           continue;
         }
@@ -343,7 +349,9 @@ class ChallengeService {
           passed,
           actualOutput,
           executionTime,
-          error: passed ? undefined : `Expected: "${expectedOutput}", Got: "${actualOutput}"`
+          error: passed
+            ? undefined
+            : `Expected: "${expectedOutput}", Got: "${actualOutput}"`,
         });
       }
 
@@ -351,24 +359,29 @@ class ChallengeService {
         success: true,
         testResults,
         totalScore,
-        executionTime: totalExecutionTime
+        executionTime: totalExecutionTime,
       };
-
     } catch (error: any) {
       return {
         success: false,
         testResults: [],
         totalScore: 0,
         executionTime: totalExecutionTime,
-        error: error.message || 'Z-- execution failed'
+        error: error.message || 'Z-- execution failed',
       };
     }
   }
 
-  private async executeJudge0Code(code: string, language: string, testCases: TestCase[]): Promise<ExecutionResult> {
-    const serverUrl = import.meta.env.VITE_JUDGE0_PROXY_URL || 'http://localhost:3001';
-    const languageId = JUDGE0_LANGUAGE_IDS[language as keyof typeof JUDGE0_LANGUAGE_IDS];
-    
+  private async executeJudge0Code(
+    code: string,
+    language: string,
+    testCases: TestCase[]
+  ): Promise<ExecutionResult> {
+    const serverUrl =
+      import.meta.env.VITE_JUDGE0_PROXY_URL || 'http://localhost:3001';
+    const languageId =
+      JUDGE0_LANGUAGE_IDS[language as keyof typeof JUDGE0_LANGUAGE_IDS];
+
     if (!languageId) {
       throw new Error(`Unsupported language: ${language}`);
     }
@@ -390,7 +403,7 @@ class ChallengeService {
             language_id: languageId,
             source_code: code,
             stdin: testCase.input,
-            expected_output: testCase.output
+            expected_output: testCase.output,
           }),
         });
 
@@ -404,13 +417,13 @@ class ChallengeService {
             passed: false,
             actualOutput: '',
             executionTime,
-            error: errorData.message || 'Judge0 request failed'
+            error: errorData.message || 'Judge0 request failed',
           });
           continue;
         }
 
         const result: Judge0Response = await response.json();
-        
+
         // Handle compilation errors
         if (result.compile_output && result.compile_output.trim()) {
           testResults.push({
@@ -418,7 +431,7 @@ class ChallengeService {
             passed: false,
             actualOutput: '',
             executionTime,
-            error: `Compilation Error: ${result.compile_output.trim()}`
+            error: `Compilation Error: ${result.compile_output.trim()}`,
           });
           continue;
         }
@@ -430,22 +443,29 @@ class ChallengeService {
             passed: false,
             actualOutput: result.stdout || '',
             executionTime: parseFloat(result.time) * 1000 || executionTime,
-            error: `Runtime Error: ${result.stderr.trim()}`
+            error: `Runtime Error: ${result.stderr.trim()}`,
           });
           continue;
         }
 
         // Handle execution status
-        if (result.status.id !== 3) { // 3 = Accepted
+        if (result.status.id !== 3) {
+          // 3 = Accepted
           let errorMessage = result.status.description;
           if (result.status.id === 5) errorMessage = 'Time Limit Exceeded';
           else if (result.status.id === 6) errorMessage = 'Compilation Error';
-          else if (result.status.id === 7) errorMessage = 'Runtime Error (SIGSEGV)';
-          else if (result.status.id === 8) errorMessage = 'Runtime Error (SIGXFSZ)';
-          else if (result.status.id === 9) errorMessage = 'Runtime Error (SIGFPE)';
-          else if (result.status.id === 10) errorMessage = 'Runtime Error (SIGABRT)';
-          else if (result.status.id === 11) errorMessage = 'Runtime Error (NZEC)';
-          else if (result.status.id === 12) errorMessage = 'Runtime Error (Other)';
+          else if (result.status.id === 7)
+            errorMessage = 'Runtime Error (SIGSEGV)';
+          else if (result.status.id === 8)
+            errorMessage = 'Runtime Error (SIGXFSZ)';
+          else if (result.status.id === 9)
+            errorMessage = 'Runtime Error (SIGFPE)';
+          else if (result.status.id === 10)
+            errorMessage = 'Runtime Error (SIGABRT)';
+          else if (result.status.id === 11)
+            errorMessage = 'Runtime Error (NZEC)';
+          else if (result.status.id === 12)
+            errorMessage = 'Runtime Error (Other)';
           else if (result.status.id === 13) errorMessage = 'Internal Error';
           else if (result.status.id === 14) errorMessage = 'Exec Format Error';
 
@@ -454,7 +474,7 @@ class ChallengeService {
             passed: false,
             actualOutput: result.stdout || '',
             executionTime: parseFloat(result.time) * 1000 || executionTime,
-            error: errorMessage
+            error: errorMessage,
           });
           continue;
         }
@@ -473,7 +493,9 @@ class ChallengeService {
           passed,
           actualOutput,
           executionTime: parseFloat(result.time) * 1000 || executionTime,
-          error: passed ? undefined : `Expected: "${expectedOutput}", Got: "${actualOutput}"`
+          error: passed
+            ? undefined
+            : `Expected: "${expectedOutput}", Got: "${actualOutput}"`,
         });
       }
 
@@ -481,16 +503,15 @@ class ChallengeService {
         success: true,
         testResults,
         totalScore,
-        executionTime: totalExecutionTime
+        executionTime: totalExecutionTime,
       };
-
     } catch (error: any) {
       return {
         success: false,
         testResults: [],
         totalScore: 0,
         executionTime: totalExecutionTime,
-        error: error.message || 'Judge0 execution failed'
+        error: error.message || 'Judge0 execution failed',
       };
     }
   }
@@ -498,20 +519,20 @@ class ChallengeService {
   private injectInputIntoZCode(code: string, input: string): string {
     // For Z-- language, we need to handle input injection
     // This is a simplified implementation - you may need to adjust based on your Z-- syntax
-    
+
     if (!input.trim()) {
       return code;
     }
 
     // Split input into lines for processing
     const inputLines = input.trim().split('\n');
-    
+
     // Simple approach: replace any readInput() calls with actual values
     // You may need to adjust this based on your Z-- input handling syntax
     let modifiedCode = code;
-    
+
     // If there are input() or readInput() calls, replace them with the actual input
-    inputLines.forEach((line) => {
+    inputLines.forEach(line => {
       modifiedCode = modifiedCode.replace(
         new RegExp(`(input\\(\\)|readInput\\(\\)|read\\(\\))`, 'g'),
         `"${line}"`
@@ -522,7 +543,12 @@ class ChallengeService {
   }
 
   // Enhanced submission method with code execution
-  async submitSolution(challengeId: string, userId: string, code: string, language: string): Promise<Submission> {
+  async submitSolution(
+    challengeId: string,
+    userId: string,
+    code: string,
+    language: string
+  ): Promise<Submission> {
     try {
       // Get the challenge to access test cases
       const challenge = await this.getChallenge(challengeId);
@@ -535,12 +561,15 @@ class ChallengeService {
         code,
         language,
         testCases: challenge.testCases,
-        timeLimit: challenge.metadata.timeLimit * 60 * 1000 // Convert minutes to milliseconds
+        timeLimit: challenge.metadata.timeLimit * 60 * 1000, // Convert minutes to milliseconds
       });
 
       // Determine submission status
-      const allPassed = executionResult.testResults.every(result => result.passed);
-      const status = executionResult.success && allPassed ? 'success' : 'failed';
+      const allPassed = executionResult.testResults.every(
+        result => result.passed
+      );
+      const status =
+        executionResult.success && allPassed ? 'success' : 'failed';
 
       // Create submission document
       const submissionDoc = {
@@ -566,7 +595,11 @@ class ChallengeService {
 
       // Update user stats if successful
       if (status === 'success') {
-        await this.updateUserStats(userId, challengeId, executionResult.totalScore);
+        await this.updateUserStats(
+          userId,
+          challengeId,
+          executionResult.totalScore
+        );
       }
 
       // Return formatted submission
@@ -579,12 +612,11 @@ class ChallengeService {
         score: executionResult.totalScore,
         executionTime: executionResult.executionTime,
         createdAt: new Date(response.$createdAt),
-        testResults: executionResult.testResults
+        testResults: executionResult.testResults,
       };
-
     } catch (error: any) {
       console.error('Error submitting solution:', error);
-      
+
       // Create failed submission record
       const failedSubmissionDoc = {
         userId,
@@ -615,12 +647,16 @@ class ChallengeService {
         score: 0,
         executionTime: 0,
         createdAt: new Date(response.$createdAt),
-        testResults: []
+        testResults: [],
       };
     }
   }
 
-  private async updateUserStats(userId: string, challengeId: string, points: number): Promise<void> {
+  private async updateUserStats(
+    userId: string,
+    challengeId: string,
+    points: number
+  ): Promise<void> {
     try {
       // Try to get existing user stats
       const existingStats = await databases.listDocuments(
@@ -631,9 +667,10 @@ class ChallengeService {
 
       if (existingStats.documents.length > 0) {
         // Update existing stats
-        const stats = existingStats.documents[0] as unknown as UserStatsDocument;
-        const solvedChallenges = stats.solvedChallenges.includes(challengeId) 
-          ? stats.solvedChallenges 
+        const stats = existingStats
+          .documents[0] as unknown as UserStatsDocument;
+        const solvedChallenges = stats.solvedChallenges.includes(challengeId)
+          ? stats.solvedChallenges
           : [...stats.solvedChallenges, challengeId];
 
         await databases.updateDocument(

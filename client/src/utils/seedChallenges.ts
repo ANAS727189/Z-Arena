@@ -26,7 +26,7 @@ export async function seedChallenges() {
     try {
       console.log(`📥 Loading ${filename}...`);
       const challenge = await loadChallengeFile(filename);
-      
+
       // Check if challenge already exists
       try {
         const existing = await databases.listDocuments(
@@ -34,17 +34,24 @@ export async function seedChallenges() {
           COLLECTIONS.CHALLENGES,
           [Query.equal('challengeId', challenge.id)]
         );
-        
+
         if (existing.documents.length > 0) {
-          console.log(`⏭️  Challenge ${challenge.id} already exists, skipping...`);
+          console.log(
+            `⏭️  Challenge ${challenge.id} already exists, skipping...`
+          );
           continue;
         }
       } catch (error) {
-        console.log(`🔍 Error checking for existing challenge, proceeding with creation...`);
+        console.log(
+          `🔍 Error checking for existing challenge, proceeding with creation...`
+        );
       }
 
       // Transform Challenge to ChallengeDocument format
-      const challengeDocument: Omit<ChallengeDocument, keyof import('appwrite').Models.Document> = {
+      const challengeDocument: Omit<
+        ChallengeDocument,
+        keyof import('appwrite').Models.Document
+      > = {
         challengeId: challenge.id,
         title: challenge.metadata.title,
         description: challenge.metadata.description,
@@ -60,19 +67,21 @@ export async function seedChallenges() {
         constraints: challenge.problem.constraints,
         examples: JSON.stringify(challenge.problem.examples || []),
         starterCodes: JSON.stringify({
-          'z--': challenge.code?.starterCode || ''
+          'z--': challenge.code?.starterCode || '',
         }),
         solutionCodes: JSON.stringify({
-          'z--': challenge.code?.solutionCode || ''
+          'z--': challenge.code?.solutionCode || '',
         }),
         hints: JSON.stringify(challenge.code?.hints || []),
         testCases: JSON.stringify(challenge.testCases || []),
         editorial: JSON.stringify(challenge.editorial || {}),
-        stats: JSON.stringify(challenge.stats || {
-          totalSubmissions: 0,
-          successfulSubmissions: 0,
-          averageScore: 0,
-        }),
+        stats: JSON.stringify(
+          challenge.stats || {
+            totalSubmissions: 0,
+            successfulSubmissions: 0,
+            averageScore: 0,
+          }
+        ),
         isActive: true,
         createdAt: challenge.metadata.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -86,7 +95,9 @@ export async function seedChallenges() {
         challengeDocument
       );
 
-      console.log(`✅ Successfully seeded challenge: ${challenge.metadata.title}`);
+      console.log(
+        `✅ Successfully seeded challenge: ${challenge.metadata.title}`
+      );
     } catch (error) {
       console.error(`❌ Error seeding challenge ${filename}:`, error);
     }
@@ -99,7 +110,7 @@ export async function seedChallenges() {
 export async function clearAllChallenges() {
   try {
     console.log('🗑️  Clearing all challenges...');
-    
+
     const challenges = await databases.listDocuments(
       DATABASE_ID,
       COLLECTIONS.CHALLENGES

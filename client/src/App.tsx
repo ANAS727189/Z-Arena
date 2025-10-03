@@ -1,12 +1,12 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/hooks/useAuth';
-import { 
+import {
   LandingPage,
   ChallengesPage,
   ChallengePage,
   LeaderboardPage,
   ProfilePage,
-  NotFoundPage
+  NotFoundPage,
 } from './pages';
 
 function App() {
@@ -28,4 +28,4 @@ function App() {
   );
 }
 
-export default App
+export default App;

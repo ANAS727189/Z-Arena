@@ -91,7 +91,10 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium text-gray-300 mb-1"
+              >
                 Full Name
               </label>
               <div className="relative">
@@ -100,7 +103,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   id="name"
                   type="text"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={e => setName(e.target.value)}
                   className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 pl-10 pr-4 text-white focus:border-yellow-400 focus:outline-none"
                   placeholder="Enter your full name"
                   required={!isLogin}
@@ -110,7 +113,10 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           )}
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-300 mb-1"
+            >
               Email
             </label>
             <div className="relative">
@@ -119,7 +125,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 id="email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={e => setEmail(e.target.value)}
                 className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 pl-10 pr-4 text-white focus:border-yellow-400 focus:outline-none"
                 placeholder="Enter your email"
                 required
@@ -128,7 +134,10 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-300 mb-1"
+            >
               Password
             </label>
             <div className="relative">
@@ -137,7 +146,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 id="password"
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={e => setPassword(e.target.value)}
                 className="w-full bg-gray-800 border border-gray-700 rounded-lg py-3 pl-10 pr-4 text-white focus:border-yellow-400 focus:outline-none"
                 placeholder="Enter your password"
                 required
@@ -156,8 +165,10 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 <Loader2 className="w-5 h-5 animate-spin" />
                 {isLogin ? 'Signing In...' : 'Creating Account...'}
               </>
+            ) : isLogin ? (
+              'Sign In'
             ) : (
-              isLogin ? 'Sign In' : 'Create Account'
+              'Create Account'
             )}
           </button>
         </form>

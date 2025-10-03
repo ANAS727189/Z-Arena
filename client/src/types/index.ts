@@ -24,13 +24,16 @@ export interface Challenge {
     }>;
   };
   // Legacy languages structure (for backward compatibility)
-  languages?: Record<string, {
-    starterCode: string;
-    solutionCode: string;
-    hints: string[];
-    judge0Id: number | null;
-    compilerType: 'z-studio' | 'judge0';
-  }>;
+  languages?: Record<
+    string,
+    {
+      starterCode: string;
+      solutionCode: string;
+      hints: string[];
+      judge0Id: number | null;
+      compilerType: 'z-studio' | 'judge0';
+    }
+  >;
   // New simplified code structure
   code?: {
     starterCode: string;
