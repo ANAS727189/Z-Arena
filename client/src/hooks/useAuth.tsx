@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { account } from '@/lib/appwrite';
+import { userService } from '@/services/userService';
 import type { Models, OAuthProvider } from 'appwrite';
 
 interface AuthContextType {
@@ -27,6 +28,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const currentUser = await account.get();
       setUser(currentUser);
+      
+      // Initialize user stats if they don't exist
+      try {
+        await userService.initializeUserStats();
+      } catch (error) {
+        console.error('Failed to initialize user stats:', error);
+        // Don't fail authentication if stats initialization fails
+      }
     } catch (error) {
       console.log('No authenticated user');
       setUser(null);
@@ -40,6 +49,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await account.createEmailPasswordSession(email, password);
       const currentUser = await account.get();
       setUser(currentUser);
+      
+      // Initialize user stats
+      try {
+        await userService.initializeUserStats();
+      } catch (error) {
+        console.error('Failed to initialize user stats:', error);
+      }
     } catch (error) {
       console.error('Login failed:', error);
       throw error;
@@ -50,6 +66,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await account.create('unique()', email, password, name);
       await login(email, password);
+      
+      // User stats will be initialized by the login method above
     } catch (error) {
       console.error('Registration failed:', error);
       throw error;

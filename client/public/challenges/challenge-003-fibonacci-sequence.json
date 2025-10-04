@@ -4,7 +4,7 @@
     "title": "Fibonacci Number Generator",
     "description": "Generate the nth Fibonacci number using different approaches.\n\n## Learning Objectives\n- Understanding recursive and iterative approaches\n- Loop constructs and optimization\n- Mathematical sequence implementation\n\n## Background\nThe Fibonacci sequence is: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, ...\nWhere each number is the sum of the two preceding ones.",
     "difficulty": "easy",
-    "points": 30,
+    "points": 1,
     "timeLimit": 10,
     "tags": ["loops", "math", "sequences", "optimization"],
     "author": "Z-Challenge Team",

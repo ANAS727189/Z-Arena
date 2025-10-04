@@ -85,6 +85,9 @@ export async function seedChallenges() {
         isActive: true,
         createdAt: challenge.metadata.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        // Add the missing starPoints field based on difficulty
+        starPoints: challenge.metadata.difficulty === 'easy' ? 1 : 
+                   challenge.metadata.difficulty === 'medium' ? 2 : 3,
       };
 
       // Create the challenge in Appwrite using challengeId as document ID

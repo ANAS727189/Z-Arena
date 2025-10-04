@@ -4,7 +4,7 @@
     "title": "Hello Z-- World",
     "description": "Welcome to Z--! Your first challenge is simple: write a program that prints \"Hello, Z-- World!\" to the console.\n\n## Learning Objectives\n- Understand basic Z-- syntax\n- Learn about the `start`/`end` block structure\n- Use the `print()` function\n- Work with string literals\n\n## Z-- Language Basics\nZ-- programs are structured with `start` and `end` blocks. The `print()` function outputs text to the console, and string literals use double quotes.",
     "difficulty": "easy",
-    "points": 10,
+    "points": 1,
     "timeLimit": 5,
     "tags": ["basics", "hello-world", "print", "syntax"],
     "author": "Z-Challenge Team",

@@ -21,7 +21,9 @@ import { account } from '../lib/appwrite';
 import { cloudinaryService } from '../services/cloudinaryService';
 import { challengeService } from '../services/challengeService';
 import { userService } from '../services/userService';
+import { leaderboardService } from '../services/leaderboardService';
 import type { UserStatsDocument } from '../services/challengeService';
+import type { StarLevel } from '../services/leaderboardService';
 
 export const ProfilePage: React.FC = () => {
   const { user } = useAuth();
@@ -31,6 +33,7 @@ export const ProfilePage: React.FC = () => {
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [userStats, setUserStats] = useState<UserStatsDocument | null>(null);
+  const [starLevel, setStarLevel] = useState<StarLevel | null>(null);
   const [isEditingName, setIsEditingName] = useState(false);
   const [newName, setNewName] = useState('');
   const [isUpdatingName, setIsUpdatingName] = useState(false);
@@ -45,8 +48,21 @@ export const ProfilePage: React.FC = () => {
   const loadUserStats = async () => {
     if (!user) return;
     try {
+      // Ensure user stats exist first
+      await userService.initializeUserStats();
+      
+      // Then load the stats
       const stats = await challengeService.getUserStats(user.$id);
       setUserStats(stats);
+
+      // Load the star level from database
+      if (stats) {
+        const userStarLevel = await leaderboardService.getLeaderboard({ timeframe: 'all', category: 'points' });
+        const currentUser = userStarLevel.find(u => u.userId === user.$id);
+        if (currentUser) {
+          setStarLevel(currentUser.starLevel);
+        }
+      }
     } catch (error) {
       console.error('Failed to load user stats:', error);
     }
@@ -116,7 +132,8 @@ export const ProfilePage: React.FC = () => {
 
     setIsUpdatingName(true);
     try {
-      await account.updateName(newName.trim());
+      // Use userService to update name in both account and user stats
+      await userService.updateUserName(newName.trim());
       setIsEditingName(false);
       // Refresh to show updated name
       window.location.reload();
@@ -136,21 +153,16 @@ export const ProfilePage: React.FC = () => {
     });
   };
 
-  const getStarLevel = (points: number) => {
-    if (points >= 7)
-      return { level: 'Z-Master', stars: 5, color: 'text-yellow-400' };
-    if (points >= 5)
-      return { level: 'Expert', stars: 4, color: 'text-purple-400' };
-    if (points >= 3)
-      return { level: 'Rookie', stars: 3, color: 'text-blue-400' };
-    if (points >= 2)
-      return { level: 'Pookie', stars: 2, color: 'text-green-400' };
-    return { level: 'Noob', stars: 1, color: 'text-gray-400' };
+  const starInfo = starLevel || { 
+    $id: 'noob',
+    starLevel: 1,
+    title: 'Noob', 
+    pointsRequired: 0, 
+    color: 'text-gray-400',
+    icon: '⭐',
+    $createdAt: '',
+    $updatedAt: ''
   };
-
-  const starInfo = userStats
-    ? getStarLevel(userStats.totalPoints)
-    : { level: 'Noob', stars: 1, color: 'text-gray-400' };
 
   return (
     <div className="py-8 px-4">
@@ -315,7 +327,7 @@ export const ProfilePage: React.FC = () => {
                       <Star
                         key={i}
                         className={`w-5 h-5 ${
-                          i < starInfo.stars
+                          i < starInfo.starLevel
                             ? `${starInfo.color} fill-current`
                             : 'text-gray-600'
                         }`}
@@ -323,7 +335,7 @@ export const ProfilePage: React.FC = () => {
                     ))}
                   </div>
                   <p className={`font-semibold ${starInfo.color}`}>
-                    {starInfo.level}
+                    {starInfo.title}
                   </p>
                   <p className="text-sm text-[var(--text-secondary)]">
                     {userStats?.totalPoints || 0} points
@@ -417,40 +429,20 @@ export const ProfilePage: React.FC = () => {
                 <div>
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-[var(--text-secondary)]">
-                      Points to Next Level
+                      Current Level Progress
                     </span>
                     <span className="text-white font-semibold">
-                      {userStats?.totalPoints || 0} /{' '}
-                      {starInfo.stars === 5
-                        ? 'MAX'
-                        : starInfo.stars === 4
-                          ? '7'
-                          : starInfo.stars === 3
-                            ? '5'
-                            : starInfo.stars === 2
-                              ? '3'
-                              : '2'}
+                      {userStats?.totalPoints || 0} pts
                     </span>
                   </div>
                   <div className="w-full bg-[var(--background-primary)] rounded-full h-2">
                     <div
                       className="bg-gradient-to-r from-[var(--accent-purple)] to-[var(--accent-cyan)] h-2 rounded-full transition-all duration-500"
                       style={{
-                        width:
-                          starInfo.stars === 5
-                            ? '100%'
-                            : `${Math.min(
-                                ((userStats?.totalPoints || 0) /
-                                  (starInfo.stars === 4
-                                    ? 7
-                                    : starInfo.stars === 3
-                                      ? 5
-                                      : starInfo.stars === 2
-                                        ? 3
-                                        : 2)) *
-                                  100,
-                                100
-                              )}%`,
+                        width: `${Math.min(
+                          ((userStats?.totalPoints || 0) / Math.max(starInfo.pointsRequired, 1)) * 100,
+                          100
+                        )}%`,
                       }}
                     />
                   </div>
@@ -472,7 +464,7 @@ export const ProfilePage: React.FC = () => {
                         ⭐ Earned {userStats.totalPoints} total points
                       </p>
                       <p className="text-[var(--text-secondary)] text-sm">
-                        🏆 Achieved {starInfo.level} level
+                        🏆 Achieved {starInfo.title} level
                       </p>
                     </div>
                   ) : (

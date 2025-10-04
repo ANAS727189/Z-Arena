@@ -4,7 +4,7 @@
     "title": "Two Sum Problem",
     "description": "Given an array of integers and a target sum, find two numbers in the array that add up to the target.\n\n## Learning Objectives\n- Array manipulation and traversal\n- Hash table/map usage for optimization\n- Problem-solving with multiple approaches\n\n## Approach\nYou can solve this using:\n1. **Brute Force**: Check every pair (O(n²))\n2. **Hash Map**: Single pass with complement lookup (O(n))",
     "difficulty": "medium",
-    "points": 50,
+    "points": 2,
     "timeLimit": 15,
     "tags": ["arrays", "hash-map", "two-pointers", "algorithms"],
     "author": "Z-Challenge Team",

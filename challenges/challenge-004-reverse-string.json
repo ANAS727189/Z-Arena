@@ -4,7 +4,7 @@
     "title": "Reverse String",
     "description": "Implement a function to reverse a string efficiently.\n\n## Learning Objectives\n- String manipulation and character operations\n- In-place vs. new string approaches\n- Algorithm optimization techniques\n\n## Approach\nYou can solve this using:\n1. **Two Pointers**: Swap characters from both ends (in-place)\n2. **Stack**: Push all characters and pop them (LIFO)\n3. **Built-in Functions**: Use language-specific reverse methods",
     "difficulty": "easy",
-    "points": 25,
+    "points": 1,
     "timeLimit": 8,
     "tags": ["strings", "two-pointers", "algorithms", "basic"],
     "author": "Z-Challenge Team",

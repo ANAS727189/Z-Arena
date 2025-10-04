@@ -1,4 +1,4 @@
-import { databases, DATABASE_ID, COLLECTIONS, Query } from '@/lib/appwrite';
+import { databases, account, DATABASE_ID, COLLECTIONS, Query } from '@/lib/appwrite';
 import type { Challenge, TestCase, TestResult, Submission } from '@/types';
 import type { Models } from 'appwrite';
 
@@ -18,7 +18,7 @@ export interface ChallengeDocument extends Models.Document {
   constraints: string;
   examples: string; // JSON string
   starterCodes: string; // JSON string - languages mapped to starter code
-  solutionCodes: string; // JSON string - languages mapped to solution code
+  solutionCodes: string; // JSON string - languages mapped to solutions
   hints: string; // JSON string - array of hints
   testCases: string; // JSON string - array of test cases
   editorial: string; // JSON string - editorial content
@@ -26,6 +26,7 @@ export interface ChallengeDocument extends Models.Document {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  starPoints: number; // Points needed for star level calculation
 }
 
 export interface SubmissionDocument extends Models.Document {
@@ -52,6 +53,27 @@ export interface UserStatsDocument extends Models.Document {
   level: string;
   createdAt: string;
   updatedAt: string;
+  globalRank: number;
+  weeklyRank: number;
+  monthlyRank: number;
+  weeklyPoints: number;
+  monthlyPoints: number;
+  lastActive?: string;
+  streak: number;
+  bestStreak: number;
+  avgSolveTime: number;
+  country?: string;
+  profilePicture?: string;
+  isPublic: boolean;
+  starPoints: number;
+  currentStars: number;
+  starTitle: string;
+  easyChallengesSolved: number;
+  mediumChallengesSolved: number;
+  hardChallengesSolved: number;
+  achievements: string[];
+  badgesEarned: string[];
+  nextStarRequirement: number;
 }
 
 // Code execution interfaces
@@ -571,6 +593,18 @@ class ChallengeService {
       );
       const status =
         executionResult.success && allPassed ? 'completed' : 'failed';
+      
+      console.log('🧪 Submission status determination:', {
+        executionSuccess: executionResult.success,
+        allTestsPassed: allPassed,
+        testResults: executionResult.testResults.map(t => ({ 
+          id: t.testCaseId, 
+          passed: t.passed,
+          error: t.error 
+        })),
+        finalStatus: status,
+        points: challenge.metadata.points
+      });
 
       // Create submission document
       const submissionDoc = {
@@ -596,11 +630,23 @@ class ChallengeService {
 
       // Update user stats if successful
       if (status === 'completed') {
+        console.log('🏆 Challenge completed! Updating user stats...');
         await this.updateUserStats(
           userId,
           challengeId,
-          executionResult.totalScore
+          challenge.metadata.points
         );
+
+        // Update user rankings
+        const userStats = await this.getUserStats(userId);
+        if (userStats) {
+          const { leaderboardService } = await import('./leaderboardService');
+          await leaderboardService.updateUserRanking(
+            userId,
+            userStats.totalPoints,
+            userStats.solvedChallenges.length
+          );
+        }
       }
 
       // Return formatted submission
@@ -659,12 +705,25 @@ class ChallengeService {
     points: number
   ): Promise<void> {
     try {
+      console.log('🔄 Updating user stats for:', { userId, challengeId, points });
+      
+      // Get current user info
+      const user = await account.get();
+      console.log('👤 Current user:', { id: user.$id, name: user.name, email: user.email });
+      
       // Try to get existing user stats
       const existingStats = await databases.listDocuments(
         DATABASE_ID,
         COLLECTIONS.USERS,
         [Query.equal('userId', userId)]
       );
+      
+      console.log('📊 Existing stats query result:', {
+        found: existingStats.documents.length,
+        databaseId: DATABASE_ID,
+        collectionId: COLLECTIONS.USERS,
+        queryUserId: userId
+      });
 
       if (existingStats.documents.length > 0) {
         // Update existing stats
@@ -674,21 +733,47 @@ class ChallengeService {
           ? stats.solvedChallenges
           : [...stats.solvedChallenges, challengeId];
 
-        await databases.updateDocument(
+        console.log('📈 Updating existing stats:', {
+          oldStats: {
+            totalSubmissions: stats.totalSubmissions,
+            successfulSubmissions: stats.successfulSubmissions,
+            totalPoints: stats.totalPoints,
+            solvedChallenges: stats.solvedChallenges.length
+          },
+          newValues: {
+            totalSubmissions: stats.totalSubmissions + 1,
+            successfulSubmissions: stats.successfulSubmissions + 1,
+            totalPoints: stats.totalPoints + points,
+            solvedChallenges: solvedChallenges.length
+          }
+        });
+
+        const updateResult = await databases.updateDocument(
           DATABASE_ID,
           COLLECTIONS.USERS,
           stats.$id,
           {
+            profilePicture: (user.prefs as any)?.profileImage || stats.profilePicture,
             totalSubmissions: stats.totalSubmissions + 1,
             successfulSubmissions: stats.successfulSubmissions + 1,
             totalPoints: stats.totalPoints + points,
             solvedChallenges,
+            lastActive: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
+            weeklyPoints: stats.weeklyPoints + points,
+            monthlyPoints: stats.monthlyPoints + points,
+            starPoints: stats.starPoints + points,
+            currentStars: (stats.starPoints + points) >= 30 ? 7 : (stats.starPoints + points) >= 25 ? 5 : (stats.starPoints + points) >= 15 ? 3 : (stats.starPoints + points) >= 5 ? 2 : 1,
+            starTitle: (stats.starPoints + points) >= 30 ? 'ZMaster' : (stats.starPoints + points) >= 25 ? 'Expert' : (stats.starPoints + points) >= 15 ? 'Rookie' : (stats.starPoints + points) >= 5 ? 'Pookie' : 'Noob',
           }
         );
+        
+        console.log('✅ Stats updated successfully:', updateResult.$id);
       } else {
         // Create new user stats
-        await databases.createDocument(
+        console.log('🆕 Creating new user stats document');
+        
+        const createResult = await databases.createDocument(
           DATABASE_ID,
           COLLECTIONS.USERS,
           'unique()',
@@ -703,11 +788,41 @@ class ChallengeService {
             level: 'beginner',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
+            globalRank: 0,
+            weeklyRank: 0,
+            monthlyRank: 0,
+            weeklyPoints: points,
+            monthlyPoints: points,
+            lastActive: new Date().toISOString(),
+            streak: 1,
+            bestStreak: 1,
+            avgSolveTime: 0,
+            country: 'India',
+            profilePicture: (user.prefs as any)?.profileImage || null,
+            isPublic: true,
+            starPoints: points,
+            currentStars: points >= 7 ? 5 : points >= 5 ? 4 : points >= 3 ? 3 : points >= 2 ? 2 : 1,
+            starTitle: points >= 7 ? 'ZMaster' : points >= 5 ? 'Expert' : points >= 3 ? 'Rookie' : points >= 2 ? 'Pookie' : 'Noob',
+            easyChallengesSolved: 0,
+            mediumChallengesSolved: 0,
+            hardChallengesSolved: 0,
+            achievements: [],
+            badgesEarned: [],
+            nextStarRequirement: points >= 7 ? 30 : points >= 5 ? 25 : points >= 3 ? 15 : points >= 2 ? 5 : 5,
           }
         );
+        
+        console.log('✅ New stats created successfully:', createResult.$id);
       }
     } catch (error) {
-      console.error('Error updating user stats:', error);
+      console.error('❌ Error updating user stats:', error);
+      console.error('Debug info:', {
+        DATABASE_ID,
+        USERS_COLLECTION: COLLECTIONS.USERS,
+        userId,
+        challengeId,
+        points
+      });
       // Don't throw error here - submission was successful even if stats update failed
     }
   }
