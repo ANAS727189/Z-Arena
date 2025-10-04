@@ -1,0 +1,73 @@
+{
+  "id": "cpp-expression-templates",
+  "metadata": {
+    "title": "C++ Expression Templates for Mathematical Operations",
+    "description": "Implement expression templates to optimize mathematical vector operations through lazy evaluation.\n\n## Learning Objectives\n- Expression template design pattern\n- Template metaprogramming for optimization\n- Lazy evaluation techniques\n- Modern C++ operator overloading",
+    "difficulty": "hard",
+    "points": 3,
+    "timeLimit": 30,
+    "tags": ["cpp", "templates", "expression-templates", "optimization", "lazy-evaluation"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-05T12:00:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["cpp"]
+  },
+  "problem": {
+    "statement": "Create a mathematical vector library using expression templates to optimize operations like v1 + v2 * v3 without creating temporary objects.",
+    "inputFormat": "Vector operations and result evaluation",
+    "outputFormat": "Optimized computation results",
+    "constraints": "- Use expression templates for lazy evaluation\n- Avoid temporary object creation\n- Support basic arithmetic operations\n- Compile-time optimization",
+    "examples": [
+      {
+        "input": "v1: [1, 2, 3]\\nv2: [4, 5, 6]\\nv3: [2, 2, 2]\\nresult = v1 + v2 * v3",
+        "output": "[9, 12, 15]",
+        "explanation": "v2 * v3 = [8, 10, 12], then v1 + [8, 10, 12] = [9, 12, 15]"
+      }
+    ]
+  },
+  "languages": {
+    "cpp": {
+      "starterCode": "#include <iostream>\n#include <vector>\n#include <initializer_list>\n\n// Forward declarations\ntemplate<typename E>\nclass VectorExpression;\n\ntemplate<typename T>\nclass Vector;\n\ntemplate<typename E1, typename E2, typename Op>\nclass VectorBinaryOp;\n\n// Base expression template class\ntemplate<typename E>\nclass VectorExpression {\npublic:\n    const E& cast() const { return static_cast<const E&>(*this); }\n    \n    // Your implementation here\n    size_t size() const { return cast().size(); }\n    double operator[](size_t i) const { return cast()[i]; }\n};\n\n// Concrete vector class\ntemplate<typename T>\nclass Vector : public VectorExpression<Vector<T>> {\nprivate:\n    std::vector<T> data;\n    \npublic:\n    Vector(std::initializer_list<T> list) : data(list) {}\n    Vector(size_t n, T value = T{}) : data(n, value) {}\n    \n    // Your implementation here\n    size_t size() const { return data.size(); }\n    T operator[](size_t i) const { return data[i]; }\n    T& operator[](size_t i) { return data[i]; }\n    \n    // Assignment from expression\n    template<typename E>\n    Vector& operator=(const VectorExpression<E>& expr) {\n        // Implement assignment from expression\n        return *this;\n    }\n};\n\n// Binary operation expression template\ntemplate<typename E1, typename E2, typename Op>\nclass VectorBinaryOp : public VectorExpression<VectorBinaryOp<E1, E2, Op>> {\nprivate:\n    const E1& e1;\n    const E2& e2;\n    Op op;\n    \npublic:\n    VectorBinaryOp(const E1& e1, const E2& e2, Op op) : e1(e1), e2(e2), op(op) {}\n    \n    // Your implementation here\n    size_t size() const { return e1.size(); }\n    double operator[](size_t i) const { return op(e1[i], e2[i]); }\n};\n\n// Operation functors\nstruct Add {\n    double operator()(double a, double b) const { return a + b; }\n};\n\nstruct Multiply {\n    double operator()(double a, double b) const { return a * b; }\n};\n\n// Operator overloads\ntemplate<typename E1, typename E2>\nauto operator+(const VectorExpression<E1>& e1, const VectorExpression<E2>& e2) {\n    // Return expression template for addition\n    return VectorBinaryOp<E1, E2, Add>(e1.cast(), e2.cast(), Add{});\n}\n\ntemplate<typename E1, typename E2>\nauto operator*(const VectorExpression<E1>& e1, const VectorExpression<E2>& e2) {\n    // Return expression template for multiplication\n    return VectorBinaryOp<E1, E2, Multiply>(e1.cast(), e2.cast(), Multiply{});\n}\n\nint main() {\n    Vector<double> v1{1.0, 2.0, 3.0};\n    Vector<double> v2{4.0, 5.0, 6.0};\n    Vector<double> v3{2.0, 2.0, 2.0};\n    \n    std::cout << \"v1: \";\n    for (size_t i = 0; i < v1.size(); ++i) {\n        std::cout << v1[i] << \" \";\n    }\n    std::cout << std::endl;\n    \n    std::cout << \"v2: \";\n    for (size_t i = 0; i < v2.size(); ++i) {\n        std::cout << v2[i] << \" \";\n    }\n    std::cout << std::endl;\n    \n    std::cout << \"v3: \";\n    for (size_t i = 0; i < v3.size(); ++i) {\n        std::cout << v3[i] << \" \";\n    }\n    std::cout << std::endl;\n    \n    // Create expression template: v1 + v2 * v3\n    auto expr = v1 + v2 * v3;\n    \n    // Evaluate expression\n    Vector<double> result(v1.size());\n    result = expr;\n    \n    std::cout << \"Result: \";\n    for (size_t i = 0; i < result.size(); ++i) {\n        std::cout << result[i] << \" \";\n    }\n    std::cout << std::endl;\n    \n    return 0;\n}",
+      "solutionCode": "#include <iostream>\n#include <vector>\n#include <initializer_list>\n\n// Forward declarations\ntemplate<typename E>\nclass VectorExpression;\n\ntemplate<typename T>\nclass Vector;\n\ntemplate<typename E1, typename E2, typename Op>\nclass VectorBinaryOp;\n\n// Base expression template class\ntemplate<typename E>\nclass VectorExpression {\npublic:\n    const E& cast() const { return static_cast<const E&>(*this); }\n    \n    size_t size() const { return cast().size(); }\n    double operator[](size_t i) const { return cast()[i]; }\n};\n\n// Concrete vector class\ntemplate<typename T>\nclass Vector : public VectorExpression<Vector<T>> {\nprivate:\n    std::vector<T> data;\n    \npublic:\n    Vector(std::initializer_list<T> list) : data(list) {}\n    Vector(size_t n, T value = T{}) : data(n, value) {}\n    \n    size_t size() const { return data.size(); }\n    T operator[](size_t i) const { return data[i]; }\n    T& operator[](size_t i) { return data[i]; }\n    \n    // Assignment from expression\n    template<typename E>\n    Vector& operator=(const VectorExpression<E>& expr) {\n        const E& e = expr.cast();\n        data.resize(e.size());\n        for (size_t i = 0; i < e.size(); ++i) {\n            data[i] = e[i];\n        }\n        return *this;\n    }\n    \n    // Copy assignment\n    Vector& operator=(const Vector& other) {\n        if (this != &other) {\n            data = other.data;\n        }\n        return *this;\n    }\n};\n\n// Binary operation expression template\ntemplate<typename E1, typename E2, typename Op>\nclass VectorBinaryOp : public VectorExpression<VectorBinaryOp<E1, E2, Op>> {\nprivate:\n    const E1& e1;\n    const E2& e2;\n    Op op;\n    \npublic:\n    VectorBinaryOp(const E1& e1, const E2& e2, Op op) : e1(e1), e2(e2), op(op) {}\n    \n    size_t size() const { return e1.size(); }\n    double operator[](size_t i) const { return op(e1[i], e2[i]); }\n};\n\n// Operation functors\nstruct Add {\n    double operator()(double a, double b) const { return a + b; }\n};\n\nstruct Multiply {\n    double operator()(double a, double b) const { return a * b; }\n};\n\nstruct Subtract {\n    double operator()(double a, double b) const { return a - b; }\n};\n\n// Operator overloads\ntemplate<typename E1, typename E2>\nauto operator+(const VectorExpression<E1>& e1, const VectorExpression<E2>& e2) {\n    return VectorBinaryOp<E1, E2, Add>(e1.cast(), e2.cast(), Add{});\n}\n\ntemplate<typename E1, typename E2>\nauto operator*(const VectorExpression<E1>& e1, const VectorExpression<E2>& e2) {\n    return VectorBinaryOp<E1, E2, Multiply>(e1.cast(), e2.cast(), Multiply{});\n}\n\ntemplate<typename E1, typename E2>\nauto operator-(const VectorExpression<E1>& e1, const VectorExpression<E2>& e2) {\n    return VectorBinaryOp<E1, E2, Subtract>(e1.cast(), e2.cast(), Subtract{});\n}\n\nint main() {\n    Vector<double> v1{1.0, 2.0, 3.0};\n    Vector<double> v2{4.0, 5.0, 6.0};\n    Vector<double> v3{2.0, 2.0, 2.0};\n    \n    std::cout << \"v1: \";\n    for (size_t i = 0; i < v1.size(); ++i) {\n        std::cout << v1[i] << \" \";\n    }\n    std::cout << std::endl;\n    \n    std::cout << \"v2: \";\n    for (size_t i = 0; i < v2.size(); ++i) {\n        std::cout << v2[i] << \" \";\n    }\n    std::cout << std::endl;\n    \n    std::cout << \"v3: \";\n    for (size_t i = 0; i < v3.size(); ++i) {\n        std::cout << v3[i] << \" \";\n    }\n    std::cout << std::endl;\n    \n    // Create expression template: v1 + v2 * v3\n    // This creates a lazy evaluation tree without temporary objects\n    auto expr = v1 + v2 * v3;\n    \n    // Evaluate expression only when assigned\n    Vector<double> result(v1.size());\n    result = expr;\n    \n    std::cout << \"Result: \";\n    for (size_t i = 0; i < result.size(); ++i) {\n        std::cout << result[i] << \" \";\n    }\n    std::cout << std::endl;\n    \n    // Demonstrate no temporary objects\n    std::cout << \"Complex expression: v1 + v2 * v3 - v1\" << std::endl;\n    auto complex_expr = v1 + v2 * v3 - v1;\n    Vector<double> complex_result(v1.size());\n    complex_result = complex_expr;\n    \n    std::cout << \"Complex Result: \";\n    for (size_t i = 0; i < complex_result.size(); ++i) {\n        std::cout << complex_result[i] << \" \";\n    }\n    std::cout << std::endl;\n    \n    return 0;\n}",
+      "hints": [
+        "Use CRTP (Curiously Recurring Template Pattern) for expression base",
+        "Return expression objects from operators, not computed results",
+        "Implement lazy evaluation in operator[] of expression templates",
+        "Use auto return type for complex expression templates"
+      ],
+      "judge0Id": 76,
+      "compilerType": "judge0"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-basic-expression",
+      "input": "",
+      "output": "v1: 1 2 3 \\nv2: 4 5 6 \\nv3: 2 2 2 \\nResult: 9 12 15 \\nComplex expression: v1 + v2 * v3 - v1\\nComplex Result: 8 10 12",
+      "points": 6,
+      "isHidden": false,
+      "timeout": 5000
+    },
+    {
+      "id": "test-expression-evaluation",
+      "input": "",
+      "output": "v1: 1 2 3 \\nv2: 4 5 6 \\nv3: 2 2 2 \\nResult: 9 12 15",
+      "points": 4,
+      "isHidden": true,
+      "timeout": 5000
+    }
+  ],
+  "editorial": {
+    "approach": "Expression templates enable compile-time optimization of mathematical operations by building lazy evaluation trees that eliminate temporary objects and enable vectorization.",
+    "complexity": {
+      "time": "O(n) for final evaluation, O(1) for expression building",
+      "space": "O(1) additional space - no temporary vectors created"
+    },
+    "keyPoints": [
+      "CRTP for static polymorphism in expression trees",
+      "Lazy evaluation delays computation until assignment",
+      "Template metaprogramming for compile-time optimization",
+      "Elimination of temporary objects improves performance"
+    ]
+  }
+}

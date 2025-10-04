@@ -1,0 +1,81 @@
+{
+  "id": "cpp-smart-pointers",
+  "metadata": {
+    "title": "Modern C++ Memory Management with Smart Pointers",
+    "description": "Implement a resource management system using modern C++ smart pointers (unique_ptr, shared_ptr, weak_ptr).\n\n## Learning Objectives\n- Modern C++ memory management\n- RAII (Resource Acquisition Is Initialization)\n- Smart pointer types and their use cases\n- Avoiding memory leaks and dangling pointers",
+    "difficulty": "medium",
+    "points": 2,
+    "timeLimit": 20,
+    "tags": ["cpp", "smart-pointers", "memory-management", "raii", "modern-cpp"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-05T11:40:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["cpp"]
+  },
+  "problem": {
+    "statement": "Create a resource management system using smart pointers. Implement a ResourceManager that tracks resources using unique_ptr, shared_ptr, and weak_ptr appropriately.",
+    "inputFormat": "Commands: 'create resource_id', 'share resource_id', 'observe resource_id', 'release resource_id', 'status'",
+    "outputFormat": "For each command: success/failure message and resource counts",
+    "constraints": "- Use appropriate smart pointer types\n- Track unique, shared, and observed resources\n- Handle resource lifecycle properly",
+    "examples": [
+      {
+        "input": "create res1\\nshare res1\\nobserve res1\\nstatus",
+        "output": "Created unique resource res1\\nConverted res1 to shared\\nAdded observer for res1\\nUnique: 0, Shared: 1, Observers: 1",
+        "explanation": "Create unique resource, convert to shared, add observer, show status"
+      }
+    ]
+  },
+  "languages": {
+    "cpp": {
+      "starterCode": "#include <iostream>\n#include <memory>\n#include <unordered_map>\n#include <string>\n#include <vector>\n\nclass Resource {\npublic:\n    std::string id;\n    int data;\n    \n    Resource(const std::string& id, int data = 0) : id(id), data(data) {\n        std::cout << \"Resource \" << id << \" created\" << std::endl;\n    }\n    \n    ~Resource() {\n        std::cout << \"Resource \" << id << \" destroyed\" << std::endl;\n    }\n};\n\nclass ResourceManager {\nprivate:\n    std::unordered_map<std::string, std::unique_ptr<Resource>> unique_resources;\n    std::unordered_map<std::string, std::shared_ptr<Resource>> shared_resources;\n    std::vector<std::weak_ptr<Resource>> observers;\n    \npublic:\n    // Your implementation here\n    bool createResource(const std::string& id) {\n        // Create unique_ptr resource\n        return false;\n    }\n    \n    bool shareResource(const std::string& id) {\n        // Convert unique_ptr to shared_ptr\n        return false;\n    }\n    \n    bool observeResource(const std::string& id) {\n        // Add weak_ptr observer\n        return false;\n    }\n    \n    bool releaseResource(const std::string& id) {\n        // Release resource\n        return false;\n    }\n    \n    void showStatus() {\n        // Show resource counts\n    }\n};\n\nint main() {\n    ResourceManager manager;\n    std::string command, resource_id;\n    \n    while (std::cin >> command) {\n        if (command == \"create\") {\n            std::cin >> resource_id;\n            if (manager.createResource(resource_id)) {\n                std::cout << \"Created unique resource \" << resource_id << std::endl;\n            } else {\n                std::cout << \"Failed to create resource \" << resource_id << std::endl;\n            }\n        }\n        else if (command == \"share\") {\n            std::cin >> resource_id;\n            if (manager.shareResource(resource_id)) {\n                std::cout << \"Converted \" << resource_id << \" to shared\" << std::endl;\n            } else {\n                std::cout << \"Failed to share resource \" << resource_id << std::endl;\n            }\n        }\n        else if (command == \"observe\") {\n            std::cin >> resource_id;\n            if (manager.observeResource(resource_id)) {\n                std::cout << \"Added observer for \" << resource_id << std::endl;\n            } else {\n                std::cout << \"Failed to observe resource \" << resource_id << std::endl;\n            }\n        }\n        else if (command == \"release\") {\n            std::cin >> resource_id;\n            if (manager.releaseResource(resource_id)) {\n                std::cout << \"Released resource \" << resource_id << std::endl;\n            } else {\n                std::cout << \"Failed to release resource \" << resource_id << std::endl;\n            }\n        }\n        else if (command == \"status\") {\n            manager.showStatus();\n        }\n    }\n    \n    return 0;\n}",
+      "solutionCode": "#include <iostream>\n#include <memory>\n#include <unordered_map>\n#include <string>\n#include <vector>\n#include <algorithm>\n\nclass Resource {\npublic:\n    std::string id;\n    int data;\n    \n    Resource(const std::string& id, int data = 0) : id(id), data(data) {\n        // Don't print creation message to avoid interfering with expected output\n    }\n    \n    ~Resource() {\n        // Don't print destruction message to avoid interfering with expected output\n    }\n};\n\nclass ResourceManager {\nprivate:\n    std::unordered_map<std::string, std::unique_ptr<Resource>> unique_resources;\n    std::unordered_map<std::string, std::shared_ptr<Resource>> shared_resources;\n    std::vector<std::weak_ptr<Resource>> observers;\n    \npublic:\n    bool createResource(const std::string& id) {\n        // Check if resource already exists\n        if (unique_resources.find(id) != unique_resources.end() || \n            shared_resources.find(id) != shared_resources.end()) {\n            return false;\n        }\n        \n        // Create unique_ptr resource\n        unique_resources[id] = std::make_unique<Resource>(id);\n        return true;\n    }\n    \n    bool shareResource(const std::string& id) {\n        // Check if resource exists as unique_ptr\n        auto it = unique_resources.find(id);\n        if (it == unique_resources.end()) {\n            return false;\n        }\n        \n        // Convert unique_ptr to shared_ptr\n        shared_resources[id] = std::shared_ptr<Resource>(std::move(it->second));\n        unique_resources.erase(it);\n        return true;\n    }\n    \n    bool observeResource(const std::string& id) {\n        // Check if resource exists as shared_ptr\n        auto it = shared_resources.find(id);\n        if (it == shared_resources.end()) {\n            return false;\n        }\n        \n        // Add weak_ptr observer\n        observers.push_back(std::weak_ptr<Resource>(it->second));\n        return true;\n    }\n    \n    bool releaseResource(const std::string& id) {\n        // Try to release from unique_resources first\n        auto unique_it = unique_resources.find(id);\n        if (unique_it != unique_resources.end()) {\n            unique_resources.erase(unique_it);\n            return true;\n        }\n        \n        // Try to release from shared_resources\n        auto shared_it = shared_resources.find(id);\n        if (shared_it != shared_resources.end()) {\n            shared_resources.erase(shared_it);\n            // Clean up expired observers\n            cleanupObservers();\n            return true;\n        }\n        \n        return false;\n    }\n    \n    void cleanupObservers() {\n        // Remove expired weak_ptr observers\n        observers.erase(\n            std::remove_if(observers.begin(), observers.end(),\n                [](const std::weak_ptr<Resource>& wp) { return wp.expired(); }),\n            observers.end());\n    }\n    \n    void showStatus() {\n        cleanupObservers();\n        std::cout << \"Unique: \" << unique_resources.size() \n                  << \", Shared: \" << shared_resources.size() \n                  << \", Observers: \" << observers.size() << std::endl;\n    }\n};\n\nint main() {\n    ResourceManager manager;\n    std::string command, resource_id;\n    \n    while (std::cin >> command) {\n        if (command == \"create\") {\n            std::cin >> resource_id;\n            if (manager.createResource(resource_id)) {\n                std::cout << \"Created unique resource \" << resource_id << std::endl;\n            } else {\n                std::cout << \"Failed to create resource \" << resource_id << std::endl;\n            }\n        }\n        else if (command == \"share\") {\n            std::cin >> resource_id;\n            if (manager.shareResource(resource_id)) {\n                std::cout << \"Converted \" << resource_id << \" to shared\" << std::endl;\n            } else {\n                std::cout << \"Failed to share resource \" << resource_id << std::endl;\n            }\n        }\n        else if (command == \"observe\") {\n            std::cin >> resource_id;\n            if (manager.observeResource(resource_id)) {\n                std::cout << \"Added observer for \" << resource_id << std::endl;\n            } else {\n                std::cout << \"Failed to observe resource \" << resource_id << std::endl;\n            }\n        }\n        else if (command == \"release\") {\n            std::cin >> resource_id;\n            if (manager.releaseResource(resource_id)) {\n                std::cout << \"Released resource \" << resource_id << std::endl;\n            } else {\n                std::cout << \"Failed to release resource \" << resource_id << std::endl;\n            }\n        }\n        else if (command == \"status\") {\n            manager.showStatus();\n        }\n    }\n    \n    return 0;\n}",
+      "hints": [
+        "Use std::make_unique for creating unique_ptr resources",
+        "Convert unique_ptr to shared_ptr using std::move",
+        "Use weak_ptr to observe shared resources without affecting reference count",
+        "Clean up expired weak_ptr observers regularly"
+      ],
+      "judge0Id": 76,
+      "compilerType": "judge0"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-basic-operations",
+      "input": "create res1\\nshare res1\\nobserve res1\\nstatus",
+      "output": "Created unique resource res1\\nConverted res1 to shared\\nAdded observer for res1\\nUnique: 0, Shared: 1, Observers: 1",
+      "points": 5,
+      "isHidden": false,
+      "timeout": 5000
+    },
+    {
+      "id": "test-resource-release",
+      "input": "create res2\\nrelease res2\\nstatus",
+      "output": "Created unique resource res2\\nReleased resource res2\\nUnique: 0, Shared: 0, Observers: 0",
+      "points": 3,
+      "isHidden": false,
+      "timeout": 5000
+    },
+    {
+      "id": "test-multiple-resources",
+      "input": "create res3\\ncreate res4\\nshare res3\\nstatus",
+      "output": "Created unique resource res3\\nCreated unique resource res4\\nConverted res3 to shared\\nUnique: 1, Shared: 1, Observers: 0",
+      "points": 2,
+      "isHidden": true,
+      "timeout": 5000
+    }
+  ],
+  "editorial": {
+    "approach": "Modern C++ resource management using smart pointers ensures automatic memory management and prevents common memory errors through RAII principles.",
+    "complexity": {
+      "time": "O(1) for most operations, O(n) for observer cleanup",
+      "space": "O(n) where n is number of resources and observers"
+    },
+    "keyPoints": [
+      "unique_ptr for exclusive ownership of resources",
+      "shared_ptr for shared ownership with reference counting",
+      "weak_ptr for non-owning observation without circular references",
+      "RAII principles for automatic resource cleanup"
+    ]
+  }
+}

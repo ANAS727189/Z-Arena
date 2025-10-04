@@ -1,0 +1,81 @@
+{
+  "id": "py-async-web-scraper",
+  "metadata": {
+    "title": "Async Web Scraper with Rate Limiting",
+    "description": "Build an asynchronous web scraper with rate limiting, retry logic, and concurrent request management.\n\n## Learning Objectives\n- Asyncio and aiohttp for concurrent HTTP requests\n- Rate limiting with semaphores and delays\n- Retry mechanisms with exponential backoff\n- HTML parsing and data extraction",
+    "difficulty": "hard",
+    "points": 3,
+    "timeLimit": 30,
+    "tags": ["python", "asyncio", "web-scraping", "rate-limiting", "concurrency"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-05T11:15:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["python"]
+  },
+  "problem": {
+    "statement": "Create an async web scraper that fetches URLs with rate limiting (max 2 concurrent requests), retry logic (max 3 attempts), and extracts title tags from HTML responses.",
+    "inputFormat": "URLs to scrape, one per line",
+    "outputFormat": "For each URL: 'URL: title' or 'URL: ERROR' if failed",
+    "constraints": "- Max 2 concurrent requests\n- 1 second delay between requests\n- Max 3 retry attempts with exponential backoff",
+    "examples": [
+      {
+        "input": "https://httpbin.org/html\\nhttps://httpbin.org/status/404",
+        "output": "https://httpbin.org/html: Herman Melville - Moby-Dick\\nhttps://httpbin.org/status/404: ERROR",
+        "explanation": "First URL returns HTML with title, second returns 404 error"
+      }
+    ]
+  },
+  "languages": {
+    "python": {
+      "starterCode": "import asyncio\nimport aiohttp\nimport re\nimport time\nfrom typing import List, Optional\n\nclass AsyncWebScraper:\n    def __init__(self, max_concurrent: int = 2, delay: float = 1.0, max_retries: int = 3):\n        self.max_concurrent = max_concurrent\n        self.delay = delay\n        self.max_retries = max_retries\n        self.semaphore = asyncio.Semaphore(max_concurrent)\n    \n    async def fetch_with_retry(self, session: aiohttp.ClientSession, url: str) -> Optional[str]:\n        \"\"\"Fetch URL with retry logic and exponential backoff\"\"\"\n        # Your implementation here\n        pass\n    \n    async def extract_title(self, html: str) -> str:\n        \"\"\"Extract title from HTML content\"\"\"\n        # Your implementation here\n        pass\n    \n    async def scrape_url(self, session: aiohttp.ClientSession, url: str) -> str:\n        \"\"\"Scrape a single URL with rate limiting\"\"\"\n        # Your implementation here\n        pass\n    \n    async def scrape_urls(self, urls: List[str]) -> List[str]:\n        \"\"\"Scrape multiple URLs concurrently\"\"\"\n        # Your implementation here\n        pass\n\nasync def main():\n    import sys\n    lines = sys.stdin.read().strip().split('\\n')\n    urls = [line.strip() for line in lines if line.strip()]\n    \n    scraper = AsyncWebScraper(max_concurrent=2, delay=1.0, max_retries=3)\n    results = await scraper.scrape_urls(urls)\n    \n    for result in results:\n        print(result)\n\nif __name__ == '__main__':\n    asyncio.run(main())",
+      "solutionCode": "import asyncio\nimport aiohttp\nimport re\nimport time\nfrom typing import List, Optional\n\nclass AsyncWebScraper:\n    def __init__(self, max_concurrent: int = 2, delay: float = 1.0, max_retries: int = 3):\n        self.max_concurrent = max_concurrent\n        self.delay = delay\n        self.max_retries = max_retries\n        self.semaphore = asyncio.Semaphore(max_concurrent)\n        self.last_request_time = 0\n    \n    async def fetch_with_retry(self, session: aiohttp.ClientSession, url: str) -> Optional[str]:\n        \"\"\"Fetch URL with retry logic and exponential backoff\"\"\"\n        for attempt in range(self.max_retries):\n            try:\n                async with session.get(url, timeout=aiohttp.ClientTimeout(total=10)) as response:\n                    if response.status == 200:\n                        return await response.text()\n                    elif response.status >= 500:  # Server errors, retry\n                        if attempt < self.max_retries - 1:\n                            await asyncio.sleep(2 ** attempt)  # Exponential backoff\n                            continue\n                    return None  # Client errors (4xx), don't retry\n            except (aiohttp.ClientError, asyncio.TimeoutError) as e:\n                if attempt < self.max_retries - 1:\n                    await asyncio.sleep(2 ** attempt)\n                    continue\n                return None\n        return None\n    \n    async def extract_title(self, html: str) -> str:\n        \"\"\"Extract title from HTML content\"\"\"\n        # Simple regex to extract title\n        title_match = re.search(r'<title[^>]*>([^<]+)</title>', html, re.IGNORECASE)\n        if title_match:\n            return title_match.group(1).strip()\n        return \"No Title Found\"\n    \n    async def scrape_url(self, session: aiohttp.ClientSession, url: str) -> str:\n        \"\"\"Scrape a single URL with rate limiting\"\"\"\n        async with self.semaphore:\n            # Rate limiting - ensure delay between requests\n            current_time = time.time()\n            time_since_last = current_time - self.last_request_time\n            if time_since_last < self.delay:\n                await asyncio.sleep(self.delay - time_since_last)\n            \n            self.last_request_time = time.time()\n            \n            try:\n                html = await self.fetch_with_retry(session, url)\n                if html:\n                    title = await self.extract_title(html)\n                    return f\"{url}: {title}\"\n                else:\n                    return f\"{url}: ERROR\"\n            except Exception as e:\n                return f\"{url}: ERROR\"\n    \n    async def scrape_urls(self, urls: List[str]) -> List[str]:\n        \"\"\"Scrape multiple URLs concurrently\"\"\"\n        async with aiohttp.ClientSession() as session:\n            tasks = [self.scrape_url(session, url) for url in urls]\n            results = await asyncio.gather(*tasks, return_exceptions=True)\n            \n            # Handle exceptions in results\n            final_results = []\n            for i, result in enumerate(results):\n                if isinstance(result, Exception):\n                    final_results.append(f\"{urls[i]}: ERROR\")\n                else:\n                    final_results.append(result)\n            \n            return final_results\n\nasync def main():\n    import sys\n    lines = sys.stdin.read().strip().split('\\n')\n    urls = [line.strip() for line in lines if line.strip()]\n    \n    scraper = AsyncWebScraper(max_concurrent=2, delay=1.0, max_retries=3)\n    results = await scraper.scrape_urls(urls)\n    \n    for result in results:\n        print(result)\n\nif __name__ == '__main__':\n    asyncio.run(main())",
+      "hints": [
+        "Use asyncio.Semaphore for concurrency control",
+        "Implement exponential backoff with 2^attempt delay",
+        "Use regex to extract title tags from HTML",
+        "Handle both client and server errors differently"
+      ],
+      "judge0Id": 92,
+      "compilerType": "judge0"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-basic-scraping",
+      "input": "https://httpbin.org/html",
+      "output": "https://httpbin.org/html: Herman Melville - Moby-Dick",
+      "points": 5,
+      "isHidden": false,
+      "timeout": 15000
+    },
+    {
+      "id": "test-error-handling",
+      "input": "https://httpbin.org/status/404",
+      "output": "https://httpbin.org/status/404: ERROR",
+      "points": 3,
+      "isHidden": false,
+      "timeout": 10000
+    },
+    {
+      "id": "test-multiple-urls",
+      "input": "https://httpbin.org/html\\nhttps://httpbin.org/status/500",
+      "output": "https://httpbin.org/html: Herman Melville - Moby-Dick\\nhttps://httpbin.org/status/500: ERROR",
+      "points": 2,
+      "isHidden": true,
+      "timeout": 20000
+    }
+  ],
+  "editorial": {
+    "approach": "Async web scraper uses aiohttp for concurrent HTTP requests, semaphores for rate limiting, and implements retry logic with exponential backoff for resilient web scraping.",
+    "complexity": {
+      "time": "O(n/c) where n is URLs and c is concurrency limit",
+      "space": "O(n) for storing results and tasks"
+    },
+    "keyPoints": [
+      "Asyncio and aiohttp for concurrent HTTP operations",
+      "Semaphore-based rate limiting and request throttling",
+      "Exponential backoff retry mechanism for resilience",
+      "HTML parsing with regex for title extraction"
+    ]
+  }
+}

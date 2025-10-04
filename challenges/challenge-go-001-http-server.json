@@ -1,0 +1,86 @@
+{
+  "id": "go-http-server",
+  "metadata": {
+    "title": "HTTP Server with JSON API",
+    "description": "Build a simple HTTP server in Go that handles JSON requests and responses. This challenge focuses on Go's `net/http` package and JSON handling.\n\n## Learning Objectives\n- HTTP server creation with Go's standard library\n- JSON marshaling/unmarshaling\n- HTTP request routing\n- Error handling in web services",
+    "difficulty": "medium",
+    "points": 2,
+    "timeLimit": 20,
+    "tags": ["go", "http", "json", "web-server", "api"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-05T10:00:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["go"]
+  },
+  "problem": {
+    "statement": "Create an HTTP server that listens on port 8080 and handles POST requests to `/api/user`. The server should accept JSON input with `name` and `age` fields, validate the data, and return a JSON response with a welcome message.",
+    "inputFormat": "HTTP POST request to /api/user with JSON body: {\"name\": \"string\", \"age\": number}",
+    "outputFormat": "JSON response: {\"message\": \"Welcome, [name]! You are [age] years old.\", \"status\": \"success\"}",
+    "constraints": "- Name must be non-empty and less than 50 characters\n- Age must be between 1 and 120\n- Return error JSON for invalid input",
+    "examples": [
+      {
+        "input": "POST /api/user\n{\"name\": \"Alice\", \"age\": 25}",
+        "output": "{\"message\": \"Welcome, Alice! You are 25 years old.\", \"status\": \"success\"}",
+        "explanation": "Valid input returns success message"
+      },
+      {
+        "input": "POST /api/user\n{\"name\": \"\", \"age\": 25}",
+        "output": "{\"error\": \"Name cannot be empty\", \"status\": \"error\"}",
+        "explanation": "Empty name returns error"
+      }
+    ]
+  },
+  "languages": {
+    "go": {
+      "starterCode": "package main\n\nimport (\n\t\"encoding/json\"\n\t\"fmt\"\n\t\"net/http\"\n\t\"log\"\n)\n\ntype User struct {\n\tName string `json:\"name\"`\n\tAge  int    `json:\"age\"`\n}\n\ntype Response struct {\n\tMessage string `json:\"message,omitempty\"`\n\tError   string `json:\"error,omitempty\"`\n\tStatus  string `json:\"status\"`\n}\n\nfunc userHandler(w http.ResponseWriter, r *http.Request) {\n\t// Your code here\n}\n\nfunc main() {\n\thttp.HandleFunc(\"/api/user\", userHandler)\n\tfmt.Println(\"Server starting on :8080\")\n\tlog.Fatal(http.ListenAndServe(\":8080\", nil))\n}",
+      "solutionCode": "package main\n\nimport (\n\t\"encoding/json\"\n\t\"fmt\"\n\t\"net/http\"\n\t\"log\"\n\t\"strings\"\n)\n\ntype User struct {\n\tName string `json:\"name\"`\n\tAge  int    `json:\"age\"`\n}\n\ntype Response struct {\n\tMessage string `json:\"message,omitempty\"`\n\tError   string `json:\"error,omitempty\"`\n\tStatus  string `json:\"status\"`\n}\n\nfunc userHandler(w http.ResponseWriter, r *http.Request) {\n\tw.Header().Set(\"Content-Type\", \"application/json\")\n\t\n\tif r.Method != http.MethodPost {\n\t\tw.WriteHeader(http.StatusMethodNotAllowed)\n\t\tjson.NewEncoder(w).Encode(Response{Error: \"Method not allowed\", Status: \"error\"})\n\t\treturn\n\t}\n\t\n\tvar user User\n\tif err := json.NewDecoder(r.Body).Decode(&user); err != nil {\n\t\tw.WriteHeader(http.StatusBadRequest)\n\t\tjson.NewEncoder(w).Encode(Response{Error: \"Invalid JSON\", Status: \"error\"})\n\t\treturn\n\t}\n\t\n\tif strings.TrimSpace(user.Name) == \"\" {\n\t\tw.WriteHeader(http.StatusBadRequest)\n\t\tjson.NewEncoder(w).Encode(Response{Error: \"Name cannot be empty\", Status: \"error\"})\n\t\treturn\n\t}\n\t\n\tif len(user.Name) >= 50 {\n\t\tw.WriteHeader(http.StatusBadRequest)\n\t\tjson.NewEncoder(w).Encode(Response{Error: \"Name too long\", Status: \"error\"})\n\t\treturn\n\t}\n\t\n\tif user.Age < 1 || user.Age > 120 {\n\t\tw.WriteHeader(http.StatusBadRequest)\n\t\tjson.NewEncoder(w).Encode(Response{Error: \"Age must be between 1 and 120\", Status: \"error\"})\n\t\treturn\n\t}\n\t\n\tmessage := fmt.Sprintf(\"Welcome, %s! You are %d years old.\", user.Name, user.Age)\n\tjson.NewEncoder(w).Encode(Response{Message: message, Status: \"success\"})\n}\n\nfunc main() {\n\thttp.HandleFunc(\"/api/user\", userHandler)\n\tfmt.Println(\"Server starting on :8080\")\n\tlog.Fatal(http.ListenAndServe(\":8080\", nil))\n}",
+      "hints": [
+        "Use json.NewDecoder(r.Body).Decode() to parse JSON from request",
+        "Set Content-Type header to application/json",
+        "Use json.NewEncoder(w).Encode() to send JSON response",
+        "Validate input fields before processing"
+      ],
+      "judge0Id": 95,
+      "compilerType": "judge0"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-valid-user",
+      "input": "{\"name\": \"Alice\", \"age\": 25}",
+      "output": "{\"message\": \"Welcome, Alice! You are 25 years old.\", \"status\": \"success\"}",
+      "points": 5,
+      "isHidden": false,
+      "timeout": 2000
+    },
+    {
+      "id": "test-empty-name",
+      "input": "{\"name\": \"\", \"age\": 25}",
+      "output": "{\"error\": \"Name cannot be empty\", \"status\": \"error\"}",
+      "points": 3,
+      "isHidden": false,
+      "timeout": 2000
+    },
+    {
+      "id": "test-invalid-age",
+      "input": "{\"name\": \"Bob\", \"age\": 150}",
+      "output": "{\"error\": \"Age must be between 1 and 120\", \"status\": \"error\"}",
+      "points": 2,
+      "isHidden": true,
+      "timeout": 2000
+    }
+  ],
+  "editorial": {
+    "approach": "This challenge demonstrates Go's HTTP server capabilities and JSON handling. The solution uses the standard library's net/http package for server creation and encoding/json for data serialization.",
+    "complexity": {
+      "time": "O(1) per request",
+      "space": "O(1)"
+    },
+    "keyPoints": [
+      "HTTP method validation",
+      "JSON parsing and validation",
+      "Error handling and appropriate HTTP status codes",
+      "Struct tags for JSON marshaling"
+    ]
+  }
+}

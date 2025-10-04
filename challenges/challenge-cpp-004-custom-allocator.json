@@ -1,0 +1,81 @@
+{
+  "id": "cpp-custom-allocator",
+  "metadata": {
+    "title": "C++ Custom Memory Allocator Implementation",
+    "description": "Design and implement a custom memory allocator with pool allocation and memory tracking.\n\n## Learning Objectives\n- Memory management internals\n- Custom allocator design patterns\n- STL allocator interface\n- Memory pool optimization",
+    "difficulty": "hard",
+    "points": 3,
+    "timeLimit": 30,
+    "tags": ["cpp", "memory", "allocator", "performance", "stl"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-05T11:55:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["cpp"]
+  },
+  "problem": {
+    "statement": "Implement a memory pool allocator that can be used with STL containers. The allocator should track memory usage and provide efficient allocation/deallocation.",
+    "inputFormat": "Operations: 'create pool_size', 'allocate container_type count', 'stats', 'clear'",
+    "outputFormat": "Memory allocation results and statistics",
+    "constraints": "- Implement STL-compatible allocator interface\n- Use memory pool for efficient allocation\n- Track memory usage statistics\n- Support different container types",
+    "examples": [
+      {
+        "input": "create 1024\\nallocate vector 10\\nstats",
+        "output": "Pool created: 1024 bytes\\nVector allocated: 10 elements\\nUsed: 40, Free: 984, Allocations: 1",
+        "explanation": "Create memory pool and allocate vector with tracking"
+      }
+    ]
+  },
+  "languages": {
+    "cpp": {
+      "starterCode": "#include <iostream>\n#include <vector>\n#include <memory>\n#include <string>\n#include <cstddef>\n#include <new>\n\ntemplate<typename T>\nclass PoolAllocator {\npublic:\n    using value_type = T;\n    using pointer = T*;\n    using const_pointer = const T*;\n    using reference = T&;\n    using const_reference = const T&;\n    using size_type = std::size_t;\n    using difference_type = std::ptrdiff_t;\n    \n    template<typename U>\n    struct rebind {\n        using other = PoolAllocator<U>;\n    };\n    \nprivate:\n    static char* pool;\n    static size_t pool_size;\n    static size_t pool_used;\n    static size_t allocation_count;\n    \npublic:\n    // Your implementation here\n    PoolAllocator() noexcept = default;\n    \n    template<typename U>\n    PoolAllocator(const PoolAllocator<U>&) noexcept {}\n    \n    pointer allocate(size_type n) {\n        // Allocate from pool\n        return nullptr;\n    }\n    \n    void deallocate(pointer p, size_type n) noexcept {\n        // Return to pool (simplified - just track)\n    }\n    \n    static bool create_pool(size_t size) {\n        // Create memory pool\n        return false;\n    }\n    \n    static void get_stats(size_t& used, size_t& free, size_t& allocations) {\n        // Get memory statistics\n    }\n    \n    static void clear_pool() {\n        // Clear the pool\n    }\n};\n\n// Static member definitions\ntemplate<typename T>\nchar* PoolAllocator<T>::pool = nullptr;\n\ntemplate<typename T>\nsize_t PoolAllocator<T>::pool_size = 0;\n\ntemplate<typename T>\nsize_t PoolAllocator<T>::pool_used = 0;\n\ntemplate<typename T>\nsize_t PoolAllocator<T>::allocation_count = 0;\n\ntemplate<typename T, typename U>\nbool operator==(const PoolAllocator<T>&, const PoolAllocator<U>&) noexcept {\n    return true;\n}\n\ntemplate<typename T, typename U>\nbool operator!=(const PoolAllocator<T>&, const PoolAllocator<U>&) noexcept {\n    return false;\n}\n\nint main() {\n    std::string command;\n    \n    while (std::cin >> command) {\n        if (command == \"create\") {\n            size_t size;\n            std::cin >> size;\n            if (PoolAllocator<int>::create_pool(size)) {\n                std::cout << \"Pool created: \" << size << \" bytes\" << std::endl;\n            } else {\n                std::cout << \"Failed to create pool\" << std::endl;\n            }\n        }\n        else if (command == \"allocate\") {\n            std::string container_type;\n            int count;\n            std::cin >> container_type >> count;\n            \n            if (container_type == \"vector\") {\n                std::vector<int, PoolAllocator<int>> vec;\n                vec.reserve(count);\n                for (int i = 0; i < count; ++i) {\n                    vec.push_back(i);\n                }\n                std::cout << \"Vector allocated: \" << count << \" elements\" << std::endl;\n            }\n        }\n        else if (command == \"stats\") {\n            size_t used, free, allocations;\n            PoolAllocator<int>::get_stats(used, free, allocations);\n            std::cout << \"Used: \" << used << \", Free: \" << free \n                      << \", Allocations: \" << allocations << std::endl;\n        }\n        else if (command == \"clear\") {\n            PoolAllocator<int>::clear_pool();\n            std::cout << \"Pool cleared\" << std::endl;\n        }\n    }\n    \n    return 0;\n}",
+      "solutionCode": "#include <iostream>\n#include <vector>\n#include <memory>\n#include <string>\n#include <cstddef>\n#include <new>\n#include <algorithm>\n\ntemplate<typename T>\nclass PoolAllocator {\npublic:\n    using value_type = T;\n    using pointer = T*;\n    using const_pointer = const T*;\n    using reference = T&;\n    using const_reference = const T&;\n    using size_type = std::size_t;\n    using difference_type = std::ptrdiff_t;\n    \n    template<typename U>\n    struct rebind {\n        using other = PoolAllocator<U>;\n    };\n    \nprivate:\n    static char* pool;\n    static size_t pool_size;\n    static size_t pool_used;\n    static size_t allocation_count;\n    \npublic:\n    PoolAllocator() noexcept = default;\n    \n    template<typename U>\n    PoolAllocator(const PoolAllocator<U>&) noexcept {}\n    \n    pointer allocate(size_type n) {\n        size_t bytes_needed = n * sizeof(T);\n        \n        if (!pool || pool_used + bytes_needed > pool_size) {\n            throw std::bad_alloc();\n        }\n        \n        pointer result = reinterpret_cast<pointer>(pool + pool_used);\n        pool_used += bytes_needed;\n        allocation_count++;\n        \n        return result;\n    }\n    \n    void deallocate(pointer p, size_type n) noexcept {\n        // Simple pool allocator - no individual deallocation\n        // In a real implementation, you might maintain a free list\n    }\n    \n    static bool create_pool(size_t size) {\n        if (pool) {\n            delete[] pool;\n        }\n        \n        try {\n            pool = new char[size];\n            pool_size = size;\n            pool_used = 0;\n            allocation_count = 0;\n            return true;\n        } catch (const std::bad_alloc&) {\n            pool = nullptr;\n            pool_size = 0;\n            return false;\n        }\n    }\n    \n    static void get_stats(size_t& used, size_t& free, size_t& allocations) {\n        used = pool_used;\n        free = pool ? pool_size - pool_used : 0;\n        allocations = allocation_count;\n    }\n    \n    static void clear_pool() {\n        if (pool) {\n            delete[] pool;\n            pool = nullptr;\n            pool_size = 0;\n            pool_used = 0;\n            allocation_count = 0;\n        }\n    }\n    \n    template<typename U, typename... Args>\n    void construct(U* p, Args&&... args) {\n        new(p) U(std::forward<Args>(args)...);\n    }\n    \n    template<typename U>\n    void destroy(U* p) {\n        p->~U();\n    }\n};\n\n// Static member definitions\ntemplate<typename T>\nchar* PoolAllocator<T>::pool = nullptr;\n\ntemplate<typename T>\nsize_t PoolAllocator<T>::pool_size = 0;\n\ntemplate<typename T>\nsize_t PoolAllocator<T>::pool_used = 0;\n\ntemplate<typename T>\nsize_t PoolAllocator<T>::allocation_count = 0;\n\ntemplate<typename T, typename U>\nbool operator==(const PoolAllocator<T>&, const PoolAllocator<U>&) noexcept {\n    return true;\n}\n\ntemplate<typename T, typename U>\nbool operator!=(const PoolAllocator<T>&, const PoolAllocator<U>&) noexcept {\n    return false;\n}\n\nint main() {\n    std::string command;\n    \n    while (std::cin >> command) {\n        if (command == \"create\") {\n            size_t size;\n            std::cin >> size;\n            if (PoolAllocator<int>::create_pool(size)) {\n                std::cout << \"Pool created: \" << size << \" bytes\" << std::endl;\n            } else {\n                std::cout << \"Failed to create pool\" << std::endl;\n            }\n        }\n        else if (command == \"allocate\") {\n            std::string container_type;\n            int count;\n            std::cin >> container_type >> count;\n            \n            if (container_type == \"vector\") {\n                try {\n                    std::vector<int, PoolAllocator<int>> vec;\n                    vec.reserve(count);\n                    for (int i = 0; i < count; ++i) {\n                        vec.push_back(i);\n                    }\n                    std::cout << \"Vector allocated: \" << count << \" elements\" << std::endl;\n                } catch (const std::bad_alloc&) {\n                    std::cout << \"Allocation failed: insufficient pool memory\" << std::endl;\n                }\n            }\n        }\n        else if (command == \"stats\") {\n            size_t used, free, allocations;\n            PoolAllocator<int>::get_stats(used, free, allocations);\n            std::cout << \"Used: \" << used << \", Free: \" << free \n                      << \", Allocations: \" << allocations << std::endl;\n        }\n        else if (command == \"clear\") {\n            PoolAllocator<int>::clear_pool();\n            std::cout << \"Pool cleared\" << std::endl;\n        }\n    }\n    \n    return 0;\n}",
+      "hints": [
+        "STL allocators need value_type and rebind template",
+        "Track pool usage with static members",
+        "Use placement new for construct() method",
+        "Handle alignment requirements for different types"
+      ],
+      "judge0Id": 76,
+      "compilerType": "judge0"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-pool-creation",
+      "input": "create 1024\\nstats",
+      "output": "Pool created: 1024 bytes\\nUsed: 0, Free: 1024, Allocations: 0",
+      "points": 3,
+      "isHidden": false,
+      "timeout": 5000
+    },
+    {
+      "id": "test-vector-allocation",
+      "input": "create 1024\\nallocate vector 10\\nstats",
+      "output": "Pool created: 1024 bytes\\nVector allocated: 10 elements\\nUsed: 40, Free: 984, Allocations: 1",
+      "points": 5,
+      "isHidden": false,
+      "timeout": 5000
+    },
+    {
+      "id": "test-pool-clear",
+      "input": "create 512\\nallocate vector 5\\nclear\\nstats",
+      "output": "Pool created: 512 bytes\\nVector allocated: 5 elements\\nPool cleared\\nUsed: 0, Free: 0, Allocations: 0",
+      "points": 2,
+      "isHidden": true,
+      "timeout": 5000
+    }
+  ],
+  "editorial": {
+    "approach": "Custom allocators provide control over memory management, enabling optimizations like pool allocation for reduced fragmentation and improved performance in specific use cases.",
+    "complexity": {
+      "time": "O(1) for allocation/deallocation from pool",
+      "space": "O(pool_size) for the memory pool"
+    },
+    "keyPoints": [
+      "STL-compatible allocator interface with required typedefs",
+      "Memory pool for efficient bulk allocation",
+      "Static members for shared pool state",
+      "Exception safety with proper resource cleanup"
+    ]
+  }
+}

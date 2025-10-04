@@ -1,0 +1,81 @@
+{
+  "id": "py-metaclass-orm",
+  "metadata": {
+    "title": "Simple ORM with Metaclasses",
+    "description": "Build a lightweight ORM using Python metaclasses for automatic table mapping and query generation.\n\n## Learning Objectives\n- Python metaclasses and class creation\n- Dynamic attribute management\n- SQL query generation and execution\n- Object-relational mapping concepts",
+    "difficulty": "hard",
+    "points": 3,
+    "timeLimit": 25,
+    "tags": ["python", "metaclasses", "orm", "sql", "database"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-05T11:20:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["python"]
+  },
+  "problem": {
+    "statement": "Create a simple ORM using metaclasses that can define models, create tables, and perform basic CRUD operations on an in-memory SQLite database.",
+    "inputFormat": "Commands: 'create_table ModelName', 'insert field1=value1 field2=value2', 'select field=value', 'count'",
+    "outputFormat": "For operations: success message or query results",
+    "constraints": "- Use metaclasses for model definition\n- Support string and integer fields\n- Generate SQL automatically",
+    "examples": [
+      {
+        "input": "create_table User\\ninsert name=Alice age=25\\nselect name=Alice",
+        "output": "Table User created\\nInserted record\\nAlice, 25",
+        "explanation": "Create User table, insert Alice record, select and display"
+      }
+    ]
+  },
+  "languages": {
+    "python": {
+      "starterCode": "import sqlite3\nfrom typing import Dict, Any, List\n\nclass Field:\n    def __init__(self, field_type: str, primary_key: bool = False):\n        self.field_type = field_type\n        self.primary_key = primary_key\n        self.name = None\n    \n    def __set_name__(self, owner, name):\n        self.name = name\n\nclass ModelMeta(type):\n    \"\"\"Metaclass for ORM models\"\"\"\n    def __new__(mcs, name, bases, attrs):\n        # Your implementation here\n        return super().__new__(mcs, name, bases, attrs)\n\nclass Model(metaclass=ModelMeta):\n    \"\"\"Base model class\"\"\"\n    \n    def __init__(self, **kwargs):\n        # Your implementation here\n        pass\n    \n    @classmethod\n    def create_table(cls):\n        \"\"\"Create table in database\"\"\"\n        # Your implementation here\n        pass\n    \n    def save(self):\n        \"\"\"Save instance to database\"\"\"\n        # Your implementation here\n        pass\n    \n    @classmethod\n    def select(cls, **conditions):\n        \"\"\"Select records from database\"\"\"\n        # Your implementation here\n        pass\n    \n    @classmethod\n    def count(cls):\n        \"\"\"Count records in table\"\"\"\n        # Your implementation here\n        pass\n\n# Global database connection\ndb = sqlite3.connect(':memory:')\ndb.row_factory = sqlite3.Row\n\n# Define User model\nclass User(Model):\n    id = Field('INTEGER', primary_key=True)\n    name = Field('TEXT')\n    age = Field('INTEGER')\n\ndef main():\n    import sys\n    lines = sys.stdin.read().strip().split('\\n')\n    \n    for line in lines:\n        parts = line.split()\n        command = parts[0]\n        \n        if command == 'create_table':\n            model_name = parts[1]\n            if model_name == 'User':\n                User.create_table()\n                print(f\"Table {model_name} created\")\n        \n        elif command == 'insert':\n            # Parse field=value pairs\n            data = {}\n            for part in parts[1:]:\n                key, value = part.split('=')\n                try:\n                    data[key] = int(value)\n                except ValueError:\n                    data[key] = value\n            \n            user = User(**data)\n            user.save()\n            print(\"Inserted record\")\n        \n        elif command == 'select':\n            # Parse conditions\n            conditions = {}\n            for part in parts[1:]:\n                key, value = part.split('=')\n                try:\n                    conditions[key] = int(value)\n                except ValueError:\n                    conditions[key] = value\n            \n            results = User.select(**conditions)\n            for result in results:\n                print(f\"{result.name}, {result.age}\")\n        \n        elif command == 'count':\n            count = User.count()\n            print(count)\n\nif __name__ == '__main__':\n    main()",
+      "solutionCode": "import sqlite3\nfrom typing import Dict, Any, List\n\nclass Field:\n    def __init__(self, field_type: str, primary_key: bool = False):\n        self.field_type = field_type\n        self.primary_key = primary_key\n        self.name = None\n    \n    def __set_name__(self, owner, name):\n        self.name = name\n\nclass ModelMeta(type):\n    \"\"\"Metaclass for ORM models\"\"\"\n    def __new__(mcs, name, bases, attrs):\n        # Skip processing for base Model class\n        if name == 'Model':\n            return super().__new__(mcs, name, bases, attrs)\n        \n        # Extract fields from class attributes\n        fields = {}\n        for key, value in attrs.items():\n            if isinstance(value, Field):\n                fields[key] = value\n                value.name = key\n        \n        # Store fields in class\n        attrs['_fields'] = fields\n        attrs['_table_name'] = name.lower()\n        \n        return super().__new__(mcs, name, bases, attrs)\n\nclass Model(metaclass=ModelMeta):\n    \"\"\"Base model class\"\"\"\n    \n    def __init__(self, **kwargs):\n        for field_name, field in self._fields.items():\n            setattr(self, field_name, kwargs.get(field_name))\n    \n    @classmethod\n    def create_table(cls):\n        \"\"\"Create table in database\"\"\"\n        columns = []\n        for field_name, field in cls._fields.items():\n            column_def = f\"{field_name} {field.field_type}\"\n            if field.primary_key:\n                column_def += \" PRIMARY KEY AUTOINCREMENT\"\n            columns.append(column_def)\n        \n        sql = f\"CREATE TABLE IF NOT EXISTS {cls._table_name} ({', '.join(columns)})\"\n        db.execute(sql)\n        db.commit()\n    \n    def save(self):\n        \"\"\"Save instance to database\"\"\"\n        # Get non-primary key fields for insert\n        insert_fields = []\n        values = []\n        placeholders = []\n        \n        for field_name, field in self._fields.items():\n            if not field.primary_key and hasattr(self, field_name):\n                value = getattr(self, field_name)\n                if value is not None:\n                    insert_fields.append(field_name)\n                    values.append(value)\n                    placeholders.append('?')\n        \n        if insert_fields:\n            sql = f\"INSERT INTO {self._table_name} ({', '.join(insert_fields)}) VALUES ({', '.join(placeholders)})\"\n            db.execute(sql, values)\n            db.commit()\n    \n    @classmethod\n    def select(cls, **conditions):\n        \"\"\"Select records from database\"\"\"\n        sql = f\"SELECT * FROM {cls._table_name}\"\n        values = []\n        \n        if conditions:\n            where_clauses = []\n            for field, value in conditions.items():\n                where_clauses.append(f\"{field} = ?\")\n                values.append(value)\n            sql += f\" WHERE {' AND '.join(where_clauses)}\"\n        \n        cursor = db.execute(sql, values)\n        results = []\n        \n        for row in cursor.fetchall():\n            instance = cls()\n            for field_name in cls._fields.keys():\n                if field_name in row.keys():\n                    setattr(instance, field_name, row[field_name])\n            results.append(instance)\n        \n        return results\n    \n    @classmethod\n    def count(cls):\n        \"\"\"Count records in table\"\"\"\n        cursor = db.execute(f\"SELECT COUNT(*) FROM {cls._table_name}\")\n        return cursor.fetchone()[0]\n\n# Global database connection\ndb = sqlite3.connect(':memory:')\ndb.row_factory = sqlite3.Row\n\n# Define User model\nclass User(Model):\n    id = Field('INTEGER', primary_key=True)\n    name = Field('TEXT')\n    age = Field('INTEGER')\n\ndef main():\n    import sys\n    lines = sys.stdin.read().strip().split('\\n')\n    \n    for line in lines:\n        parts = line.split()\n        command = parts[0]\n        \n        if command == 'create_table':\n            model_name = parts[1]\n            if model_name == 'User':\n                User.create_table()\n                print(f\"Table {model_name} created\")\n        \n        elif command == 'insert':\n            # Parse field=value pairs\n            data = {}\n            for part in parts[1:]:\n                key, value = part.split('=')\n                try:\n                    data[key] = int(value)\n                except ValueError:\n                    data[key] = value\n            \n            user = User(**data)\n            user.save()\n            print(\"Inserted record\")\n        \n        elif command == 'select':\n            # Parse conditions\n            conditions = {}\n            for part in parts[1:]:\n                key, value = part.split('=')\n                try:\n                    conditions[key] = int(value)\n                except ValueError:\n                    conditions[key] = value\n            \n            results = User.select(**conditions)\n            for result in results:\n                print(f\"{result.name}, {result.age}\")\n        \n        elif command == 'count':\n            count = User.count()\n            print(count)\n\nif __name__ == '__main__':\n    main()",
+      "hints": [
+        "Use __new__ method in metaclass to process class creation",
+        "Store field definitions in class attributes during metaclass processing",
+        "Generate SQL dynamically based on field definitions",
+        "Use sqlite3.Row for convenient column access"
+      ],
+      "judge0Id": 92,
+      "compilerType": "judge0"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-basic-orm",
+      "input": "create_table User\\ninsert name=Alice age=25\\nselect name=Alice",
+      "output": "Table User created\\nInserted record\\nAlice, 25",
+      "points": 5,
+      "isHidden": false,
+      "timeout": 5000
+    },
+    {
+      "id": "test-multiple-records",
+      "input": "create_table User\\ninsert name=Bob age=30\\ninsert name=Charlie age=35\\ncount",
+      "output": "Table User created\\nInserted record\\nInserted record\\n2",
+      "points": 3,
+      "isHidden": false,
+      "timeout": 5000
+    },
+    {
+      "id": "test-select-all",
+      "input": "create_table User\\ninsert name=Dave age=40\\nselect",
+      "output": "Table User created\\nInserted record\\nDave, 40",
+      "points": 2,
+      "isHidden": true,
+      "timeout": 5000
+    }
+  ],
+  "editorial": {
+    "approach": "Metaclass-powered ORM automatically processes class definitions to create database mappings, generate SQL queries, and provide object-relational functionality.",
+    "complexity": {
+      "time": "O(1) for single record operations, O(n) for queries",
+      "space": "O(n) where n is number of records"
+    },
+    "keyPoints": [
+      "Metaclass __new__ method for automatic class processing",
+      "Field descriptor pattern for column definitions",
+      "Dynamic SQL generation based on model structure",
+      "Object-relational mapping between Python objects and database records"
+    ]
+  }
+}

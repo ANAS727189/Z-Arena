@@ -2,7 +2,14 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Z-Challenge Multi-Language Challenge Schema",
   "type": "object",
-  "required": ["id", "metadata", "problem", "languages", "testCases", "editorial"],
+  "required": [
+    "id",
+    "metadata",
+    "problem",
+    "languages",
+    "testCases",
+    "editorial"
+  ],
   "properties": {
     "id": {
       "type": "string",
@@ -13,7 +20,7 @@
       "type": "object",
       "required": [
         "title",
-        "description", 
+        "description",
         "difficulty",
         "points",
         "timeLimit",
@@ -47,7 +54,16 @@
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["z--", "cpp", "c", "java", "python", "javascript", "rust", "go"]
+            "enum": [
+              "z--",
+              "cpp",
+              "c",
+              "java",
+              "python",
+              "javascript",
+              "rust",
+              "go"
+            ]
           },
           "minItems": 1
         }
@@ -55,7 +71,13 @@
     },
     "problem": {
       "type": "object",
-      "required": ["statement", "inputFormat", "outputFormat", "constraints", "examples"],
+      "required": [
+        "statement",
+        "inputFormat",
+        "outputFormat",
+        "constraints",
+        "examples"
+      ],
       "properties": {
         "statement": { "type": "string" },
         "inputFormat": { "type": "string" },
@@ -80,7 +102,13 @@
       "patternProperties": {
         "^(z--|cpp|c|java|python|javascript|rust|go)$": {
           "type": "object",
-          "required": ["starterCode", "solutionCode", "hints", "judge0Id", "compilerType"],
+          "required": [
+            "starterCode",
+            "solutionCode",
+            "hints",
+            "judge0Id",
+            "compilerType"
+          ],
           "properties": {
             "starterCode": { "type": "string" },
             "solutionCode": { "type": "string" },
@@ -88,7 +116,7 @@
               "type": "array",
               "items": { "type": "string" }
             },
-            "judge0Id": { 
+            "judge0Id": {
               "type": ["integer", "null"],
               "description": "Judge0 language ID, null for Z--"
             },

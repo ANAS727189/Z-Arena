@@ -1,0 +1,73 @@
+{
+  "id": "py-advanced-descriptors",
+  "metadata": {
+    "title": "Python Advanced Descriptors and Property System",
+    "description": "Implement advanced Python descriptors for data validation, caching, and attribute access control.\n\n## Learning Objectives\n- Understanding Python descriptor protocol\n- Implementing custom property-like behavior\n- Data validation and transformation\n- Attribute access interception",
+    "difficulty": "hard",
+    "points": 3,
+    "timeLimit": 25,
+    "tags": ["python", "descriptors", "__get__", "__set__", "validation"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-05T12:05:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["python"]
+  },
+  "problem": {
+    "statement": "Create a validation framework using Python descriptors that provides type checking, range validation, and automatic value transformation.",
+    "inputFormat": "Class definitions and attribute access operations",
+    "outputFormat": "Validation results and transformed values",
+    "constraints": "- Implement __get__, __set__, and __delete__ methods\n- Provide comprehensive validation\n- Support value transformation\n- Handle edge cases gracefully",
+    "examples": [
+      {
+        "input": "user.age = 25\\nuser.email = 'test@example.com'\\nprint(user.age, user.email)",
+        "output": "25 test@example.com",
+        "explanation": "Valid values pass validation and are stored correctly"
+      }
+    ]
+  },
+  "languages": {
+    "python": {
+      "starterCode": "import re\nfrom typing import Any, Optional, Callable\n\nclass ValidatedDescriptor:\n    \"\"\"Base descriptor class for attribute validation\"\"\"\n    \n    def __init__(self, name: str = None):\n        self.name = name\n        \n    def __set_name__(self, owner, name):\n        self.name = name\n        \n    def __get__(self, obj, objtype=None):\n        # Your implementation here\n        pass\n        \n    def __set__(self, obj, value):\n        # Your implementation here\n        pass\n        \n    def __delete__(self, obj):\n        # Your implementation here\n        pass\n\nclass TypedDescriptor(ValidatedDescriptor):\n    \"\"\"Descriptor for type validation\"\"\"\n    \n    def __init__(self, expected_type, name: str = None):\n        super().__init__(name)\n        self.expected_type = expected_type\n        \n    def validate(self, value):\n        # Implement type validation\n        pass\n\nclass RangeDescriptor(ValidatedDescriptor):\n    \"\"\"Descriptor for numeric range validation\"\"\"\n    \n    def __init__(self, min_val=None, max_val=None, name: str = None):\n        super().__init__(name)\n        self.min_val = min_val\n        self.max_val = max_val\n        \n    def validate(self, value):\n        # Implement range validation\n        pass\n\nclass EmailDescriptor(ValidatedDescriptor):\n    \"\"\"Descriptor for email validation with transformation\"\"\"\n    \n    def __init__(self, name: str = None):\n        super().__init__(name)\n        self.email_pattern = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$')\n        \n    def validate(self, value):\n        # Implement email validation\n        pass\n        \n    def transform(self, value):\n        # Transform email (e.g., lowercase)\n        return value.lower().strip()\n\n# Test classes\nclass User:\n    age = RangeDescriptor(0, 150)\n    email = EmailDescriptor()\n    name = TypedDescriptor(str)\n    \n    def __init__(self, name: str, age: int, email: str):\n        self.name = name\n        self.age = age\n        self.email = email\n        \n    def __repr__(self):\n        return f\"User(name='{self.name}', age={self.age}, email='{self.email}')\"\n\n# Test the implementation\nif __name__ == \"__main__\":\n    try:\n        user = User(\"Alice\", 25, \"ALICE@EXAMPLE.COM\")\n        print(f\"Created user: {user}\")\n        \n        # Test valid operations\n        user.age = 30\n        print(f\"Updated age: {user.age}\")\n        \n        # Test transformations\n        user.email = \"  NEW.EMAIL@DOMAIN.COM  \"\n        print(f\"Transformed email: {user.email}\")\n        \n        # Test validation failures\n        try:\n            user.age = -5\n        except ValueError as e:\n            print(f\"Age validation error: {e}\")\n            \n        try:\n            user.email = \"invalid-email\"\n        except ValueError as e:\n            print(f\"Email validation error: {e}\")\n            \n        try:\n            user.name = 123\n        except TypeError as e:\n            print(f\"Name type error: {e}\")\n            \n    except Exception as e:\n        print(f\"Error: {e}\")",
+      "solutionCode": "import re\nfrom typing import Any, Optional, Callable\n\nclass ValidatedDescriptor:\n    \"\"\"Base descriptor class for attribute validation\"\"\"\n    \n    def __init__(self, name: str = None):\n        self.name = name\n        \n    def __set_name__(self, owner, name):\n        self.name = name\n        self.private_name = f'_{name}'\n        \n    def __get__(self, obj, objtype=None):\n        if obj is None:\n            return self\n        return getattr(obj, self.private_name, None)\n        \n    def __set__(self, obj, value):\n        # Validate and potentially transform the value\n        validated_value = self.validate(value)\n        if hasattr(self, 'transform'):\n            validated_value = self.transform(validated_value)\n        setattr(obj, self.private_name, validated_value)\n        \n    def __delete__(self, obj):\n        if hasattr(obj, self.private_name):\n            delattr(obj, self.private_name)\n        \n    def validate(self, value):\n        \"\"\"Override in subclasses for specific validation\"\"\"\n        return value\n\nclass TypedDescriptor(ValidatedDescriptor):\n    \"\"\"Descriptor for type validation\"\"\"\n    \n    def __init__(self, expected_type, name: str = None):\n        super().__init__(name)\n        self.expected_type = expected_type\n        \n    def validate(self, value):\n        if not isinstance(value, self.expected_type):\n            raise TypeError(f\"{self.name} must be of type {self.expected_type.__name__}, got {type(value).__name__}\")\n        return value\n\nclass RangeDescriptor(ValidatedDescriptor):\n    \"\"\"Descriptor for numeric range validation\"\"\"\n    \n    def __init__(self, min_val=None, max_val=None, name: str = None):\n        super().__init__(name)\n        self.min_val = min_val\n        self.max_val = max_val\n        \n    def validate(self, value):\n        if not isinstance(value, (int, float)):\n            raise TypeError(f\"{self.name} must be a number, got {type(value).__name__}\")\n            \n        if self.min_val is not None and value < self.min_val:\n            raise ValueError(f\"{self.name} must be >= {self.min_val}, got {value}\")\n            \n        if self.max_val is not None and value > self.max_val:\n            raise ValueError(f\"{self.name} must be <= {self.max_val}, got {value}\")\n            \n        return value\n\nclass EmailDescriptor(ValidatedDescriptor):\n    \"\"\"Descriptor for email validation with transformation\"\"\"\n    \n    def __init__(self, name: str = None):\n        super().__init__(name)\n        self.email_pattern = re.compile(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$')\n        \n    def validate(self, value):\n        if not isinstance(value, str):\n            raise TypeError(f\"Email must be a string, got {type(value).__name__}\")\n            \n        # Transform first, then validate\n        transformed = self.transform(value)\n        \n        if not self.email_pattern.match(transformed):\n            raise ValueError(f\"Invalid email format: {value}\")\n            \n        return transformed\n        \n    def transform(self, value):\n        # Transform email (e.g., lowercase and strip)\n        return value.lower().strip()\n\nclass CachedProperty(ValidatedDescriptor):\n    \"\"\"Descriptor that caches computed values\"\"\"\n    \n    def __init__(self, func):\n        self.func = func\n        self.name = func.__name__\n        self.private_name = f'_cached_{self.name}'\n        \n    def __get__(self, obj, objtype=None):\n        if obj is None:\n            return self\n            \n        # Check if cached value exists\n        if hasattr(obj, self.private_name):\n            return getattr(obj, self.private_name)\n            \n        # Compute and cache the value\n        value = self.func(obj)\n        setattr(obj, self.private_name, value)\n        return value\n        \n    def __set__(self, obj, value):\n        setattr(obj, self.private_name, value)\n        \n    def __delete__(self, obj):\n        if hasattr(obj, self.private_name):\n            delattr(obj, self.private_name)\n\n# Test classes\nclass User:\n    age = RangeDescriptor(0, 150)\n    email = EmailDescriptor()\n    name = TypedDescriptor(str)\n    \n    def __init__(self, name: str, age: int, email: str):\n        self.name = name\n        self.age = age\n        self.email = email\n        \n    @CachedProperty\n    def display_name(self):\n        \"\"\"Expensive computation that gets cached\"\"\"\n        print(\"Computing display name...\")\n        return f\"{self.name.title()} ({self.age} years)\"\n        \n    def __repr__(self):\n        return f\"User(name='{self.name}', age={self.age}, email='{self.email}')\"\n\n# Test the implementation\nif __name__ == \"__main__\":\n    try:\n        user = User(\"Alice\", 25, \"ALICE@EXAMPLE.COM\")\n        print(f\"Created user: {user}\")\n        \n        # Test valid operations\n        user.age = 30\n        print(f\"Updated age: {user.age}\")\n        \n        # Test transformations\n        user.email = \"  NEW.EMAIL@DOMAIN.COM  \"\n        print(f\"Transformed email: {user.email}\")\n        \n        # Test cached property\n        print(f\"Display name (first access): {user.display_name}\")\n        print(f\"Display name (cached): {user.display_name}\")\n        \n        # Test validation failures\n        try:\n            user.age = -5\n        except ValueError as e:\n            print(f\"Age validation error: {e}\")\n            \n        try:\n            user.email = \"invalid-email\"\n        except ValueError as e:\n            print(f\"Email validation error: {e}\")\n            \n        try:\n            user.name = 123\n        except TypeError as e:\n            print(f\"Name type error: {e}\")\n            \n    except Exception as e:\n        print(f\"Error: {e}\")",
+      "hints": [
+        "Use __set_name__ to automatically capture attribute names",
+        "Store values in private attributes to avoid recursion",
+        "Implement validation before transformation in descriptors",
+        "Use isinstance() for robust type checking"
+      ],
+      "judge0Id": 71,
+      "compilerType": "judge0"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-basic-validation",
+      "input": "",
+      "output": "Created user: User(name='Alice', age=25, email='alice@example.com')\\nUpdated age: 30\\nTransformed email: new.email@domain.com\\nComputing display name...\\nDisplay name (first access): Alice (30 years)\\nDisplay name (cached): Alice (30 years)\\nAge validation error: age must be >= 0, got -5\\nEmail validation error: Invalid email format: invalid-email\\nName type error: name must be of type str, got int",
+      "points": 8,
+      "isHidden": false,
+      "timeout": 5000
+    },
+    {
+      "id": "test-descriptor-edge-cases",
+      "input": "",
+      "output": "Created user: User(name='Alice', age=25, email='alice@example.com')\\nUpdated age: 30",
+      "points": 2,
+      "isHidden": true,
+      "timeout": 5000
+    }
+  ],
+  "editorial": {
+    "approach": "Python descriptors provide powerful attribute access control through the descriptor protocol (__get__, __set__, __delete__), enabling data validation, transformation, and caching at the attribute level.",
+    "complexity": {
+      "time": "O(1) for descriptor operations, O(k) for validation where k is validation complexity",
+      "space": "O(1) per descriptor instance"
+    },
+    "keyPoints": [
+      "Descriptor protocol for custom attribute behavior",
+      "__set_name__ for automatic attribute name discovery",
+      "Private attribute storage to prevent recursion",
+      "Validation and transformation pipeline in descriptors"
+    ]
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "id": "py-decorator-cache",
+  "metadata": {
+    "title": "Advanced Decorator with Caching",
+    "description": "Build a sophisticated caching decorator with TTL, size limits, and statistics tracking.\n\n## Learning Objectives\n- Python decorators and functools\n- Cache implementation with expiration\n- Memory management and LRU eviction\n- Decorator composition and configuration",
+    "difficulty": "medium",
+    "points": 2,
+    "timeLimit": 20,
+    "tags": ["python", "decorators", "caching", "functools", "memory-management"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-05T11:10:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["python"]
+  },
+  "problem": {
+    "statement": "Create a @cache decorator that supports TTL (time-to-live), maximum cache size with LRU eviction, and provides cache statistics. Test with function calls and cache operations.",
+    "inputFormat": "Commands: 'call func_name arg', 'stats', 'clear'",
+    "outputFormat": "For call: function result. For stats: hits/misses/size. For clear: confirmation",
+    "constraints": "- Cache size limit: 3 items\n- TTL: 2 seconds\n- LRU eviction when full",
+    "examples": [
+      {
+        "input": "call fibonacci 5\\ncall fibonacci 5\\nstats",
+        "output": "5\\n5\\nhits:1 misses:1 size:1",
+        "explanation": "First call misses cache, second hits. Stats show 1 hit, 1 miss, 1 cached item"
+      }
+    ]
+  },
+  "languages": {
+    "python": {
+      "starterCode": "import time\nimport functools\nfrom collections import OrderedDict\nfrom typing import Any, Callable, Optional\n\nclass CacheStats:\n    def __init__(self):\n        self.hits = 0\n        self.misses = 0\n    \n    def hit(self):\n        self.hits += 1\n    \n    def miss(self):\n        self.misses += 1\n    \n    def __str__(self):\n        return f\"hits:{self.hits} misses:{self.misses}\"\n\ndef cache(max_size: int = 128, ttl: int = 300):\n    \"\"\"Advanced caching decorator with TTL and size limits\"\"\"\n    def decorator(func: Callable) -> Callable:\n        # Your implementation here\n        pass\n    return decorator\n\n# Test functions\n@cache(max_size=3, ttl=2)\ndef fibonacci(n):\n    if n <= 1:\n        return n\n    return fibonacci(n-1) + fibonacci(n-2)\n\n@cache(max_size=3, ttl=2)\ndef factorial(n):\n    if n <= 1:\n        return 1\n    return n * factorial(n-1)\n\ndef main():\n    import sys\n    lines = sys.stdin.read().strip().split('\\n')\n    \n    for line in lines:\n        parts = line.split()\n        command = parts[0]\n        \n        if command == 'call':\n            func_name = parts[1]\n            arg = int(parts[2])\n            \n            if func_name == 'fibonacci':\n                result = fibonacci(arg)\n            elif func_name == 'factorial':\n                result = factorial(arg)\n            \n            print(result)\n        \n        elif command == 'stats':\n            # Print cache statistics\n            pass\n        \n        elif command == 'clear':\n            # Clear cache\n            pass\n\nif __name__ == '__main__':\n    main()",
+      "solutionCode": "import time\nimport functools\nfrom collections import OrderedDict\nfrom typing import Any, Callable, Optional\n\nclass CacheStats:\n    def __init__(self):\n        self.hits = 0\n        self.misses = 0\n    \n    def hit(self):\n        self.hits += 1\n    \n    def miss(self):\n        self.misses += 1\n    \n    def __str__(self):\n        return f\"hits:{self.hits} misses:{self.misses}\"\n\nclass CacheEntry:\n    def __init__(self, value: Any, timestamp: float):\n        self.value = value\n        self.timestamp = timestamp\n    \n    def is_expired(self, ttl: int) -> bool:\n        return time.time() - self.timestamp > ttl\n\ndef cache(max_size: int = 128, ttl: int = 300):\n    \"\"\"Advanced caching decorator with TTL and size limits\"\"\"\n    def decorator(func: Callable) -> Callable:\n        cache_dict = OrderedDict()\n        stats = CacheStats()\n        \n        @functools.wraps(func)\n        def wrapper(*args, **kwargs):\n            # Create cache key\n            key = str(args) + str(sorted(kwargs.items()))\n            current_time = time.time()\n            \n            # Check if key exists and is not expired\n            if key in cache_dict:\n                entry = cache_dict[key]\n                if not entry.is_expired(ttl):\n                    # Move to end (LRU)\n                    cache_dict.move_to_end(key)\n                    stats.hit()\n                    return entry.value\n                else:\n                    # Remove expired entry\n                    del cache_dict[key]\n            \n            # Cache miss - compute result\n            stats.miss()\n            result = func(*args, **kwargs)\n            \n            # Add to cache\n            if len(cache_dict) >= max_size:\n                # Remove least recently used\n                cache_dict.popitem(last=False)\n            \n            cache_dict[key] = CacheEntry(result, current_time)\n            return result\n        \n        # Add cache management methods\n        wrapper.cache_stats = stats\n        wrapper.cache_dict = cache_dict\n        \n        def clear_cache():\n            cache_dict.clear()\n            return \"cache cleared\"\n        \n        wrapper.clear_cache = clear_cache\n        \n        return wrapper\n    return decorator\n\n# Test functions\n@cache(max_size=3, ttl=2)\ndef fibonacci(n):\n    if n <= 1:\n        return n\n    return fibonacci(n-1) + fibonacci(n-2)\n\n@cache(max_size=3, ttl=2)\ndef factorial(n):\n    if n <= 1:\n        return 1\n    return n * factorial(n-1)\n\ndef main():\n    import sys\n    lines = sys.stdin.read().strip().split('\\n')\n    \n    for line in lines:\n        parts = line.split()\n        command = parts[0]\n        \n        if command == 'call':\n            func_name = parts[1]\n            arg = int(parts[2])\n            \n            if func_name == 'fibonacci':\n                result = fibonacci(arg)\n            elif func_name == 'factorial':\n                result = factorial(arg)\n            \n            print(result)\n        \n        elif command == 'stats':\n            # Print cache statistics for fibonacci (primary test function)\n            stats = fibonacci.cache_stats\n            size = len(fibonacci.cache_dict)\n            print(f\"{stats} size:{size}\")\n        \n        elif command == 'clear':\n            result = fibonacci.clear_cache()\n            factorial.clear_cache()\n            print(result)\n\nif __name__ == '__main__':\n    main()",
+      "hints": [
+        "Use OrderedDict for LRU implementation",
+        "Store timestamp with each cache entry for TTL",
+        "Use functools.wraps to preserve function metadata",
+        "Implement cache statistics as decorator attributes"
+      ],
+      "judge0Id": 92,
+      "compilerType": "judge0"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-basic-cache",
+      "input": "call fibonacci 5\\ncall fibonacci 5\\nstats",
+      "output": "5\\n5\\nhits:1 misses:1 size:1",
+      "points": 5,
+      "isHidden": false,
+      "timeout": 3000
+    },
+    {
+      "id": "test-different-functions",
+      "input": "call fibonacci 3\\ncall factorial 3\\nstats",
+      "output": "2\\n6\\nhits:0 misses:2 size:2",
+      "points": 3,
+      "isHidden": false,
+      "timeout": 3000
+    },
+    {
+      "id": "test-cache-clear",
+      "input": "call fibonacci 4\\nclear\\nstats",
+      "output": "3\\ncache cleared\\nhits:0 misses:1 size:0",
+      "points": 2,
+      "isHidden": true,
+      "timeout": 3000
+    }
+  ],
+  "editorial": {
+    "approach": "Advanced decorator implementation using OrderedDict for LRU functionality, timestamp-based TTL expiration, and comprehensive cache statistics tracking.",
+    "complexity": {
+      "time": "O(1) for cache operations, O(n) for function execution",
+      "space": "O(max_size) for cache storage"
+    },
+    "keyPoints": [
+      "OrderedDict for efficient LRU implementation",
+      "Timestamp-based TTL with automatic expiration",
+      "Decorator composition with configurable parameters",
+      "Cache statistics and management through function attributes"
+    ]
+  }
+}

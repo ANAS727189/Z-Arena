@@ -1,4 +1,3 @@
-// Cloudinary configuration
 const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
@@ -63,9 +62,7 @@ class CloudinaryService {
    * @returns Promise<CloudinaryUploadResponse>
    */
   async uploadImage(
-    file: File,
-    folder?: string,
-    transformation?: string
+    file: File
   ): Promise<CloudinaryUploadResponse> {
     if (!this.cloudName || !this.uploadPreset) {
       throw new Error('Cloudinary configuration is missing');
@@ -76,10 +73,10 @@ class CloudinaryService {
       throw new Error('Only image files are allowed');
     }
 
-    // Validate file size (max 10MB)
-    const maxSize = 10 * 1024 * 1024; // 10MB
+    // Validate file size (max 50MB)
+    const maxSize = 50 * 1024 * 1024; // 50MB
     if (file.size > maxSize) {
-      throw new Error('File size must be less than 10MB');
+      throw new Error('File size must be less than 50MB');
     }
 
     try {

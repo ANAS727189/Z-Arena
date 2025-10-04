@@ -1,0 +1,65 @@
+{
+  "id": "go-circuit-breaker",
+  "metadata": {
+    "title": "Circuit Breaker Pattern",
+    "description": "Implement a circuit breaker pattern for resilient service calls.\n\n## Learning Objectives\n- Resilience patterns in distributed systems\n- State machine implementation\n- Error rate calculation and thresholds\n- Service protection mechanisms",
+    "difficulty": "hard",
+    "points": 3,
+    "timeLimit": 25,
+    "tags": ["go", "circuit-breaker", "resilience", "state-machine", "distributed-systems"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-05T10:55:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["go"]
+  },
+  "problem": {
+    "statement": "Implement a circuit breaker that opens after 3 failures in 5 requests, stays open for 2 seconds, then goes to half-open. Test with a series of service calls.",
+    "inputFormat": "Series of 'call success/failure' commands",
+    "outputFormat": "For each call: 'success', 'failure', or 'blocked' (when circuit is open)",
+    "constraints": "- Failure threshold: 3 out of 5 requests\n- Timeout: 2 seconds\n- Track success/failure rates",
+    "examples": [
+      {
+        "input": "call failure\\ncall failure\\ncall failure\\ncall success",
+        "output": "failure\\nfailure\\nfailure\\nblocked",
+        "explanation": "After 3 failures, circuit opens and blocks calls"
+      }
+    ]
+  },
+  "languages": {
+    "go": {
+      "starterCode": "package main\n\nimport (\n\t\"fmt\"\n\t\"sync\"\n\t\"time\"\n)\n\ntype State int\n\nconst (\n\tClosed State = iota\n\tOpen\n\tHalfOpen\n)\n\ntype CircuitBreaker struct {\n\t// Your implementation here\n}\n\nfunc NewCircuitBreaker(failureThreshold int, windowSize int, timeout time.Duration) *CircuitBreaker {\n\t// Your implementation here\n\treturn nil\n}\n\nfunc (cb *CircuitBreaker) Call(serviceCall func() error) error {\n\t// Your implementation here\n\treturn nil\n}\n\nfunc main() {\n\tcb := NewCircuitBreaker(3, 5, 2*time.Second)\n\t\n\t// Read commands\n\tfor {\n\t\tvar command, result string\n\t\tn, _ := fmt.Scan(&command, &result)\n\t\tif n != 2 {\n\t\t\tbreak\n\t\t}\n\t\t\n\t\tif command == \"call\" {\n\t\t\tserviceCall := func() error {\n\t\t\t\tif result == \"failure\" {\n\t\t\t\t\treturn fmt.Errorf(\"service failed\")\n\t\t\t\t}\n\t\t\t\treturn nil\n\t\t\t}\n\t\t\t\n\t\t\terr := cb.Call(serviceCall)\n\t\t\tif err != nil {\n\t\t\t\tif err.Error() == \"circuit breaker is open\" {\n\t\t\t\t\tfmt.Println(\"blocked\")\n\t\t\t\t} else {\n\t\t\t\t\tfmt.Println(\"failure\")\n\t\t\t\t}\n\t\t\t} else {\n\t\t\t\tfmt.Println(\"success\")\n\t\t\t}\n\t\t}\n\t}\n}",
+      "solutionCode": "package main\n\nimport (\n\t\"fmt\"\n\t\"sync\"\n\t\"time\"\n)\n\ntype State int\n\nconst (\n\tClosed State = iota\n\tOpen\n\tHalfOpen\n)\n\ntype CircuitBreaker struct {\n\tmu               sync.Mutex\n\tstate            State\n\tfailureThreshold int\n\twindowSize       int\n\ttimeout          time.Duration\n\tlastFailureTime  time.Time\n\trequests         []bool // true for success, false for failure\n\trequestIndex     int\n}\n\nfunc NewCircuitBreaker(failureThreshold int, windowSize int, timeout time.Duration) *CircuitBreaker {\n\treturn &CircuitBreaker{\n\t\tstate:            Closed,\n\t\tfailureThreshold: failureThreshold,\n\t\twindowSize:       windowSize,\n\t\ttimeout:          timeout,\n\t\trequests:         make([]bool, windowSize),\n\t}\n}\n\nfunc (cb *CircuitBreaker) Call(serviceCall func() error) error {\n\tcb.mu.Lock()\n\tdefer cb.mu.Unlock()\n\t\n\t// Check if we should transition from Open to HalfOpen\n\tif cb.state == Open && time.Since(cb.lastFailureTime) >= cb.timeout {\n\t\tcb.state = HalfOpen\n\t}\n\t\n\t// Block calls if circuit is open\n\tif cb.state == Open {\n\t\treturn fmt.Errorf(\"circuit breaker is open\")\n\t}\n\t\n\t// Make the service call\n\terr := serviceCall()\n\tsuccess := err == nil\n\t\n\t// Record the result\n\tcb.requests[cb.requestIndex] = success\n\tcb.requestIndex = (cb.requestIndex + 1) % cb.windowSize\n\t\n\t// Count failures in current window\n\tfailures := 0\n\ttotalRequests := 0\n\tfor _, req := range cb.requests {\n\t\tif req || (!req && totalRequests < cb.windowSize) {\n\t\t\ttotalRequests++\n\t\t\tif !req {\n\t\t\t\tfailures++\n\t\t\t}\n\t\t}\n\t}\n\t\n\t// Transition logic\n\tif cb.state == HalfOpen {\n\t\tif success {\n\t\t\tcb.state = Closed\n\t\t} else {\n\t\t\tcb.state = Open\n\t\t\tcb.lastFailureTime = time.Now()\n\t\t}\n\t} else if cb.state == Closed {\n\t\tif totalRequests >= cb.windowSize && failures >= cb.failureThreshold {\n\t\t\tcb.state = Open\n\t\t\tcb.lastFailureTime = time.Now()\n\t\t}\n\t}\n\t\n\treturn err\n}\n\nfunc main() {\n\tcb := NewCircuitBreaker(3, 5, 2*time.Second)\n\t\n\t// Read commands\n\tfor {\n\t\tvar command, result string\n\t\tn, _ := fmt.Scan(&command, &result)\n\t\tif n != 2 {\n\t\t\tbreak\n\t\t}\n\t\t\n\t\tif command == \"call\" {\n\t\t\tserviceCall := func() error {\n\t\t\t\tif result == \"failure\" {\n\t\t\t\t\treturn fmt.Errorf(\"service failed\")\n\t\t\t\t}\n\t\t\t\treturn nil\n\t\t\t}\n\t\t\t\n\t\t\terr := cb.Call(serviceCall)\n\t\t\tif err != nil {\n\t\t\t\tif err.Error() == \"circuit breaker is open\" {\n\t\t\t\t\tfmt.Println(\"blocked\")\n\t\t\t\t} else {\n\t\t\t\t\tfmt.Println(\"failure\")\n\t\t\t\t}\n\t\t\t} else {\n\t\t\t\tfmt.Println(\"success\")\n\t\t\t}\n\t\t}\n\t}\n}",
+      "hints": [
+        "Track request history with circular buffer",
+        "Implement three states: Closed, Open, HalfOpen",
+        "Use timeout to transition from Open to HalfOpen",
+        "Count failures in sliding window"
+      ],
+      "judge0Id": 95,
+      "compilerType": "judge0"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-basic",
+      "input": "call failure\\ncall failure\\ncall failure\\ncall success",
+      "output": "failure\\nfailure\\nfailure\\nblocked",
+      "points": 5,
+      "isHidden": false,
+      "timeout": 3000
+    }
+  ],
+  "editorial": {
+    "approach": "Circuit breaker implements a state machine (Closed->Open->HalfOpen) to protect services from cascading failures by temporarily blocking calls when error rates exceed thresholds.",
+    "complexity": {
+      "time": "O(1) per call",
+      "space": "O(window_size) for request history"
+    },
+    "keyPoints": [
+      "Three-state state machine implementation",
+      "Sliding window for failure rate calculation",
+      "Time-based state transitions",
+      "Service protection through call blocking"
+    ]
+  }
+}

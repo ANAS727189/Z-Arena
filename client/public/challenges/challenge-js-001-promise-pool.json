@@ -1,0 +1,81 @@
+{
+  "id": "js-promise-pool",
+  "metadata": {
+    "title": "Promise Pool for Concurrent Execution",
+    "description": "Implement a promise pool that limits concurrent promise execution to prevent overwhelming system resources.\n\n## Learning Objectives\n- Promise concurrency control\n- Async/await patterns\n- Resource management\n- Queue-based execution",
+    "difficulty": "hard",
+    "points": 3,
+    "timeLimit": 25,
+    "tags": ["javascript", "promises", "concurrency", "async", "queue"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-05T10:30:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["javascript"]
+  },
+  "problem": {
+    "statement": "Create a PromisePool class that executes promises with a maximum concurrency limit. Process an array of tasks (represented as numbers indicating delay in milliseconds) and return results in order.",
+    "inputFormat": "First line: concurrency limit. Second line: space-separated task delays in milliseconds",
+    "outputFormat": "Results of all tasks in original order (each task returns its delay value)",
+    "constraints": "- Maximum 3 concurrent promises\n- Maintain result order\n- Handle promise rejections gracefully",
+    "examples": [
+      {
+        "input": "2\n100 200 300 150",
+        "output": "100 200 300 150",
+        "explanation": "Execute max 2 promises concurrently, return results in original order"
+      }
+    ]
+  },
+  "languages": {
+    "javascript": {
+      "starterCode": "class PromisePool {\n    constructor(concurrency) {\n        this.concurrency = concurrency;\n        // Your implementation here\n    }\n    \n    async execute(tasks) {\n        // Your implementation here\n        // tasks is an array of functions that return promises\n        return [];\n    }\n}\n\nfunction createTask(delay) {\n    return () => new Promise(resolve => {\n        setTimeout(() => resolve(delay), delay);\n    });\n}\n\nasync function main() {\n    const input = require('fs').readFileSync('/dev/stdin', 'utf8').trim().split('\\n');\n    const concurrency = parseInt(input[0]);\n    const delays = input[1].split(' ').map(Number);\n    \n    const tasks = delays.map(delay => createTask(delay));\n    const pool = new PromisePool(concurrency);\n    \n    const results = await pool.execute(tasks);\n    console.log(results.join(' '));\n}\n\nmain().catch(console.error);",
+      "solutionCode": "class PromisePool {\n    constructor(concurrency) {\n        this.concurrency = concurrency;\n        this.running = new Set();\n        this.queue = [];\n    }\n    \n    async execute(tasks) {\n        const results = new Array(tasks.length);\n        const promises = tasks.map((task, index) => this.runTask(task, index, results));\n        \n        await Promise.all(promises);\n        return results;\n    }\n    \n    async runTask(task, index, results) {\n        return new Promise((resolve, reject) => {\n            this.queue.push({ task, index, results, resolve, reject });\n            this.processQueue();\n        });\n    }\n    \n    async processQueue() {\n        if (this.running.size >= this.concurrency || this.queue.length === 0) {\n            return;\n        }\n        \n        const { task, index, results, resolve, reject } = this.queue.shift();\n        const promise = this.executeTask(task, index, results, resolve, reject);\n        \n        this.running.add(promise);\n        \n        try {\n            await promise;\n        } finally {\n            this.running.delete(promise);\n            this.processQueue();\n        }\n    }\n    \n    async executeTask(task, index, results, resolve, reject) {\n        try {\n            const result = await task();\n            results[index] = result;\n            resolve();\n        } catch (error) {\n            reject(error);\n        }\n    }\n}\n\nfunction createTask(delay) {\n    return () => new Promise(resolve => {\n        setTimeout(() => resolve(delay), delay);\n    });\n}\n\nasync function main() {\n    const input = require('fs').readFileSync('/dev/stdin', 'utf8').trim().split('\\n');\n    const concurrency = parseInt(input[0]);\n    const delays = input[1].split(' ').map(Number);\n    \n    const tasks = delays.map(delay => createTask(delay));\n    const pool = new PromisePool(concurrency);\n    \n    const results = await pool.execute(tasks);\n    console.log(results.join(' '));\n}\n\nmain().catch(console.error);",
+      "hints": [
+        "Use a queue to manage pending tasks",
+        "Track running promises with a Set",
+        "Maintain result order using array indices",
+        "Process queue recursively when tasks complete"
+      ],
+      "judge0Id": 93,
+      "compilerType": "judge0"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-basic",
+      "input": "2\n100 200 300 150",
+      "output": "100 200 300 150",
+      "points": 5,
+      "isHidden": false,
+      "timeout": 2000
+    },
+    {
+      "id": "test-single-concurrency",
+      "input": "1\n50 100 75",
+      "output": "50 100 75",
+      "points": 3,
+      "isHidden": false,
+      "timeout": 1000
+    },
+    {
+      "id": "test-high-concurrency",
+      "input": "5\n10 20 30 40 50",
+      "output": "10 20 30 40 50",
+      "points": 2,
+      "isHidden": true,
+      "timeout": 1000
+    }
+  ],
+  "editorial": {
+    "approach": "Promise pool manages concurrent execution by maintaining a queue of pending tasks and a set of running promises, ensuring the concurrency limit is never exceeded.",
+    "complexity": {
+      "time": "O(n) where n is number of tasks",
+      "space": "O(c) where c is concurrency limit"
+    },
+    "keyPoints": [
+      "Queue-based task management",
+      "Concurrency limiting with Set tracking",
+      "Result order preservation with array indices",
+      "Recursive queue processing on task completion"
+    ]
+  }
+}

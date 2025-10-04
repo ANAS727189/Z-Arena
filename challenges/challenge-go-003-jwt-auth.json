@@ -1,0 +1,86 @@
+{
+  "id": "go-jwt-auth",
+  "metadata": {
+    "title": "JWT Authentication System",
+    "description": "Implement a JWT-based authentication system with token generation and validation.\n\n## Learning Objectives\n- JWT token creation and parsing\n- Authentication middleware\n- Cryptographic operations\n- Security best practices",
+    "difficulty": "hard",
+    "points": 3,
+    "timeLimit": 30,
+    "tags": ["go", "jwt", "authentication", "security", "middleware"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-05T10:10:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["go"]
+  },
+  "problem": {
+    "statement": "Create a JWT authentication system that can generate tokens for users and validate them. Implement functions to create JWT tokens with user claims and verify their validity.",
+    "inputFormat": "Commands: 'generate username' or 'validate token'",
+    "outputFormat": "For generate: JWT token string. For validate: 'valid' or 'invalid'",
+    "constraints": "- Use HMAC-SHA256 for signing\n- Include username and expiry in claims\n- Tokens expire after 1 hour",
+    "examples": [
+      {
+        "input": "generate alice",
+        "output": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        "explanation": "Generate JWT token for user alice"
+      },
+      {
+        "input": "validate eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        "output": "valid",
+        "explanation": "Validate the provided JWT token"
+      }
+    ]
+  },
+  "languages": {
+    "go": {
+      "starterCode": "package main\n\nimport (\n\t\"crypto/hmac\"\n\t\"crypto/sha256\"\n\t\"encoding/base64\"\n\t\"encoding/json\"\n\t\"fmt\"\n\t\"strings\"\n\t\"time\"\n)\n\ntype Header struct {\n\tAlg string `json:\"alg\"`\n\tTyp string `json:\"typ\"`\n}\n\ntype Claims struct {\n\tUsername string `json:\"username\"`\n\tExp      int64  `json:\"exp\"`\n}\n\nconst secretKey = \"your-secret-key\"\n\nfunc generateToken(username string) string {\n\t// Your implementation here\n\treturn \"\"\n}\n\nfunc validateToken(token string) bool {\n\t// Your implementation here\n\treturn false\n}\n\nfunc main() {\n\tvar command, input string\n\tfmt.Scan(&command, &input)\n\t\n\tif command == \"generate\" {\n\t\ttoken := generateToken(input)\n\t\tfmt.Println(token)\n\t} else if command == \"validate\" {\n\t\tif validateToken(input) {\n\t\t\tfmt.Println(\"valid\")\n\t\t} else {\n\t\t\tfmt.Println(\"invalid\")\n\t\t}\n\t}\n}",
+      "solutionCode": "package main\n\nimport (\n\t\"crypto/hmac\"\n\t\"crypto/sha256\"\n\t\"encoding/base64\"\n\t\"encoding/json\"\n\t\"fmt\"\n\t\"strings\"\n\t\"time\"\n)\n\ntype Header struct {\n\tAlg string `json:\"alg\"`\n\tTyp string `json:\"typ\"`\n}\n\ntype Claims struct {\n\tUsername string `json:\"username\"`\n\tExp      int64  `json:\"exp\"`\n}\n\nconst secretKey = \"your-secret-key\"\n\nfunc base64URLEncode(data []byte) string {\n\treturn strings.TrimRight(base64.URLEncoding.EncodeToString(data), \"=\")\n}\n\nfunc base64URLDecode(data string) ([]byte, error) {\n\tif m := len(data) % 4; m != 0 {\n\t\tdata += strings.Repeat(\"=\", 4-m)\n\t}\n\treturn base64.URLEncoding.DecodeString(data)\n}\n\nfunc generateToken(username string) string {\n\theader := Header{Alg: \"HS256\", Typ: \"JWT\"}\n\tclaims := Claims{\n\t\tUsername: username,\n\t\tExp:      time.Now().Add(time.Hour).Unix(),\n\t}\n\t\n\theaderBytes, _ := json.Marshal(header)\n\tclaimsBytes, _ := json.Marshal(claims)\n\t\n\theaderEncoded := base64URLEncode(headerBytes)\n\tclaimsEncoded := base64URLEncode(claimsBytes)\n\t\n\tpayload := headerEncoded + \".\" + claimsEncoded\n\t\n\th := hmac.New(sha256.New, []byte(secretKey))\n\th.Write([]byte(payload))\n\tsignature := base64URLEncode(h.Sum(nil))\n\t\n\treturn payload + \".\" + signature\n}\n\nfunc validateToken(token string) bool {\n\tparts := strings.Split(token, \".\")\n\tif len(parts) != 3 {\n\t\treturn false\n\t}\n\t\n\theaderEncoded, claimsEncoded, signature := parts[0], parts[1], parts[2]\n\tpayload := headerEncoded + \".\" + claimsEncoded\n\t\n\t// Verify signature\n\th := hmac.New(sha256.New, []byte(secretKey))\n\th.Write([]byte(payload))\n\texpectedSignature := base64URLEncode(h.Sum(nil))\n\t\n\tif signature != expectedSignature {\n\t\treturn false\n\t}\n\t\n\t// Check expiry\n\tclaimsBytes, err := base64URLDecode(claimsEncoded)\n\tif err != nil {\n\t\treturn false\n\t}\n\t\n\tvar claims Claims\n\tif err := json.Unmarshal(claimsBytes, &claims); err != nil {\n\t\treturn false\n\t}\n\t\n\treturn time.Now().Unix() < claims.Exp\n}\n\nfunc main() {\n\tvar command, input string\n\tfmt.Scan(&command, &input)\n\t\n\tif command == \"generate\" {\n\t\ttoken := generateToken(input)\n\t\tfmt.Println(token)\n\t} else if command == \"validate\" {\n\t\tif validateToken(input) {\n\t\t\tfmt.Println(\"valid\")\n\t\t} else {\n\t\t\tfmt.Println(\"invalid\")\n\t\t}\n\t}\n}",
+      "hints": [
+        "JWT format: header.payload.signature (all base64url encoded)",
+        "Use HMAC-SHA256 for signature generation",
+        "Check token expiry time against current time",
+        "Handle base64url encoding/decoding properly"
+      ],
+      "judge0Id": 95,
+      "compilerType": "judge0"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-generate",
+      "input": "generate alice",
+      "output": "*",
+      "points": 5,
+      "isHidden": false,
+      "timeout": 2000
+    },
+    {
+      "id": "test-validate-valid",
+      "input": "validate eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFsaWNlIiwiZXhwIjo5OTk5OTk5OTk5fQ.invalid",
+      "output": "invalid",
+      "points": 3,
+      "isHidden": false,
+      "timeout": 2000
+    },
+    {
+      "id": "test-malformed",
+      "input": "validate invalid.token",
+      "output": "invalid",
+      "points": 2,
+      "isHidden": true,
+      "timeout": 2000
+    }
+  ],
+  "editorial": {
+    "approach": "This challenge implements JWT authentication from scratch, demonstrating understanding of JWT structure, HMAC signing, and security principles.",
+    "complexity": {
+      "time": "O(1) for token operations",
+      "space": "O(1)"
+    },
+    "keyPoints": [
+      "JWT three-part structure (header.payload.signature)",
+      "HMAC-SHA256 for cryptographic signing",
+      "Base64URL encoding for web-safe tokens",
+      "Token expiry validation"
+    ]
+  }
+}

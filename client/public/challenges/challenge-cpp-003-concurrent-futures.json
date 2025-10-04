@@ -1,0 +1,81 @@
+{
+  "id": "cpp-concurrent-futures",
+  "metadata": {
+    "title": "C++ Concurrent Programming with Futures and Promises",
+    "description": "Implement a concurrent task execution system using std::future, std::promise, and std::async.\n\n## Learning Objectives\n- Modern C++ concurrency primitives\n- Asynchronous task execution\n- Future/Promise pattern\n- Thread synchronization",
+    "difficulty": "hard",
+    "points": 3,
+    "timeLimit": 25,
+    "tags": ["cpp", "concurrency", "futures", "async", "threads"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-05T11:50:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["cpp"]
+  },
+  "problem": {
+    "statement": "Create a TaskManager that executes tasks concurrently using futures and promises. Support task dependencies, timeouts, and result aggregation.",
+    "inputFormat": "Commands: 'task task_id duration', 'depend task_id dep_id', 'execute', 'status task_id', 'wait timeout'",
+    "outputFormat": "Task execution results and status information",
+    "constraints": "- Use std::future and std::promise\n- Handle task dependencies\n- Support concurrent execution\n- Implement timeout handling",
+    "examples": [
+      {
+        "input": "task A 100\\ntask B 200\\nexecute\\nwait 500",
+        "output": "Task A scheduled\\nTask B scheduled\\nExecuting tasks...\\nTask A completed: 100\\nTask B completed: 400",
+        "explanation": "Schedule two tasks and execute them concurrently"
+      }
+    ]
+  },
+  "languages": {
+    "cpp": {
+      "starterCode": "#include <iostream>\n#include <future>\n#include <chrono>\n#include <thread>\n#include <unordered_map>\n#include <vector>\n#include <string>\n#include <functional>\n\nstruct Task {\n    std::string id;\n    int duration;\n    std::vector<std::string> dependencies;\n    std::promise<int> promise;\n    std::future<int> future;\n    bool completed = false;\n    int result = 0;\n    \n    Task(const std::string& id, int duration) \n        : id(id), duration(duration), future(promise.get_future()) {}\n};\n\nclass TaskManager {\nprivate:\n    std::unordered_map<std::string, std::unique_ptr<Task>> tasks;\n    \npublic:\n    // Your implementation here\n    bool addTask(const std::string& id, int duration) {\n        // Add a task with given duration\n        return false;\n    }\n    \n    bool addDependency(const std::string& taskId, const std::string& depId) {\n        // Add dependency between tasks\n        return false;\n    }\n    \n    void executeTasks() {\n        // Execute all tasks concurrently respecting dependencies\n    }\n    \n    std::string getTaskStatus(const std::string& id) {\n        // Get task status\n        return \"\";\n    }\n    \n    bool waitForCompletion(int timeoutMs) {\n        // Wait for all tasks to complete with timeout\n        return false;\n    }\n    \n    int simulateWork(int duration) {\n        // Simulate work by sleeping and return computed result\n        std::this_thread::sleep_for(std::chrono::milliseconds(duration));\n        return duration * 2; // Some computation\n    }\n};\n\nint main() {\n    TaskManager manager;\n    std::string command;\n    \n    while (std::cin >> command) {\n        if (command == \"task\") {\n            std::string taskId;\n            int duration;\n            std::cin >> taskId >> duration;\n            if (manager.addTask(taskId, duration)) {\n                std::cout << \"Task \" << taskId << \" scheduled\" << std::endl;\n            } else {\n                std::cout << \"Failed to schedule task \" << taskId << std::endl;\n            }\n        }\n        else if (command == \"depend\") {\n            std::string taskId, depId;\n            std::cin >> taskId >> depId;\n            if (manager.addDependency(taskId, depId)) {\n                std::cout << \"Dependency added: \" << taskId << \" depends on \" << depId << std::endl;\n            } else {\n                std::cout << \"Failed to add dependency\" << std::endl;\n            }\n        }\n        else if (command == \"execute\") {\n            std::cout << \"Executing tasks...\" << std::endl;\n            manager.executeTasks();\n        }\n        else if (command == \"status\") {\n            std::string taskId;\n            std::cin >> taskId;\n            std::cout << manager.getTaskStatus(taskId) << std::endl;\n        }\n        else if (command == \"wait\") {\n            int timeout;\n            std::cin >> timeout;\n            if (manager.waitForCompletion(timeout)) {\n                std::cout << \"All tasks completed\" << std::endl;\n            } else {\n                std::cout << \"Timeout waiting for tasks\" << std::endl;\n            }\n        }\n    }\n    \n    return 0;\n}",
+      "solutionCode": "#include <iostream>\n#include <future>\n#include <chrono>\n#include <thread>\n#include <unordered_map>\n#include <vector>\n#include <string>\n#include <functional>\n#include <queue>\n#include <mutex>\n\nstruct Task {\n    std::string id;\n    int duration;\n    std::vector<std::string> dependencies;\n    std::promise<int> promise;\n    std::future<int> future;\n    bool completed = false;\n    bool started = false;\n    int result = 0;\n    \n    Task(const std::string& id, int duration) \n        : id(id), duration(duration), future(promise.get_future()) {}\n};\n\nclass TaskManager {\nprivate:\n    std::unordered_map<std::string, std::unique_ptr<Task>> tasks;\n    std::mutex tasksMutex;\n    \npublic:\n    bool addTask(const std::string& id, int duration) {\n        std::lock_guard<std::mutex> lock(tasksMutex);\n        if (tasks.find(id) != tasks.end()) {\n            return false; // Task already exists\n        }\n        tasks[id] = std::make_unique<Task>(id, duration);\n        return true;\n    }\n    \n    bool addDependency(const std::string& taskId, const std::string& depId) {\n        std::lock_guard<std::mutex> lock(tasksMutex);\n        auto taskIt = tasks.find(taskId);\n        auto depIt = tasks.find(depId);\n        \n        if (taskIt == tasks.end() || depIt == tasks.end()) {\n            return false;\n        }\n        \n        taskIt->second->dependencies.push_back(depId);\n        return true;\n    }\n    \n    void executeTasks() {\n        std::vector<std::thread> workers;\n        \n        // Start tasks that have no dependencies or whose dependencies are met\n        for (auto& [id, task] : tasks) {\n            if (!task->started) {\n                workers.emplace_back([this, &task]() {\n                    this->executeTask(task.get());\n                });\n            }\n        }\n        \n        // Detach threads to allow concurrent execution\n        for (auto& worker : workers) {\n            worker.detach();\n        }\n    }\n    \n    void executeTask(Task* task) {\n        // Wait for dependencies\n        for (const auto& depId : task->dependencies) {\n            auto depIt = tasks.find(depId);\n            if (depIt != tasks.end()) {\n                // Wait for dependency to complete\n                depIt->second->future.wait();\n            }\n        }\n        \n        task->started = true;\n        \n        // Simulate work\n        int result = simulateWork(task->duration);\n        \n        // Set result and mark as completed\n        task->result = result;\n        task->completed = true;\n        task->promise.set_value(result);\n        \n        std::cout << \"Task \" << task->id << \" completed: \" << result << std::endl;\n    }\n    \n    std::string getTaskStatus(const std::string& id) {\n        std::lock_guard<std::mutex> lock(tasksMutex);\n        auto it = tasks.find(id);\n        if (it == tasks.end()) {\n            return \"Task not found\";\n        }\n        \n        if (it->second->completed) {\n            return \"Completed: \" + std::to_string(it->second->result);\n        } else if (it->second->started) {\n            return \"Running\";\n        } else {\n            return \"Pending\";\n        }\n    }\n    \n    bool waitForCompletion(int timeoutMs) {\n        auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeoutMs);\n        \n        for (auto& [id, task] : tasks) {\n            auto remaining = deadline - std::chrono::steady_clock::now();\n            if (remaining.count() <= 0) {\n                return false; // Timeout\n            }\n            \n            if (task->future.wait_until(deadline) == std::future_status::timeout) {\n                return false;\n            }\n        }\n        \n        return true;\n    }\n    \n    int simulateWork(int duration) {\n        // Simulate work by sleeping and return computed result\n        std::this_thread::sleep_for(std::chrono::milliseconds(duration));\n        return duration * 2; // Some computation\n    }\n};\n\nint main() {\n    TaskManager manager;\n    std::string command;\n    \n    while (std::cin >> command) {\n        if (command == \"task\") {\n            std::string taskId;\n            int duration;\n            std::cin >> taskId >> duration;\n            if (manager.addTask(taskId, duration)) {\n                std::cout << \"Task \" << taskId << \" scheduled\" << std::endl;\n            } else {\n                std::cout << \"Failed to schedule task \" << taskId << std::endl;\n            }\n        }\n        else if (command == \"depend\") {\n            std::string taskId, depId;\n            std::cin >> taskId >> depId;\n            if (manager.addDependency(taskId, depId)) {\n                std::cout << \"Dependency added: \" << taskId << \" depends on \" << depId << std::endl;\n            } else {\n                std::cout << \"Failed to add dependency\" << std::endl;\n            }\n        }\n        else if (command == \"execute\") {\n            std::cout << \"Executing tasks...\" << std::endl;\n            manager.executeTasks();\n        }\n        else if (command == \"status\") {\n            std::string taskId;\n            std::cin >> taskId;\n            std::cout << manager.getTaskStatus(taskId) << std::endl;\n        }\n        else if (command == \"wait\") {\n            int timeout;\n            std::cin >> timeout;\n            if (manager.waitForCompletion(timeout)) {\n                std::cout << \"All tasks completed\" << std::endl;\n            } else {\n                std::cout << \"Timeout waiting for tasks\" << std::endl;\n            }\n        }\n    }\n    \n    return 0;\n}",
+      "hints": [
+        "Use std::promise::set_value() to fulfill futures",
+        "std::future::wait() blocks until the future is ready",
+        "std::thread::detach() allows concurrent execution",
+        "Use std::future::wait_until() for timeout handling"
+      ],
+      "judge0Id": 76,
+      "compilerType": "judge0"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-basic-execution",
+      "input": "task A 100\\ntask B 200\\nexecute\\nwait 500",
+      "output": "Task A scheduled\\nTask B scheduled\\nExecuting tasks...\\nTask A completed: 200\\nTask B completed: 400\\nAll tasks completed",
+      "points": 5,
+      "isHidden": false,
+      "timeout": 10000
+    },
+    {
+      "id": "test-dependencies",
+      "input": "task C 100\\ntask D 150\\ndepend D C\\nexecute\\nwait 400",
+      "output": "Task C scheduled\\nTask D scheduled\\nDependency added: D depends on C\\nExecuting tasks...\\nTask C completed: 200\\nTask D completed: 300\\nAll tasks completed",
+      "points": 3,
+      "isHidden": false,
+      "timeout": 10000
+    },
+    {
+      "id": "test-timeout",
+      "input": "task E 300\\nexecute\\nwait 100",
+      "output": "Task E scheduled\\nExecuting tasks...\\nTimeout waiting for tasks",
+      "points": 2,
+      "isHidden": true,
+      "timeout": 5000
+    }
+  ],
+  "editorial": {
+    "approach": "Modern C++ concurrency uses futures and promises for asynchronous task execution, providing type-safe communication between threads without manual synchronization.",
+    "complexity": {
+      "time": "O(n) for task scheduling, O(max_duration) for execution",
+      "space": "O(n) for storing tasks and futures"
+    },
+    "keyPoints": [
+      "std::future/std::promise for asynchronous communication",
+      "std::thread for concurrent execution",
+      "Dependency resolution through future.wait()",
+      "Timeout handling with wait_until()"
+    ]
+  }
+}

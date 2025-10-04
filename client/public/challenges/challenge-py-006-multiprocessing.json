@@ -1,0 +1,81 @@
+{
+  "id": "py-multiprocessing-pool",
+  "metadata": {
+    "title": "Parallel Processing with Multiprocessing Pool",
+    "description": "Implement parallel data processing using multiprocessing.Pool for CPU-intensive tasks with progress tracking.\n\n## Learning Objectives\n- Multiprocessing for CPU-bound tasks\n- Process pool management\n- Inter-process communication\n- Parallel algorithm optimization",
+    "difficulty": "hard",
+    "points": 3,
+    "timeLimit": 25,
+    "tags": ["python", "multiprocessing", "parallel-processing", "cpu-intensive", "optimization"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-05T11:35:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["python"]
+  },
+  "problem": {
+    "statement": "Create a parallel processor that computes prime factorization for multiple numbers using multiprocessing.Pool. Track processing progress and return results.",
+    "inputFormat": "Numbers to factorize, one per line",
+    "outputFormat": "For each number: 'number: [factor1, factor2, ...]' sorted by input order",
+    "constraints": "- Use multiprocessing.Pool with 2 workers\n- Handle large numbers efficiently\n- Maintain input order in results",
+    "examples": [
+      {
+        "input": "12\\n15\\n28",
+        "output": "12: [2, 2, 3]\\n15: [3, 5]\\n28: [2, 2, 7]",
+        "explanation": "Compute prime factors for each number in parallel"
+      }
+    ]
+  },
+  "languages": {
+    "python": {
+      "starterCode": "import multiprocessing as mp\nfrom typing import List, Tuple\nimport time\n\ndef prime_factors(n: int) -> List[int]:\n    \"\"\"Compute prime factors of n\"\"\"\n    # Your implementation here\n    pass\n\ndef process_number(data: Tuple[int, int]) -> Tuple[int, int, List[int]]:\n    \"\"\"Process a single number (for multiprocessing)\"\"\"\n    # data = (index, number)\n    # Your implementation here\n    pass\n\nclass ParallelProcessor:\n    def __init__(self, num_workers: int = 2):\n        self.num_workers = num_workers\n        self.processed_count = 0\n        self.total_count = 0\n    \n    def process_numbers(self, numbers: List[int]) -> List[Tuple[int, List[int]]]:\n        \"\"\"Process numbers in parallel\"\"\"\n        # Your implementation here\n        pass\n    \n    def get_progress(self) -> float:\n        \"\"\"Get processing progress percentage\"\"\"\n        if self.total_count == 0:\n            return 0.0\n        return (self.processed_count / self.total_count) * 100\n\ndef main():\n    import sys\n    lines = sys.stdin.read().strip().split('\\n')\n    numbers = [int(line.strip()) for line in lines if line.strip()]\n    \n    processor = ParallelProcessor(num_workers=2)\n    results = processor.process_numbers(numbers)\n    \n    # Sort results by original order and print\n    for number, factors in results:\n        print(f\"{number}: {factors}\")\n\nif __name__ == '__main__':\n    main()",
+      "solutionCode": "import multiprocessing as mp\nfrom typing import List, Tuple\nimport time\n\ndef prime_factors(n: int) -> List[int]:\n    \"\"\"Compute prime factors of n\"\"\"\n    factors = []\n    d = 2\n    while d * d <= n:\n        while n % d == 0:\n            factors.append(d)\n            n //= d\n        d += 1\n    if n > 1:\n        factors.append(n)\n    return factors\n\ndef process_number(data: Tuple[int, int]) -> Tuple[int, int, List[int]]:\n    \"\"\"Process a single number (for multiprocessing)\"\"\"\n    index, number = data\n    factors = prime_factors(number)\n    return (index, number, factors)\n\nclass ParallelProcessor:\n    def __init__(self, num_workers: int = 2):\n        self.num_workers = num_workers\n        self.processed_count = 0\n        self.total_count = 0\n    \n    def process_numbers(self, numbers: List[int]) -> List[Tuple[int, List[int]]]:\n        \"\"\"Process numbers in parallel\"\"\"\n        if not numbers:\n            return []\n        \n        self.total_count = len(numbers)\n        self.processed_count = 0\n        \n        # Prepare data with indices to maintain order\n        indexed_numbers = [(i, num) for i, num in enumerate(numbers)]\n        \n        # Process in parallel\n        with mp.Pool(processes=self.num_workers) as pool:\n            # Use map to process all numbers\n            results = pool.map(process_number, indexed_numbers)\n        \n        # Sort results by original index to maintain order\n        results.sort(key=lambda x: x[0])\n        \n        # Extract number and factors, maintaining original order\n        final_results = [(result[1], result[2]) for result in results]\n        \n        self.processed_count = len(results)\n        return final_results\n    \n    def get_progress(self) -> float:\n        \"\"\"Get processing progress percentage\"\"\"\n        if self.total_count == 0:\n            return 0.0\n        return (self.processed_count / self.total_count) * 100\n\ndef main():\n    import sys\n    lines = sys.stdin.read().strip().split('\\n')\n    numbers = [int(line.strip()) for line in lines if line.strip()]\n    \n    processor = ParallelProcessor(num_workers=2)\n    results = processor.process_numbers(numbers)\n    \n    # Sort results by original order and print\n    for number, factors in results:\n        print(f\"{number}: {factors}\")\n\nif __name__ == '__main__':\n    main()",
+      "hints": [
+        "Use multiprocessing.Pool.map() for parallel processing",
+        "Include index with each number to maintain order",
+        "Implement efficient prime factorization algorithm",
+        "Handle process pool creation and cleanup properly"
+      ],
+      "judge0Id": 92,
+      "compilerType": "judge0"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-basic-factorization",
+      "input": "12\\n15\\n28",
+      "output": "12: [2, 2, 3]\\n15: [3, 5]\\n28: [2, 2, 7]",
+      "points": 5,
+      "isHidden": false,
+      "timeout": 10000
+    },
+    {
+      "id": "test-prime-numbers",
+      "input": "13\\n17\\n19",
+      "output": "13: [13]\\n17: [17]\\n19: [19]",
+      "points": 3,
+      "isHidden": false,
+      "timeout": 8000
+    },
+    {
+      "id": "test-large-numbers",
+      "input": "100\\n105\\n120",
+      "output": "100: [2, 2, 5, 5]\\n105: [3, 5, 7]\\n120: [2, 2, 2, 3, 5]",
+      "points": 2,
+      "isHidden": true,
+      "timeout": 12000
+    }
+  ],
+  "editorial": {
+    "approach": "Multiprocessing.Pool enables parallel computation of CPU-intensive tasks like prime factorization, distributing work across multiple processes while maintaining result order.",
+    "complexity": {
+      "time": "O(n*sqrt(max_number)/p) where p is number of processes",
+      "space": "O(n) for storing results and process data"
+    },
+    "keyPoints": [
+      "Multiprocessing.Pool for parallel CPU-bound tasks",
+      "Index preservation for maintaining result order",
+      "Efficient prime factorization algorithm",
+      "Process pool lifecycle management"
+    ]
+  }
+}

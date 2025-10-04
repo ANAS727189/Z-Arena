@@ -1,0 +1,81 @@
+{
+  "id": "js-event-emitter",
+  "metadata": {
+    "title": "Custom Event Emitter System",
+    "description": "Build a custom event emitter system with support for event listeners, wildcards, and once-only listeners.\n\n## Learning Objectives\n- Event-driven programming patterns\n- Observer pattern implementation\n- JavaScript closures and callbacks\n- Memory management in event systems",
+    "difficulty": "medium",
+    "points": 2,
+    "timeLimit": 20,
+    "tags": ["javascript", "events", "observer-pattern", "callbacks", "memory-management"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-05T10:35:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["javascript"]
+  },
+  "problem": {
+    "statement": "Create an EventEmitter class that supports registering listeners, emitting events, and removing listeners. Implement once() for one-time listeners and support for wildcard events with '*'.",
+    "inputFormat": "Series of commands: 'on event callback', 'once event callback', 'emit event data', 'off event callback', 'count event'",
+    "outputFormat": "For each command: execution result or listener count",
+    "constraints": "- Support wildcard '*' events\n- once() listeners auto-remove after execution\n- off() removes specific listeners",
+    "examples": [
+      {
+        "input": "on test callback1\\nemit test hello\\ncount test",
+        "output": "callback1: hello\\n1",
+        "explanation": "Register listener, emit event, count listeners"
+      }
+    ]
+  },
+  "languages": {
+    "javascript": {
+      "starterCode": "class EventEmitter {\n    constructor() {\n        // Your implementation here\n    }\n    \n    on(event, callback) {\n        // Register event listener\n    }\n    \n    once(event, callback) {\n        // Register one-time event listener\n    }\n    \n    emit(event, data) {\n        // Emit event to all listeners\n    }\n    \n    off(event, callback) {\n        // Remove specific event listener\n    }\n    \n    listenerCount(event) {\n        // Return number of listeners for event\n        return 0;\n    }\n}\n\nfunction main() {\n    const input = require('fs').readFileSync('/dev/stdin', 'utf8').trim().split('\\n');\n    const emitter = new EventEmitter();\n    const callbacks = {};\n    \n    input.forEach(line => {\n        const parts = line.split(' ');\n        const command = parts[0];\n        \n        if (command === 'on' || command === 'once') {\n            const event = parts[1];\n            const callbackName = parts[2];\n            \n            if (!callbacks[callbackName]) {\n                callbacks[callbackName] = (data) => console.log(`${callbackName}: ${data}`);\n            }\n            \n            if (command === 'on') {\n                emitter.on(event, callbacks[callbackName]);\n            } else {\n                emitter.once(event, callbacks[callbackName]);\n            }\n        } else if (command === 'emit') {\n            const event = parts[1];\n            const data = parts.slice(2).join(' ');\n            emitter.emit(event, data);\n        } else if (command === 'off') {\n            const event = parts[1];\n            const callbackName = parts[2];\n            emitter.off(event, callbacks[callbackName]);\n        } else if (command === 'count') {\n            const event = parts[1];\n            console.log(emitter.listenerCount(event));\n        }\n    });\n}\n\nmain();",
+      "solutionCode": "class EventEmitter {\n    constructor() {\n        this.events = new Map();\n    }\n    \n    on(event, callback) {\n        if (!this.events.has(event)) {\n            this.events.set(event, []);\n        }\n        this.events.get(event).push({ callback, once: false });\n    }\n    \n    once(event, callback) {\n        if (!this.events.has(event)) {\n            this.events.set(event, []);\n        }\n        this.events.get(event).push({ callback, once: true });\n    }\n    \n    emit(event, data) {\n        // Emit to specific event listeners\n        if (this.events.has(event)) {\n            const listeners = this.events.get(event).slice();\n            listeners.forEach(listener => {\n                listener.callback(data);\n                if (listener.once) {\n                    this.off(event, listener.callback);\n                }\n            });\n        }\n        \n        // Emit to wildcard listeners\n        if (event !== '*' && this.events.has('*')) {\n            const wildcardListeners = this.events.get('*').slice();\n            wildcardListeners.forEach(listener => {\n                listener.callback(data);\n                if (listener.once) {\n                    this.off('*', listener.callback);\n                }\n            });\n        }\n    }\n    \n    off(event, callback) {\n        if (this.events.has(event)) {\n            const listeners = this.events.get(event);\n            const index = listeners.findIndex(listener => listener.callback === callback);\n            if (index !== -1) {\n                listeners.splice(index, 1);\n            }\n            if (listeners.length === 0) {\n                this.events.delete(event);\n            }\n        }\n    }\n    \n    listenerCount(event) {\n        return this.events.has(event) ? this.events.get(event).length : 0;\n    }\n}\n\nfunction main() {\n    const input = require('fs').readFileSync('/dev/stdin', 'utf8').trim().split('\\n');\n    const emitter = new EventEmitter();\n    const callbacks = {};\n    \n    input.forEach(line => {\n        const parts = line.split(' ');\n        const command = parts[0];\n        \n        if (command === 'on' || command === 'once') {\n            const event = parts[1];\n            const callbackName = parts[2];\n            \n            if (!callbacks[callbackName]) {\n                callbacks[callbackName] = (data) => console.log(`${callbackName}: ${data}`);\n            }\n            \n            if (command === 'on') {\n                emitter.on(event, callbacks[callbackName]);\n            } else {\n                emitter.once(event, callbacks[callbackName]);\n            }\n        } else if (command === 'emit') {\n            const event = parts[1];\n            const data = parts.slice(2).join(' ');\n            emitter.emit(event, data);\n        } else if (command === 'off') {\n            const event = parts[1];\n            const callbackName = parts[2];\n            emitter.off(event, callbacks[callbackName]);\n        } else if (command === 'count') {\n            const event = parts[1];\n            console.log(emitter.listenerCount(event));\n        }\n    });\n}\n\nmain();",
+      "hints": [
+        "Use Map to store event listeners by event name",
+        "Store both callback and once flag for each listener",
+        "Handle wildcard '*' events separately",
+        "Remove once listeners after they execute"
+      ],
+      "judge0Id": 93,
+      "compilerType": "judge0"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-basic",
+      "input": "on test callback1\\nemit test hello\\ncount test",
+      "output": "callback1: hello\\n1",
+      "points": 5,
+      "isHidden": false,
+      "timeout": 2000
+    },
+    {
+      "id": "test-once",
+      "input": "once test callback1\\nemit test data1\\nemit test data2\\ncount test",
+      "output": "callback1: data1\\n0",
+      "points": 3,
+      "isHidden": false,
+      "timeout": 2000
+    },
+    {
+      "id": "test-wildcard",
+      "input": "on * wildcard\\nemit test hello\\nemit other world",
+      "output": "wildcard: hello\\nwildcard: world",
+      "points": 2,
+      "isHidden": true,
+      "timeout": 2000
+    }
+  ],
+  "editorial": {
+    "approach": "EventEmitter uses Map for efficient event storage and supports both regular and wildcard events. Once listeners are automatically removed after execution.",
+    "complexity": {
+      "time": "O(n) for emit where n is number of listeners",
+      "space": "O(n) where n is total number of listeners"
+    },
+    "keyPoints": [
+      "Map-based event storage for O(1) lookup",
+      "Listener metadata tracking (once flag)",
+      "Wildcard event support for global listeners",
+      "Automatic cleanup of one-time listeners"
+    ]
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "id": "js-async-queue",
+  "metadata": {
+    "title": "Async Task Queue with Priority",
+    "description": "Implement an asynchronous task queue with priority levels and concurrency control.\n\n## Learning Objectives\n- Priority queue implementation\n- Async/await task management\n- Queue processing with delays\n- Promise-based concurrency control",
+    "difficulty": "medium",
+    "points": 2,
+    "timeLimit": 20,
+    "tags": ["javascript", "async", "priority-queue", "concurrency", "promises"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-05T11:00:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["javascript"]
+  },
+  "problem": {
+    "statement": "Create an async task queue that processes tasks by priority (1=highest, 3=lowest). Tasks with higher priority execute first. Process with max 2 concurrent tasks.",
+    "inputFormat": "Commands: 'add priority taskId' or 'process'",
+    "outputFormat": "For process command: output taskIds in execution order",
+    "constraints": "- Priority 1 > 2 > 3\n- Max 2 concurrent tasks\n- FIFO within same priority",
+    "examples": [
+      {
+        "input": "add 2 task1\\nadd 1 task2\\nadd 2 task3\\nprocess",
+        "output": "task2 task1 task3",
+        "explanation": "Priority 1 task executes first, then priority 2 tasks in FIFO order"
+      }
+    ]
+  },
+  "languages": {
+    "javascript": {
+      "starterCode": "class AsyncTaskQueue {\n    constructor(maxConcurrency = 2) {\n        this.maxConcurrency = maxConcurrency;\n        // Your implementation here\n    }\n    \n    add(priority, taskId) {\n        // Add task with priority\n    }\n    \n    async process() {\n        // Process all tasks and return execution order\n        return [];\n    }\n}\n\nasync function main() {\n    const input = require('fs').readFileSync('/dev/stdin', 'utf8').trim().split('\\n');\n    const queue = new AsyncTaskQueue(2);\n    \n    for (const line of input) {\n        const parts = line.split(' ');\n        const command = parts[0];\n        \n        if (command === 'add') {\n            const priority = parseInt(parts[1]);\n            const taskId = parts[2];\n            queue.add(priority, taskId);\n        } else if (command === 'process') {\n            const results = await queue.process();\n            console.log(results.join(' '));\n        }\n    }\n}\n\nmain().catch(console.error);",
+      "solutionCode": "class AsyncTaskQueue {\n    constructor(maxConcurrency = 2) {\n        this.maxConcurrency = maxConcurrency;\n        this.tasks = [];\n        this.running = 0;\n        this.results = [];\n    }\n    \n    add(priority, taskId) {\n        this.tasks.push({ priority, taskId, timestamp: Date.now() });\n        // Sort by priority (1 is highest), then by timestamp (FIFO)\n        this.tasks.sort((a, b) => {\n            if (a.priority !== b.priority) {\n                return a.priority - b.priority;\n            }\n            return a.timestamp - b.timestamp;\n        });\n    }\n    \n    async executeTask(task) {\n        // Simulate async work\n        await new Promise(resolve => setTimeout(resolve, 10));\n        this.results.push(task.taskId);\n    }\n    \n    async process() {\n        this.results = [];\n        \n        const executeNext = async () => {\n            while (this.tasks.length > 0 && this.running < this.maxConcurrency) {\n                const task = this.tasks.shift();\n                this.running++;\n                \n                this.executeTask(task).then(() => {\n                    this.running--;\n                    executeNext();\n                });\n            }\n        };\n        \n        await executeNext();\n        \n        // Wait for all tasks to complete\n        while (this.running > 0) {\n            await new Promise(resolve => setTimeout(resolve, 1));\n        }\n        \n        return this.results;\n    }\n}\n\nasync function main() {\n    const input = require('fs').readFileSync('/dev/stdin', 'utf8').trim().split('\\n');\n    const queue = new AsyncTaskQueue(2);\n    \n    for (const line of input) {\n        const parts = line.split(' ');\n        const command = parts[0];\n        \n        if (command === 'add') {\n            const priority = parseInt(parts[1]);\n            const taskId = parts[2];\n            queue.add(priority, taskId);\n        } else if (command === 'process') {\n            const results = await queue.process();\n            console.log(results.join(' '));\n        }\n    }\n}\n\nmain().catch(console.error);",
+      "hints": [
+        "Sort tasks by priority, then by insertion order",
+        "Track running task count for concurrency control",
+        "Use Promise chains for async task execution",
+        "Wait for all tasks to complete before returning results"
+      ],
+      "judge0Id": 93,
+      "compilerType": "judge0"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-priority",
+      "input": "add 2 task1\\nadd 1 task2\\nadd 2 task3\\nprocess",
+      "output": "task2 task1 task3",
+      "points": 5,
+      "isHidden": false,
+      "timeout": 3000
+    },
+    {
+      "id": "test-same-priority",
+      "input": "add 1 A\\nadd 1 B\\nadd 1 C\\nprocess",
+      "output": "A B C",
+      "points": 3,
+      "isHidden": false,
+      "timeout": 2000
+    }
+  ],
+  "editorial": {
+    "approach": "Priority-based async queue sorts tasks by priority and timestamp, then processes them with concurrency control using Promise chains and running task counters.",
+    "complexity": {
+      "time": "O(n log n) for sorting, O(n) for processing",
+      "space": "O(n) for task storage"
+    },
+    "keyPoints": [
+      "Priority-based task sorting with FIFO within priority",
+      "Concurrency control with running task counter",
+      "Promise-based async task execution",
+      "Completion detection for batch processing"
+    ]
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "id": "go-json-stream-parser",
+  "metadata": {
+    "title": "JSON Stream Parser",
+    "description": "Build a streaming JSON parser that processes large JSON arrays without loading the entire document into memory.\n\n## Learning Objectives\n- Streaming JSON processing\n- Memory-efficient data handling\n- JSON decoder interface\n- Iterator pattern implementation",
+    "difficulty": "easy",
+    "points": 1,
+    "timeLimit": 15,
+    "tags": ["go", "json", "streaming", "memory-efficiency", "parsing"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-05T10:20:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["go"]
+  },
+  "problem": {
+    "statement": "Parse a JSON array of user objects and count how many users have age greater than 25. Use streaming to handle large datasets efficiently.",
+    "inputFormat": "JSON array string containing user objects with 'name' and 'age' fields",
+    "outputFormat": "Single integer: count of users with age > 25",
+    "constraints": "- Use json.Decoder for streaming\n- Don't load entire JSON into memory at once\n- Handle malformed JSON gracefully",
+    "examples": [
+      {
+        "input": "[{\"name\":\"Alice\",\"age\":30},{\"name\":\"Bob\",\"age\":20},{\"name\":\"Charlie\",\"age\":35}]",
+        "output": "2",
+        "explanation": "Alice (30) and Charlie (35) are older than 25"
+      }
+    ]
+  },
+  "languages": {
+    "go": {
+      "starterCode": "package main\n\nimport (\n\t\"encoding/json\"\n\t\"fmt\"\n\t\"strings\"\n)\n\ntype User struct {\n\tName string `json:\"name\"`\n\tAge  int    `json:\"age\"`\n}\n\nfunc countUsersOverAge(jsonStream string, minAge int) int {\n\t// Your implementation here\n\t// Use json.Decoder for streaming\n\treturn 0\n}\n\nfunc main() {\n\tvar jsonInput string\n\tfmt.Scanln(&jsonInput)\n\t\n\tcount := countUsersOverAge(jsonInput, 25)\n\tfmt.Println(count)\n}",
+      "solutionCode": "package main\n\nimport (\n\t\"encoding/json\"\n\t\"fmt\"\n\t\"strings\"\n)\n\ntype User struct {\n\tName string `json:\"name\"`\n\tAge  int    `json:\"age\"`\n}\n\nfunc countUsersOverAge(jsonStream string, minAge int) int {\n\treader := strings.NewReader(jsonStream)\n\tdecoder := json.NewDecoder(reader)\n\t\n\t// Read opening bracket\n\ttoken, err := decoder.Token()\n\tif err != nil || token != json.Delim('[') {\n\t\treturn 0\n\t}\n\t\n\tcount := 0\n\t\n\t// Read array elements\n\tfor decoder.More() {\n\t\tvar user User\n\t\tif err := decoder.Decode(&user); err != nil {\n\t\t\tcontinue // Skip malformed entries\n\t\t}\n\t\t\n\t\tif user.Age > minAge {\n\t\t\tcount++\n\t\t}\n\t}\n\t\n\t// Read closing bracket\n\tdecoder.Token()\n\t\n\treturn count\n}\n\nfunc main() {\n\tvar jsonInput string\n\tfmt.Scanln(&jsonInput)\n\t\n\tcount := countUsersOverAge(jsonInput, 25)\n\tfmt.Println(count)\n}",
+      "hints": [
+        "Use json.NewDecoder() with a string reader",
+        "Read array delimiters with decoder.Token()",
+        "Use decoder.More() to check for more elements",
+        "Handle each object individually with decoder.Decode()"
+      ],
+      "judge0Id": 95,
+      "compilerType": "judge0"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-basic",
+      "input": "[{\"name\":\"Alice\",\"age\":30},{\"name\":\"Bob\",\"age\":20},{\"name\":\"Charlie\",\"age\":35}]",
+      "output": "2",
+      "points": 5,
+      "isHidden": false,
+      "timeout": 2000
+    },
+    {
+      "id": "test-empty-array",
+      "input": "[]",
+      "output": "0",
+      "points": 3,
+      "isHidden": false,
+      "timeout": 2000
+    },
+    {
+      "id": "test-all-young",
+      "input": "[{\"name\":\"Alice\",\"age\":20},{\"name\":\"Bob\",\"age\":15}]",
+      "output": "0",
+      "points": 2,
+      "isHidden": true,
+      "timeout": 2000
+    }
+  ],
+  "editorial": {
+    "approach": "Streaming JSON parsing using json.Decoder allows processing large JSON datasets without loading everything into memory. This is crucial for handling big data efficiently.",
+    "complexity": {
+      "time": "O(n) where n is number of JSON objects",
+      "space": "O(1) - constant memory usage"
+    },
+    "keyPoints": [
+      "json.Decoder for streaming JSON parsing",
+      "Token-based reading for array delimiters",
+      "Memory-efficient processing of large datasets",
+      "Error handling for malformed JSON"
+    ]
+  }
+}

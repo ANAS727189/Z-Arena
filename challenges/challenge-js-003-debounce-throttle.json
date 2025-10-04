@@ -1,0 +1,81 @@
+{
+  "id": "js-debounce-throttle",
+  "metadata": {
+    "title": "Debounce and Throttle Implementation",
+    "description": "Implement debounce and throttle functions for rate-limiting function calls in web applications.\n\n## Learning Objectives\n- Function composition and higher-order functions\n- Timer management with setTimeout/clearTimeout\n- Closure patterns for state management\n- Performance optimization techniques",
+    "difficulty": "easy",
+    "points": 1,
+    "timeLimit": 15,
+    "tags": ["javascript", "debounce", "throttle", "performance", "closures"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-05T10:40:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["javascript"]
+  },
+  "problem": {
+    "statement": "Implement debounce and throttle functions. Debounce delays execution until after calls have stopped. Throttle limits execution to once per time period.",
+    "inputFormat": "Commands: 'debounce delay' or 'throttle delay' followed by 'call timestamp' commands",
+    "outputFormat": "For each actual function execution, output the timestamp",
+    "constraints": "- Debounce resets timer on each call\n- Throttle executes at most once per period\n- Handle multiple rapid calls properly",
+    "examples": [
+      {
+        "input": "debounce 100\\ncall 0\\ncall 50\\ncall 150",
+        "output": "150",
+        "explanation": "Only the last call executes after 100ms delay"
+      }
+    ]
+  },
+  "languages": {
+    "javascript": {
+      "starterCode": "function debounce(func, delay) {\n    // Your implementation here\n    return function(...args) {\n        // Debounced function logic\n    };\n}\n\nfunction throttle(func, delay) {\n    // Your implementation here\n    return function(...args) {\n        // Throttled function logic\n    };\n}\n\nfunction main() {\n    const input = require('fs').readFileSync('/dev/stdin', 'utf8').trim().split('\\n');\n    \n    let currentTime = 0;\n    let wrappedFunc;\n    \n    const testFunc = (timestamp) => {\n        console.log(timestamp);\n    };\n    \n    input.forEach(line => {\n        const parts = line.split(' ');\n        const command = parts[0];\n        \n        if (command === 'debounce') {\n            const delay = parseInt(parts[1]);\n            wrappedFunc = debounce(testFunc, delay);\n        } else if (command === 'throttle') {\n            const delay = parseInt(parts[1]);\n            wrappedFunc = throttle(testFunc, delay);\n        } else if (command === 'call') {\n            const timestamp = parseInt(parts[1]);\n            currentTime = timestamp;\n            \n            // Simulate time passage\n            setTimeout(() => {\n                wrappedFunc(timestamp);\n            }, 0);\n        }\n    });\n}\n\nmain();",
+      "solutionCode": "function debounce(func, delay) {\n    let timeoutId;\n    \n    return function(...args) {\n        clearTimeout(timeoutId);\n        timeoutId = setTimeout(() => {\n            func.apply(this, args);\n        }, delay);\n    };\n}\n\nfunction throttle(func, delay) {\n    let lastCall = 0;\n    let timeoutId;\n    \n    return function(...args) {\n        const now = Date.now();\n        \n        if (now - lastCall >= delay) {\n            lastCall = now;\n            func.apply(this, args);\n        } else if (!timeoutId) {\n            timeoutId = setTimeout(() => {\n                lastCall = Date.now();\n                timeoutId = null;\n                func.apply(this, args);\n            }, delay - (now - lastCall));\n        }\n    };\n}\n\nfunction main() {\n    const input = require('fs').readFileSync('/dev/stdin', 'utf8').trim().split('\\n');\n    \n    let currentTime = 0;\n    let wrappedFunc;\n    let startTime = Date.now();\n    \n    const testFunc = (timestamp) => {\n        console.log(timestamp);\n    };\n    \n    // Process commands synchronously but with simulated timing\n    let commands = [];\n    input.forEach(line => {\n        const parts = line.split(' ');\n        commands.push({ command: parts[0], value: parseInt(parts[1]) || 0 });\n    });\n    \n    // Execute commands with proper timing simulation\n    commands.forEach((cmd, index) => {\n        if (cmd.command === 'debounce') {\n            wrappedFunc = debounce(testFunc, cmd.value);\n        } else if (cmd.command === 'throttle') {\n            wrappedFunc = throttle(testFunc, cmd.value);\n        } else if (cmd.command === 'call') {\n            setTimeout(() => {\n                wrappedFunc(cmd.value);\n            }, cmd.value);\n        }\n    });\n}\n\nmain();",
+      "hints": [
+        "Use setTimeout and clearTimeout for debounce",
+        "Track last execution time for throttle",
+        "Use closures to maintain state between calls",
+        "Handle edge cases with multiple rapid calls"
+      ],
+      "judge0Id": 93,
+      "compilerType": "judge0"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-debounce",
+      "input": "debounce 100\\ncall 0\\ncall 50\\ncall 150",
+      "output": "150",
+      "points": 5,
+      "isHidden": false,
+      "timeout": 3000
+    },
+    {
+      "id": "test-throttle",
+      "input": "throttle 100\\ncall 0\\ncall 50\\ncall 150",
+      "output": "0\\n150",
+      "points": 3,
+      "isHidden": false,
+      "timeout": 3000
+    },
+    {
+      "id": "test-rapid-calls",
+      "input": "debounce 50\\ncall 0\\ncall 10\\ncall 20\\ncall 30",
+      "output": "30",
+      "points": 2,
+      "isHidden": true,
+      "timeout": 2000
+    }
+  ],
+  "editorial": {
+    "approach": "Debounce and throttle are essential performance optimization patterns. Debounce uses timer reset, while throttle tracks execution frequency.",
+    "complexity": {
+      "time": "O(1) per function call",
+      "space": "O(1) for state storage"
+    },
+    "keyPoints": [
+      "Timer management with setTimeout/clearTimeout",
+      "Closure-based state preservation",
+      "Function context preservation with apply",
+      "Performance optimization for frequent events"
+    ]
+  }
+}

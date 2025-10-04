@@ -1,0 +1,81 @@
+{
+  "id": "py-generator-pipeline",
+  "metadata": {
+    "title": "Data Processing Pipeline with Generators",
+    "description": "Build a memory-efficient data processing pipeline using Python generators for streaming large datasets.\n\n## Learning Objectives\n- Generator functions and yield statements\n- Memory-efficient data processing\n- Pipeline pattern implementation\n- Lazy evaluation concepts",
+    "difficulty": "medium",
+    "points": 2,
+    "timeLimit": 20,
+    "tags": ["python", "generators", "pipeline", "lazy-evaluation", "data-processing"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-05T11:30:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["python"]
+  },
+  "problem": {
+    "statement": "Create a data processing pipeline using generators that can filter, transform, and aggregate streaming data. Process a series of numbers through multiple pipeline stages.",
+    "inputFormat": "Commands: 'add_stage filter condition', 'add_stage transform operation', 'process numbers', 'stats'",
+    "outputFormat": "For process: final results. For stats: pipeline statistics",
+    "constraints": "- Use generators for memory efficiency\n- Support filter and transform stages\n- Chain operations in pipeline order",
+    "examples": [
+      {
+        "input": "add_stage filter >5\\nadd_stage transform *2\\nprocess 1 3 7 9\\nstats",
+        "output": "[14, 18]\\nProcessed: 4, Output: 2",
+        "explanation": "Filter numbers >5 (7,9), then multiply by 2 (14,18)"
+      }
+    ]
+  },
+  "languages": {
+    "python": {
+      "starterCode": "from typing import Iterator, Any, Callable, List\nimport operator\n\nclass PipelineStats:\n    def __init__(self):\n        self.items_processed = 0\n        self.items_output = 0\n        self.stages_count = 0\n    \n    def __str__(self):\n        return f\"Processed: {self.items_processed}, Output: {self.items_output}\"\n\nclass DataPipeline:\n    def __init__(self):\n        self.stages = []\n        self.stats = PipelineStats()\n    \n    def add_filter_stage(self, condition: str):\n        \"\"\"Add filter stage to pipeline\"\"\"\n        # Your implementation here\n        pass\n    \n    def add_transform_stage(self, operation: str):\n        \"\"\"Add transform stage to pipeline\"\"\"\n        # Your implementation here\n        pass\n    \n    def filter_generator(self, data: Iterator, condition_func: Callable) -> Iterator:\n        \"\"\"Generator for filtering data\"\"\"\n        # Your implementation here\n        pass\n    \n    def transform_generator(self, data: Iterator, transform_func: Callable) -> Iterator:\n        \"\"\"Generator for transforming data\"\"\"\n        # Your implementation here\n        pass\n    \n    def process(self, data: List[int]) -> List[int]:\n        \"\"\"Process data through pipeline\"\"\"\n        # Your implementation here\n        return []\n\ndef parse_condition(condition: str) -> Callable:\n    \"\"\"Parse condition string into callable\"\"\"\n    # Your implementation here\n    pass\n\ndef parse_operation(operation: str) -> Callable:\n    \"\"\"Parse operation string into callable\"\"\"\n    # Your implementation here\n    pass\n\ndef main():\n    import sys\n    lines = sys.stdin.read().strip().split('\\n')\n    \n    pipeline = DataPipeline()\n    \n    for line in lines:\n        parts = line.split()\n        command = parts[0]\n        \n        if command == 'add_stage':\n            stage_type = parts[1]\n            operation = ' '.join(parts[2:])\n            \n            if stage_type == 'filter':\n                pipeline.add_filter_stage(operation)\n            elif stage_type == 'transform':\n                pipeline.add_transform_stage(operation)\n        \n        elif command == 'process':\n            numbers = [int(x) for x in parts[1:]]\n            result = pipeline.process(numbers)\n            print(result)\n        \n        elif command == 'stats':\n            print(pipeline.stats)\n\nif __name__ == '__main__':\n    main()",
+      "solutionCode": "from typing import Iterator, Any, Callable, List\nimport operator\n\nclass PipelineStats:\n    def __init__(self):\n        self.items_processed = 0\n        self.items_output = 0\n        self.stages_count = 0\n    \n    def process_item(self):\n        self.items_processed += 1\n    \n    def output_item(self):\n        self.items_output += 1\n    \n    def add_stage(self):\n        self.stages_count += 1\n    \n    def __str__(self):\n        return f\"Processed: {self.items_processed}, Output: {self.items_output}\"\n\nclass DataPipeline:\n    def __init__(self):\n        self.stages = []\n        self.stats = PipelineStats()\n    \n    def add_filter_stage(self, condition: str):\n        \"\"\"Add filter stage to pipeline\"\"\"\n        condition_func = parse_condition(condition)\n        self.stages.append(('filter', condition_func))\n        self.stats.add_stage()\n    \n    def add_transform_stage(self, operation: str):\n        \"\"\"Add transform stage to pipeline\"\"\"\n        transform_func = parse_operation(operation)\n        self.stages.append(('transform', transform_func))\n        self.stats.add_stage()\n    \n    def filter_generator(self, data: Iterator, condition_func: Callable) -> Iterator:\n        \"\"\"Generator for filtering data\"\"\"\n        for item in data:\n            if condition_func(item):\n                yield item\n    \n    def transform_generator(self, data: Iterator, transform_func: Callable) -> Iterator:\n        \"\"\"Generator for transforming data\"\"\"\n        for item in data:\n            yield transform_func(item)\n    \n    def process(self, data: List[int]) -> List[int]:\n        \"\"\"Process data through pipeline\"\"\"\n        # Reset stats for this processing run\n        self.stats.items_processed = len(data)\n        self.stats.items_output = 0\n        \n        # Start with input data as generator\n        current_data = iter(data)\n        \n        # Apply each stage in sequence\n        for stage_type, stage_func in self.stages:\n            if stage_type == 'filter':\n                current_data = self.filter_generator(current_data, stage_func)\n            elif stage_type == 'transform':\n                current_data = self.transform_generator(current_data, stage_func)\n        \n        # Consume the final generator and count output items\n        results = []\n        for item in current_data:\n            results.append(item)\n            self.stats.output_item()\n        \n        return results\n\ndef parse_condition(condition: str) -> Callable:\n    \"\"\"Parse condition string into callable\"\"\"\n    if condition.startswith('>'):\n        threshold = int(condition[1:])\n        return lambda x: x > threshold\n    elif condition.startswith('<'):\n        threshold = int(condition[1:])\n        return lambda x: x < threshold\n    elif condition.startswith('>='):\n        threshold = int(condition[2:])\n        return lambda x: x >= threshold\n    elif condition.startswith('<='):\n        threshold = int(condition[2:])\n        return lambda x: x <= threshold\n    elif condition.startswith('=='):\n        threshold = int(condition[2:])\n        return lambda x: x == threshold\n    elif condition == 'even':\n        return lambda x: x % 2 == 0\n    elif condition == 'odd':\n        return lambda x: x % 2 == 1\n    else:\n        return lambda x: True\n\ndef parse_operation(operation: str) -> Callable:\n    \"\"\"Parse operation string into callable\"\"\"\n    if operation.startswith('*'):\n        multiplier = int(operation[1:])\n        return lambda x: x * multiplier\n    elif operation.startswith('+'):\n        addend = int(operation[1:])\n        return lambda x: x + addend\n    elif operation.startswith('-'):\n        subtrahend = int(operation[1:])\n        return lambda x: x - subtrahend\n    elif operation == 'square':\n        return lambda x: x * x\n    elif operation == 'abs':\n        return lambda x: abs(x)\n    else:\n        return lambda x: x\n\ndef main():\n    import sys\n    lines = sys.stdin.read().strip().split('\\n')\n    \n    pipeline = DataPipeline()\n    \n    for line in lines:\n        parts = line.split()\n        command = parts[0]\n        \n        if command == 'add_stage':\n            stage_type = parts[1]\n            operation = ' '.join(parts[2:])\n            \n            if stage_type == 'filter':\n                pipeline.add_filter_stage(operation)\n            elif stage_type == 'transform':\n                pipeline.add_transform_stage(operation)\n        \n        elif command == 'process':\n            numbers = [int(x) for x in parts[1:]]\n            result = pipeline.process(numbers)\n            print(result)\n        \n        elif command == 'stats':\n            print(pipeline.stats)\n\nif __name__ == '__main__':\n    main()",
+      "hints": [
+        "Use yield to create generator functions",
+        "Chain generators by passing one as input to the next",
+        "Parse condition strings into lambda functions",
+        "Keep track of items at each pipeline stage"
+      ],
+      "judge0Id": 92,
+      "compilerType": "judge0"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-filter-transform",
+      "input": "add_stage filter >5\\nadd_stage transform *2\\nprocess 1 3 7 9\\nstats",
+      "output": "[14, 18]\\nProcessed: 4, Output: 2",
+      "points": 5,
+      "isHidden": false,
+      "timeout": 5000
+    },
+    {
+      "id": "test-multiple-filters",
+      "input": "add_stage filter >3\\nadd_stage filter even\\nprocess 1 2 4 6 8\\nstats",
+      "output": "[4, 6, 8]\\nProcessed: 5, Output: 3",
+      "points": 3,
+      "isHidden": false,
+      "timeout": 5000
+    },
+    {
+      "id": "test-complex-pipeline",
+      "input": "add_stage transform square\\nadd_stage filter >10\\nprocess 2 3 4 5\\nstats",
+      "output": "[16, 25]\\nProcessed: 4, Output: 2",
+      "points": 2,
+      "isHidden": true,
+      "timeout": 5000
+    }
+  ],
+  "editorial": {
+    "approach": "Generator-based pipeline uses lazy evaluation to process data efficiently through multiple stages without loading everything into memory at once.",
+    "complexity": {
+      "time": "O(n*s) where n is data size and s is number of stages",
+      "space": "O(1) for streaming processing (excluding final result)"
+    },
+    "keyPoints": [
+      "Generator functions with yield for lazy evaluation",
+      "Pipeline pattern with chainable data transformations",
+      "Memory-efficient streaming data processing",
+      "Dynamic function creation from string parsing"
+    ]
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "id": "py-context-manager",
+  "metadata": {
+    "title": "Custom Context Manager for Database Transactions",
+    "description": "Build a sophisticated context manager that handles database transactions with rollback, retry logic, and connection pooling.\n\n## Learning Objectives\n- Context manager protocol (__enter__, __exit__)\n- Database transaction management\n- Exception handling and rollback mechanisms\n- Resource management patterns",
+    "difficulty": "medium",
+    "points": 2,
+    "timeLimit": 20,
+    "tags": ["python", "context-managers", "database", "transactions", "resource-management"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-05T11:25:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["python"]
+  },
+  "problem": {
+    "statement": "Create a DatabaseTransaction context manager that automatically handles commits, rollbacks on exceptions, and provides transaction statistics. Test with SQL operations.",
+    "inputFormat": "Commands: 'begin', 'execute sql_statement', 'commit', 'rollback', 'stats'",
+    "outputFormat": "For each operation: success/failure message and transaction stats",
+    "constraints": "- Auto-commit on successful exit\n- Auto-rollback on exceptions\n- Track transaction statistics",
+    "examples": [
+      {
+        "input": "begin\\nexecute INSERT INTO test VALUES (1)\\ncommit",
+        "output": "Transaction started\\nExecuted successfully\\nTransaction committed\\nStats: commits=1, rollbacks=0",
+        "explanation": "Start transaction, execute SQL, commit successfully"
+      }
+    ]
+  },
+  "languages": {
+    "python": {
+      "starterCode": "import sqlite3\nfrom contextlib import contextmanager\nfrom typing import Optional, Any\n\nclass TransactionStats:\n    def __init__(self):\n        self.commits = 0\n        self.rollbacks = 0\n        self.active_transactions = 0\n    \n    def commit(self):\n        self.commits += 1\n        self.active_transactions -= 1\n    \n    def rollback(self):\n        self.rollbacks += 1\n        self.active_transactions -= 1\n    \n    def start_transaction(self):\n        self.active_transactions += 1\n    \n    def __str__(self):\n        return f\"commits={self.commits}, rollbacks={self.rollbacks}\"\n\nclass DatabaseTransaction:\n    def __init__(self, connection: sqlite3.Connection, stats: TransactionStats):\n        self.connection = connection\n        self.stats = stats\n        self.in_transaction = False\n    \n    def __enter__(self):\n        # Your implementation here\n        return self\n    \n    def __exit__(self, exc_type, exc_val, exc_tb):\n        # Your implementation here\n        pass\n    \n    def execute(self, sql: str, params=None):\n        # Your implementation here\n        pass\n\n# Global database setup\ndb = sqlite3.connect(':memory:')\ndb.execute('CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY)')\nstats = TransactionStats()\n\ndef main():\n    import sys\n    lines = sys.stdin.read().strip().split('\\n')\n    \n    transaction = None\n    \n    for line in lines:\n        parts = line.split(' ', 1)\n        command = parts[0]\n        \n        try:\n            if command == 'begin':\n                transaction = DatabaseTransaction(db, stats)\n                transaction.__enter__()\n                print(\"Transaction started\")\n            \n            elif command == 'execute':\n                sql = parts[1] if len(parts) > 1 else \"\"\n                if transaction:\n                    transaction.execute(sql)\n                    print(\"Executed successfully\")\n                else:\n                    print(\"No active transaction\")\n            \n            elif command == 'commit':\n                if transaction:\n                    transaction.__exit__(None, None, None)\n                    print(\"Transaction committed\")\n                    transaction = None\n                else:\n                    print(\"No active transaction\")\n            \n            elif command == 'rollback':\n                if transaction:\n                    transaction.__exit__(Exception, Exception(\"Manual rollback\"), None)\n                    print(\"Transaction rolled back\")\n                    transaction = None\n                else:\n                    print(\"No active transaction\")\n            \n            elif command == 'stats':\n                print(f\"Stats: {stats}\")\n        \n        except Exception as e:\n            print(f\"Error: {e}\")\n            if transaction:\n                transaction.__exit__(type(e), e, None)\n                transaction = None\n\nif __name__ == '__main__':\n    main()",
+      "solutionCode": "import sqlite3\nfrom contextlib import contextmanager\nfrom typing import Optional, Any\n\nclass TransactionStats:\n    def __init__(self):\n        self.commits = 0\n        self.rollbacks = 0\n        self.active_transactions = 0\n    \n    def commit(self):\n        self.commits += 1\n        self.active_transactions -= 1\n    \n    def rollback(self):\n        self.rollbacks += 1\n        self.active_transactions -= 1\n    \n    def start_transaction(self):\n        self.active_transactions += 1\n    \n    def __str__(self):\n        return f\"commits={self.commits}, rollbacks={self.rollbacks}\"\n\nclass DatabaseTransaction:\n    def __init__(self, connection: sqlite3.Connection, stats: TransactionStats):\n        self.connection = connection\n        self.stats = stats\n        self.in_transaction = False\n    \n    def __enter__(self):\n        \"\"\"Enter transaction context\"\"\"\n        self.connection.execute('BEGIN TRANSACTION')\n        self.in_transaction = True\n        self.stats.start_transaction()\n        return self\n    \n    def __exit__(self, exc_type, exc_val, exc_tb):\n        \"\"\"Exit transaction context with commit or rollback\"\"\"\n        if self.in_transaction:\n            if exc_type is None:\n                # No exception - commit transaction\n                self.connection.execute('COMMIT')\n                self.stats.commit()\n            else:\n                # Exception occurred - rollback transaction\n                self.connection.execute('ROLLBACK')\n                self.stats.rollback()\n            \n            self.in_transaction = False\n        \n        # Return False to let exceptions propagate (if needed)\n        return False\n    \n    def execute(self, sql: str, params=None):\n        \"\"\"Execute SQL within transaction\"\"\"\n        if not self.in_transaction:\n            raise RuntimeError(\"No active transaction\")\n        \n        if params:\n            self.connection.execute(sql, params)\n        else:\n            self.connection.execute(sql)\n\n# Global database setup\ndb = sqlite3.connect(':memory:')\ndb.execute('CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY)')\nstats = TransactionStats()\n\ndef main():\n    import sys\n    lines = sys.stdin.read().strip().split('\\n')\n    \n    transaction = None\n    \n    for line in lines:\n        parts = line.split(' ', 1)\n        command = parts[0]\n        \n        try:\n            if command == 'begin':\n                transaction = DatabaseTransaction(db, stats)\n                transaction.__enter__()\n                print(\"Transaction started\")\n            \n            elif command == 'execute':\n                sql = parts[1] if len(parts) > 1 else \"\"\n                if transaction:\n                    transaction.execute(sql)\n                    print(\"Executed successfully\")\n                else:\n                    print(\"No active transaction\")\n            \n            elif command == 'commit':\n                if transaction:\n                    transaction.__exit__(None, None, None)\n                    print(\"Transaction committed\")\n                    transaction = None\n                else:\n                    print(\"No active transaction\")\n            \n            elif command == 'rollback':\n                if transaction:\n                    transaction.__exit__(Exception, Exception(\"Manual rollback\"), None)\n                    print(\"Transaction rolled back\")\n                    transaction = None\n                else:\n                    print(\"No active transaction\")\n            \n            elif command == 'stats':\n                print(f\"Stats: {stats}\")\n        \n        except Exception as e:\n            print(f\"Error: {e}\")\n            if transaction:\n                transaction.__exit__(type(e), e, None)\n                transaction = None\n\nif __name__ == '__main__':\n    main()",
+      "hints": [
+        "Implement __enter__ to start transaction and __exit__ to commit/rollback",
+        "Use exc_type parameter to determine if exception occurred",
+        "Track transaction state to prevent double commits/rollbacks",
+        "Return False from __exit__ to allow exception propagation"
+      ],
+      "judge0Id": 92,
+      "compilerType": "judge0"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-successful-transaction",
+      "input": "begin\\nexecute INSERT INTO test VALUES (1)\\ncommit\\nstats",
+      "output": "Transaction started\\nExecuted successfully\\nTransaction committed\\nStats: commits=1, rollbacks=0",
+      "points": 5,
+      "isHidden": false,
+      "timeout": 5000
+    },
+    {
+      "id": "test-rollback",
+      "input": "begin\\nexecute INSERT INTO test VALUES (2)\\nrollback\\nstats",
+      "output": "Transaction started\\nExecuted successfully\\nTransaction rolled back\\nStats: commits=0, rollbacks=1",
+      "points": 3,
+      "isHidden": false,
+      "timeout": 5000
+    },
+    {
+      "id": "test-multiple-transactions",
+      "input": "begin\\ncommit\\nbegin\\nrollback\\nstats",
+      "output": "Transaction started\\nTransaction committed\\nTransaction started\\nTransaction rolled back\\nStats: commits=1, rollbacks=1",
+      "points": 2,
+      "isHidden": true,
+      "timeout": 5000
+    }
+  ],
+  "editorial": {
+    "approach": "Context manager implementation using __enter__ and __exit__ methods to automatically handle database transaction lifecycle with proper resource cleanup and statistics tracking.",
+    "complexity": {
+      "time": "O(1) for context manager operations",
+      "space": "O(1) for transaction state storage"
+    },
+    "keyPoints": [
+      "Context manager protocol with __enter__ and __exit__",
+      "Automatic resource cleanup and transaction management",
+      "Exception-based rollback decision making",
+      "Statistics tracking for monitoring transaction patterns"
+    ]
+  }
+}

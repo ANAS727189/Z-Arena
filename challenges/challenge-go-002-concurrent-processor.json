@@ -1,0 +1,81 @@
+{
+  "id": "go-concurrent-file-processor",
+  "metadata": {
+    "title": "Concurrent File Processor",
+    "description": "Build a concurrent file processor using Go's goroutines and channels to process multiple files simultaneously.\n\n## Learning Objectives\n- Goroutines for concurrent execution\n- Channels for communication between goroutines\n- Worker pool pattern\n- File I/O operations",
+    "difficulty": "hard",
+    "points": 3,
+    "timeLimit": 25,
+    "tags": ["go", "concurrency", "goroutines", "channels", "file-processing"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-05T10:05:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["go"]
+  },
+  "problem": {
+    "statement": "Create a concurrent file processor that counts words in multiple text files. Use a worker pool of 3 goroutines to process files concurrently. Return the total word count across all files.",
+    "inputFormat": "Number of files followed by file contents (each file content on a separate line)",
+    "outputFormat": "Single integer: total word count across all files",
+    "constraints": "- Use exactly 3 worker goroutines\n- Process files concurrently\n- Handle empty files gracefully",
+    "examples": [
+      {
+        "input": "3\nhello world\ngo is awesome\nconcurrency rocks",
+        "output": "6",
+        "explanation": "File 1: 2 words, File 2: 3 words, File 3: 2 words. Total: 7 words"
+      }
+    ]
+  },
+  "languages": {
+    "go": {
+      "starterCode": "package main\n\nimport (\n\t\"fmt\"\n\t\"strings\"\n\t\"sync\"\n)\n\ntype FileJob struct {\n\tID      int\n\tContent string\n}\n\ntype Result struct {\n\tFileID    int\n\tWordCount int\n}\n\nfunc worker(id int, jobs <-chan FileJob, results chan<- Result, wg *sync.WaitGroup) {\n\tdefer wg.Done()\n\t// Your worker implementation here\n}\n\nfunc main() {\n\tvar numFiles int\n\tfmt.Scan(&numFiles)\n\t\n\t// Your code here\n\t// Create channels, start workers, process files\n\t\n\tfmt.Println(totalWords)\n}",
+      "solutionCode": "package main\n\nimport (\n\t\"bufio\"\n\t\"fmt\"\n\t\"os\"\n\t\"strings\"\n\t\"sync\"\n)\n\ntype FileJob struct {\n\tID      int\n\tContent string\n}\n\ntype Result struct {\n\tFileID    int\n\tWordCount int\n}\n\nfunc worker(id int, jobs <-chan FileJob, results chan<- Result, wg *sync.WaitGroup) {\n\tdefer wg.Done()\n\tfor job := range jobs {\n\t\twords := strings.Fields(job.Content)\n\t\tresults <- Result{FileID: job.ID, WordCount: len(words)}\n\t}\n}\n\nfunc main() {\n\tvar numFiles int\n\tfmt.Scan(&numFiles)\n\t\n\tscanner := bufio.NewScanner(os.Stdin)\n\t\n\tjobs := make(chan FileJob, numFiles)\n\tresults := make(chan Result, numFiles)\n\t\n\tvar wg sync.WaitGroup\n\t\n\t// Start 3 workers\n\tfor i := 1; i <= 3; i++ {\n\t\twg.Add(1)\n\t\tgo worker(i, jobs, results, &wg)\n\t}\n\t\n\t// Send jobs\n\tfor i := 0; i < numFiles; i++ {\n\t\tscanner.Scan()\n\t\tcontent := scanner.Text()\n\t\tjobs <- FileJob{ID: i, Content: content}\n\t}\n\tclose(jobs)\n\t\n\t// Wait for workers to complete\n\tgo func() {\n\t\twg.Wait()\n\t\tclose(results)\n\t}()\n\t\n\t// Collect results\n\ttotalWords := 0\n\tfor result := range results {\n\t\ttotalWords += result.WordCount\n\t}\n\t\n\tfmt.Println(totalWords)\n}",
+      "hints": [
+        "Use buffered channels for jobs and results",
+        "Start worker goroutines before sending jobs",
+        "Use sync.WaitGroup to wait for all workers to complete",
+        "Close channels appropriately to avoid deadlocks"
+      ],
+      "judge0Id": 95,
+      "compilerType": "judge0"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-basic",
+      "input": "3\nhello world\ngo is awesome\nconcurrency rocks",
+      "output": "7",
+      "points": 5,
+      "isHidden": false,
+      "timeout": 3000
+    },
+    {
+      "id": "test-empty-files",
+      "input": "2\nhello\n",
+      "output": "1",
+      "points": 3,
+      "isHidden": false,
+      "timeout": 3000
+    },
+    {
+      "id": "test-many-files",
+      "input": "5\none\ntwo three\nfour five six\nseven\neight nine ten eleven",
+      "output": "11",
+      "points": 2,
+      "isHidden": true,
+      "timeout": 3000
+    }
+  ],
+  "editorial": {
+    "approach": "This challenge demonstrates Go's concurrency model using goroutines and channels. The worker pool pattern is used to process multiple files concurrently while limiting the number of concurrent workers.",
+    "complexity": {
+      "time": "O(n) where n is total characters across all files",
+      "space": "O(w) where w is the maximum words in a single file"
+    },
+    "keyPoints": [
+      "Worker pool pattern with goroutines",
+      "Channel communication between goroutines",
+      "Proper synchronization with sync.WaitGroup",
+      "Channel closing to prevent deadlocks"
+    ]
+  }
+}

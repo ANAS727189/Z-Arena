@@ -1,0 +1,73 @@
+{
+  "id": "cpp-template-metaprogramming",
+  "metadata": {
+    "title": "C++ Template Metaprogramming: Compile-Time Computations",
+    "description": "Implement template metaprogramming techniques for compile-time type manipulation and computation.\n\n## Learning Objectives\n- Template specialization and SFINAE\n- Compile-time programming with constexpr\n- Type traits and template metafunctions\n- Modern C++ template techniques",
+    "difficulty": "hard",
+    "points": 3,
+    "timeLimit": 25,
+    "tags": ["cpp", "templates", "metaprogramming", "constexpr", "sfinae"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-05T11:45:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["cpp"]
+  },
+  "problem": {
+    "statement": "Create a template metaprogramming library that provides compile-time type checking, mathematical operations, and container utilities.",
+    "inputFormat": "Test calls to your template functions",
+    "outputFormat": "Results of compile-time and runtime computations",
+    "constraints": "- All computations must be compile-time where possible\n- Use modern C++ template features\n- Implement SFINAE for type checking",
+    "examples": [
+      {
+        "input": "factorial<5>::value\\nis_container<vector<int>>::value",
+        "output": "120\\n1",
+        "explanation": "Compile-time factorial and type trait checking"
+      }
+    ]
+  },
+  "languages": {
+    "cpp": {
+      "starterCode": "#include <iostream>\n#include <vector>\n#include <string>\n#include <type_traits>\n\n// Compile-time factorial\ntemplate<int N>\nstruct factorial {\n    // Your implementation here\n};\n\n// Type trait to check if type is a container\ntemplate<typename T>\nstruct is_container {\n    // Your implementation here\n};\n\n// SFINAE-based function overloading\ntemplate<typename T>\nauto process_value(T&& value) -> typename std::enable_if<std::is_arithmetic<T>::value, void>::type {\n    // Handle arithmetic types\n}\n\ntemplate<typename T>\nauto process_value(T&& value) -> typename std::enable_if<!std::is_arithmetic<T>::value, void>::type {\n    // Handle non-arithmetic types\n}\n\n// Compile-time string length\ntemplate<char... chars>\nstruct string_literal {\n    // Your implementation here\n};\n\nint main() {\n    // Test factorial\n    std::cout << factorial<5>::value << std::endl;\n    \n    // Test container detection\n    std::cout << is_container<std::vector<int>>::value << std::endl;\n    std::cout << is_container<int>::value << std::endl;\n    \n    // Test SFINAE functions\n    process_value(42);\n    process_value(std::string(\"hello\"));\n    \n    return 0;\n}",
+      "solutionCode": "#include <iostream>\n#include <vector>\n#include <string>\n#include <type_traits>\n#include <utility>\n\n// Compile-time factorial\ntemplate<int N>\nstruct factorial {\n    static constexpr int value = N * factorial<N-1>::value;\n};\n\n// Specialization for base case\ntemplate<>\nstruct factorial<0> {\n    static constexpr int value = 1;\n};\n\n// Type trait to check if type is a container (has begin() and end())\ntemplate<typename T>\nclass is_container {\nprivate:\n    template<typename U>\n    static auto test(int) -> decltype(\n        std::declval<U>().begin(),\n        std::declval<U>().end(),\n        std::true_type{});\n    \n    template<typename>\n    static std::false_type test(...);\n    \npublic:\n    static constexpr bool value = decltype(test<T>(0))::value;\n};\n\n// SFINAE-based function overloading\ntemplate<typename T>\nauto process_value(T&& value) -> typename std::enable_if<std::is_arithmetic<T>::value, void>::type {\n    std::cout << \"Processing arithmetic value: \" << value << std::endl;\n}\n\ntemplate<typename T>\nauto process_value(T&& value) -> typename std::enable_if<!std::is_arithmetic<T>::value, void>::type {\n    std::cout << \"Processing non-arithmetic value\" << std::endl;\n}\n\n// Compile-time string length using variadic templates\ntemplate<char... chars>\nstruct string_literal {\n    static constexpr size_t length = sizeof...(chars);\n    static constexpr char data[] = {chars..., '\\0'};\n};\n\n// Helper for creating string literals\n#define STRING_LITERAL(str) []<size_t... I>(std::index_sequence<I...>) { \\\n    return string_literal<str[I]...>{}; \\\n}(std::make_index_sequence<sizeof(str)-1>{})\n\n// Compile-time power function\ntemplate<int base, int exp>\nstruct power {\n    static constexpr int value = base * power<base, exp-1>::value;\n};\n\ntemplate<int base>\nstruct power<base, 0> {\n    static constexpr int value = 1;\n};\n\n// Type list operations\ntemplate<typename... Types>\nstruct type_list {\n    static constexpr size_t size = sizeof...(Types);\n};\n\n// Get type at index\ntemplate<size_t Index, typename... Types>\nstruct type_at;\n\ntemplate<size_t Index, typename Head, typename... Tail>\nstruct type_at<Index, Head, Tail...> {\n    using type = typename type_at<Index-1, Tail...>::type;\n};\n\ntemplate<typename Head, typename... Tail>\nstruct type_at<0, Head, Tail...> {\n    using type = Head;\n};\n\nint main() {\n    // Test factorial\n    std::cout << factorial<5>::value << std::endl;\n    \n    // Test container detection\n    std::cout << is_container<std::vector<int>>::value << std::endl;\n    std::cout << is_container<int>::value << std::endl;\n    \n    // Test SFINAE functions\n    process_value(42);\n    process_value(std::string(\"hello\"));\n    \n    // Test power\n    std::cout << \"2^3 = \" << power<2, 3>::value << std::endl;\n    \n    // Test type list\n    std::cout << \"Type list size: \" << type_list<int, double, char>::size << std::endl;\n    \n    return 0;\n}",
+      "hints": [
+        "Use template specialization for base cases in recursive templates",
+        "SFINAE works with decltype and std::declval for type checking",
+        "constexpr enables compile-time computation",
+        "Variadic templates allow flexible parameter lists"
+      ],
+      "judge0Id": 76,
+      "compilerType": "judge0"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-factorial",
+      "input": "",
+      "output": "120\\n1\\n0\\nProcessing arithmetic value: 42\\nProcessing non-arithmetic value\\n2^3 = 8\\nType list size: 3",
+      "points": 7,
+      "isHidden": false,
+      "timeout": 5000
+    },
+    {
+      "id": "test-type-traits",
+      "input": "",
+      "output": "120\\n1\\n0",
+      "points": 3,
+      "isHidden": true,
+      "timeout": 5000
+    }
+  ],
+  "editorial": {
+    "approach": "Template metaprogramming enables compile-time computations and type manipulation, reducing runtime overhead and enabling powerful generic programming techniques.",
+    "complexity": {
+      "time": "O(1) runtime - all computations done at compile time",
+      "space": "O(1) runtime - templates generate specialized code"
+    },
+    "keyPoints": [
+      "Template specialization for recursive base cases",
+      "SFINAE for conditional template instantiation",
+      "constexpr for compile-time evaluation",
+      "Type traits for compile-time type checking"
+    ]
+  }
+}

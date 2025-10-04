@@ -1,0 +1,93 @@
+{
+  "id": "mixed-consistent-hashing",
+  "metadata": {
+    "title": "Consistent Hashing Implementation",
+    "description": "Implement consistent hashing for distributed systems load balancing.\n\n## Learning Objectives\n- Distributed systems concepts\n- Hash ring implementation\n- Load balancing algorithms\n- Scalable system design patterns",
+    "difficulty": "hard",
+    "points": 3,
+    "timeLimit": 30,
+    "tags": ["distributed-systems", "hashing", "load-balancing", "algorithms", "system-design"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-05T11:05:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["javascript", "python", "java", "go"]
+  },
+  "problem": {
+    "statement": "Implement a consistent hash ring for distributing keys across nodes. Support adding/removing nodes and finding which node handles a given key.",
+    "inputFormat": "Commands: 'add_node nodeName', 'remove_node nodeName', 'get_node key'",
+    "outputFormat": "For get_node: return the responsible node name",
+    "constraints": "- Use virtual nodes (replicas) for better distribution\n- Handle node addition/removal gracefully\n- Use simple hash function for consistency",
+    "examples": [
+      {
+        "input": "add_node server1\\nadd_node server2\\nget_node user123",
+        "output": "server1",
+        "explanation": "Key user123 is assigned to server1 based on hash ring position"
+      }
+    ]
+  },
+  "languages": {
+    "javascript": {
+      "starterCode": "class ConsistentHash {\n    constructor(replicas = 3) {\n        this.replicas = replicas;\n        this.ring = new Map();\n        this.nodes = new Set();\n    }\n    \n    hash(key) {\n        // Simple hash function\n        let hash = 0;\n        for (let i = 0; i < key.length; i++) {\n            hash = ((hash << 5) - hash + key.charCodeAt(i)) & 0xffffffff;\n        }\n        return Math.abs(hash);\n    }\n    \n    addNode(node) {\n        // Your implementation here\n    }\n    \n    removeNode(node) {\n        // Your implementation here\n    }\n    \n    getNode(key) {\n        // Your implementation here\n        return null;\n    }\n}\n\nfunction main() {\n    const input = require('fs').readFileSync('/dev/stdin', 'utf8').trim().split('\\n');\n    const ch = new ConsistentHash(3);\n    \n    input.forEach(line => {\n        const parts = line.split(' ');\n        const command = parts[0];\n        \n        if (command === 'add_node') {\n            ch.addNode(parts[1]);\n        } else if (command === 'remove_node') {\n            ch.removeNode(parts[1]);\n        } else if (command === 'get_node') {\n            const node = ch.getNode(parts[1]);\n            console.log(node || 'no_nodes');\n        }\n    });\n}\n\nmain();",
+      "solutionCode": "class ConsistentHash {\n    constructor(replicas = 3) {\n        this.replicas = replicas;\n        this.ring = new Map();\n        this.sortedKeys = [];\n        this.nodes = new Set();\n    }\n    \n    hash(key) {\n        // Simple hash function\n        let hash = 0;\n        for (let i = 0; i < key.length; i++) {\n            hash = ((hash << 5) - hash + key.charCodeAt(i)) & 0xffffffff;\n        }\n        return Math.abs(hash);\n    }\n    \n    addNode(node) {\n        this.nodes.add(node);\n        \n        // Add virtual nodes\n        for (let i = 0; i < this.replicas; i++) {\n            const virtualKey = this.hash(`${node}:${i}`);\n            this.ring.set(virtualKey, node);\n        }\n        \n        this.updateSortedKeys();\n    }\n    \n    removeNode(node) {\n        this.nodes.delete(node);\n        \n        // Remove virtual nodes\n        for (let i = 0; i < this.replicas; i++) {\n            const virtualKey = this.hash(`${node}:${i}`);\n            this.ring.delete(virtualKey);\n        }\n        \n        this.updateSortedKeys();\n    }\n    \n    updateSortedKeys() {\n        this.sortedKeys = Array.from(this.ring.keys()).sort((a, b) => a - b);\n    }\n    \n    getNode(key) {\n        if (this.sortedKeys.length === 0) {\n            return null;\n        }\n        \n        const keyHash = this.hash(key);\n        \n        // Find the first node with hash >= keyHash\n        for (const ringKey of this.sortedKeys) {\n            if (ringKey >= keyHash) {\n                return this.ring.get(ringKey);\n            }\n        }\n        \n        // If no node found, wrap around to the first node\n        return this.ring.get(this.sortedKeys[0]);\n    }\n}\n\nfunction main() {\n    const input = require('fs').readFileSync('/dev/stdin', 'utf8').trim().split('\\n');\n    const ch = new ConsistentHash(3);\n    \n    input.forEach(line => {\n        const parts = line.split(' ');\n        const command = parts[0];\n        \n        if (command === 'add_node') {\n            ch.addNode(parts[1]);\n        } else if (command === 'remove_node') {\n            ch.removeNode(parts[1]);\n        } else if (command === 'get_node') {\n            const node = ch.getNode(parts[1]);\n            console.log(node || 'no_nodes');\n        }\n    });\n}\n\nmain();",
+      "hints": [
+        "Use virtual nodes (replicas) for better key distribution",
+        "Maintain sorted list of hash ring positions",
+        "Find first node with hash value >= key hash",
+        "Wrap around to first node if key hash is largest"
+      ],
+      "judge0Id": 93,
+      "compilerType": "judge0"
+    },
+    "python": {
+      "starterCode": "class ConsistentHash:\n    def __init__(self, replicas=3):\n        self.replicas = replicas\n        self.ring = {}\n        self.sorted_keys = []\n        self.nodes = set()\n    \n    def hash(self, key):\n        # Simple hash function\n        h = 0\n        for char in key:\n            h = ((h << 5) - h + ord(char)) & 0xffffffff\n        return abs(h)\n    \n    def add_node(self, node):\n        # Your implementation here\n        pass\n    \n    def remove_node(self, node):\n        # Your implementation here\n        pass\n    \n    def get_node(self, key):\n        # Your implementation here\n        return None\n\ndef main():\n    import sys\n    lines = sys.stdin.read().strip().split('\\n')\n    ch = ConsistentHash(3)\n    \n    for line in lines:\n        parts = line.split()\n        command = parts[0]\n        \n        if command == 'add_node':\n            ch.add_node(parts[1])\n        elif command == 'remove_node':\n            ch.remove_node(parts[1])\n        elif command == 'get_node':\n            node = ch.get_node(parts[1])\n            print(node if node else 'no_nodes')\n\nif __name__ == '__main__':\n    main()",
+      "solutionCode": "import bisect\n\nclass ConsistentHash:\n    def __init__(self, replicas=3):\n        self.replicas = replicas\n        self.ring = {}\n        self.sorted_keys = []\n        self.nodes = set()\n    \n    def hash(self, key):\n        # Simple hash function\n        h = 0\n        for char in key:\n            h = ((h << 5) - h + ord(char)) & 0xffffffff\n        return abs(h)\n    \n    def add_node(self, node):\n        self.nodes.add(node)\n        \n        # Add virtual nodes\n        for i in range(self.replicas):\n            virtual_key = self.hash(f\"{node}:{i}\")\n            self.ring[virtual_key] = node\n        \n        self.update_sorted_keys()\n    \n    def remove_node(self, node):\n        self.nodes.discard(node)\n        \n        # Remove virtual nodes\n        for i in range(self.replicas):\n            virtual_key = self.hash(f\"{node}:{i}\")\n            if virtual_key in self.ring:\n                del self.ring[virtual_key]\n        \n        self.update_sorted_keys()\n    \n    def update_sorted_keys(self):\n        self.sorted_keys = sorted(self.ring.keys())\n    \n    def get_node(self, key):\n        if not self.sorted_keys:\n            return None\n        \n        key_hash = self.hash(key)\n        \n        # Find the first node with hash >= key_hash\n        idx = bisect.bisect_left(self.sorted_keys, key_hash)\n        \n        if idx == len(self.sorted_keys):\n            # Wrap around to the first node\n            idx = 0\n        \n        return self.ring[self.sorted_keys[idx]]\n\ndef main():\n    import sys\n    lines = sys.stdin.read().strip().split('\\n')\n    ch = ConsistentHash(3)\n    \n    for line in lines:\n        parts = line.split()\n        command = parts[0]\n        \n        if command == 'add_node':\n            ch.add_node(parts[1])\n        elif command == 'remove_node':\n            ch.remove_node(parts[1])\n        elif command == 'get_node':\n            node = ch.get_node(parts[1])\n            print(node if node else 'no_nodes')\n\nif __name__ == '__main__':\n    main()",
+      "hints": [
+        "Use bisect module for efficient sorted list operations",
+        "Create virtual nodes by hashing node:replica_number",
+        "Use bisect_left to find insertion point",
+        "Handle wrap-around when key hash exceeds all ring positions"
+      ],
+      "judge0Id": 92,
+      "compilerType": "judge0"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-basic",
+      "input": "add_node server1\\nadd_node server2\\nget_node user123",
+      "output": "server1",
+      "points": 5,
+      "isHidden": false,
+      "timeout": 3000
+    },
+    {
+      "id": "test-removal",
+      "input": "add_node server1\\nadd_node server2\\nremove_node server1\\nget_node user123",
+      "output": "server2",
+      "points": 3,
+      "isHidden": false,
+      "timeout": 2000
+    },
+    {
+      "id": "test-no-nodes",
+      "input": "get_node user123",
+      "output": "no_nodes",
+      "points": 2,
+      "isHidden": true,
+      "timeout": 2000
+    }
+  ],
+  "editorial": {
+    "approach": "Consistent hashing uses a hash ring with virtual nodes to distribute keys evenly across nodes. Virtual nodes improve load distribution when nodes are added or removed.",
+    "complexity": {
+      "time": "O(log n) for get_node, O(v log v) for add/remove where v is virtual nodes",
+      "space": "O(v) where v is total virtual nodes"
+    },
+    "keyPoints": [
+      "Hash ring with virtual nodes for better distribution",
+      "Binary search for efficient node lookup",
+      "Graceful handling of node additions and removals",
+      "Wrap-around logic for ring topology"
+    ]
+  }
+}

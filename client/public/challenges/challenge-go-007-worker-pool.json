@@ -1,0 +1,81 @@
+{
+  "id": "go-worker-pool",
+  "metadata": {
+    "title": "Generic Worker Pool Pattern",
+    "description": "Implement a generic worker pool that can process any type of job using Go generics.\n\n## Learning Objectives\n- Go generics and type parameters\n- Worker pool concurrency pattern\n- Channel-based job distribution\n- Generic interface design",
+    "difficulty": "medium",
+    "points": 2,
+    "timeLimit": 20,
+    "tags": ["go", "generics", "worker-pool", "concurrency", "channels"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-05T10:50:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["go"]
+  },
+  "problem": {
+    "statement": "Create a generic worker pool that processes integer jobs (doubling each number). Use 3 workers and process a series of numbers.",
+    "inputFormat": "First line: number of jobs. Second line: space-separated integers to process",
+    "outputFormat": "Results in order of completion (each number doubled)",
+    "constraints": "- Use Go generics for type safety\n- Exactly 3 worker goroutines\n- Results may be out of order",
+    "examples": [
+      {
+        "input": "4\\n1 2 3 4",
+        "output": "2 4 6 8",
+        "explanation": "Each number is doubled by workers (order may vary)"
+      }
+    ]
+  },
+  "languages": {
+    "go": {
+      "starterCode": "package main\n\nimport (\n\t\"fmt\"\n\t\"sort\"\n\t\"sync\"\n)\n\ntype Job[T any] struct {\n\tID   int\n\tData T\n}\n\ntype Result[T any] struct {\n\tID   int\n\tData T\n}\n\ntype WorkerPool[T any] struct {\n\t// Your implementation here\n}\n\nfunc NewWorkerPool[T any](numWorkers int, processor func(T) T) *WorkerPool[T] {\n\t// Your implementation here\n\treturn nil\n}\n\nfunc (wp *WorkerPool[T]) Submit(job Job[T]) {\n\t// Your implementation here\n}\n\nfunc (wp *WorkerPool[T]) GetResults() []Result[T] {\n\t// Your implementation here\n\treturn nil\n}\n\nfunc (wp *WorkerPool[T]) Close() {\n\t// Your implementation here\n}\n\nfunc main() {\n\tvar numJobs int\n\tfmt.Scan(&numJobs)\n\t\n\tnumbers := make([]int, numJobs)\n\tfor i := 0; i < numJobs; i++ {\n\t\tfmt.Scan(&numbers[i])\n\t}\n\t\n\t// Create worker pool that doubles numbers\n\tprocessor := func(x int) int { return x * 2 }\n\twp := NewWorkerPool(3, processor)\n\t\n\t// Submit jobs\n\tfor i, num := range numbers {\n\t\twp.Submit(Job[int]{ID: i, Data: num})\n\t}\n\t\n\twp.Close()\n\tresults := wp.GetResults()\n\t\n\t// Sort results by ID to maintain order\n\tsort.Slice(results, func(i, j int) bool {\n\t\treturn results[i].ID < results[j].ID\n\t})\n\t\n\tfor i, result := range results {\n\t\tif i > 0 {\n\t\t\tfmt.Print(\" \")\n\t\t}\n\t\tfmt.Print(result.Data)\n\t}\n\tfmt.Println()\n}",
+      "solutionCode": "package main\n\nimport (\n\t\"fmt\"\n\t\"sort\"\n\t\"sync\"\n)\n\ntype Job[T any] struct {\n\tID   int\n\tData T\n}\n\ntype Result[T any] struct {\n\tID   int\n\tData T\n}\n\ntype WorkerPool[T any] struct {\n\tnumWorkers int\n\tprocessor  func(T) T\n\tjobs       chan Job[T]\n\tresults    chan Result[T]\n\twg         sync.WaitGroup\n\tallResults []Result[T]\n\tmu         sync.Mutex\n}\n\nfunc NewWorkerPool[T any](numWorkers int, processor func(T) T) *WorkerPool[T] {\n\twp := &WorkerPool[T]{\n\t\tnumWorkers: numWorkers,\n\t\tprocessor:  processor,\n\t\tjobs:       make(chan Job[T], 100),\n\t\tresults:    make(chan Result[T], 100),\n\t}\n\t\n\t// Start workers\n\tfor i := 0; i < numWorkers; i++ {\n\t\twp.wg.Add(1)\n\t\tgo wp.worker()\n\t}\n\t\n\t// Start result collector\n\tgo wp.collectResults()\n\t\n\treturn wp\n}\n\nfunc (wp *WorkerPool[T]) worker() {\n\tdefer wp.wg.Done()\n\tfor job := range wp.jobs {\n\t\tprocessedData := wp.processor(job.Data)\n\t\twp.results <- Result[T]{ID: job.ID, Data: processedData}\n\t}\n}\n\nfunc (wp *WorkerPool[T]) collectResults() {\n\tfor result := range wp.results {\n\t\twp.mu.Lock()\n\t\twp.allResults = append(wp.allResults, result)\n\t\twp.mu.Unlock()\n\t}\n}\n\nfunc (wp *WorkerPool[T]) Submit(job Job[T]) {\n\twp.jobs <- job\n}\n\nfunc (wp *WorkerPool[T]) Close() {\n\tclose(wp.jobs)\n\twp.wg.Wait()\n\tclose(wp.results)\n}\n\nfunc (wp *WorkerPool[T]) GetResults() []Result[T] {\n\twp.mu.Lock()\n\tdefer wp.mu.Unlock()\n\treturn wp.allResults\n}\n\nfunc main() {\n\tvar numJobs int\n\tfmt.Scan(&numJobs)\n\t\n\tnumbers := make([]int, numJobs)\n\tfor i := 0; i < numJobs; i++ {\n\t\tfmt.Scan(&numbers[i])\n\t}\n\t\n\t// Create worker pool that doubles numbers\n\tprocessor := func(x int) int { return x * 2 }\n\twp := NewWorkerPool(3, processor)\n\t\n\t// Submit jobs\n\tfor i, num := range numbers {\n\t\twp.Submit(Job[int]{ID: i, Data: num})\n\t}\n\t\n\twp.Close()\n\tresults := wp.GetResults()\n\t\n\t// Sort results by ID to maintain order\n\tsort.Slice(results, func(i, j int) bool {\n\t\treturn results[i].ID < results[j].ID\n\t})\n\t\n\tfor i, result := range results {\n\t\tif i > 0 {\n\t\t\tfmt.Print(\" \")\n\t\t}\n\t\tfmt.Print(result.Data)\n\t}\n\tfmt.Println()\n}",
+      "hints": [
+        "Use type parameters [T any] for generics",
+        "Create buffered channels for jobs and results",
+        "Use sync.WaitGroup to wait for workers",
+        "Collect results in a separate goroutine"
+      ],
+      "judge0Id": 95,
+      "compilerType": "judge0"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-basic",
+      "input": "4\\n1 2 3 4",
+      "output": "2 4 6 8",
+      "points": 5,
+      "isHidden": false,
+      "timeout": 3000
+    },
+    {
+      "id": "test-single",
+      "input": "1\\n5",
+      "output": "10",
+      "points": 3,
+      "isHidden": false,
+      "timeout": 2000
+    },
+    {
+      "id": "test-many",
+      "input": "6\\n1 3 5 7 9 11",
+      "output": "2 6 10 14 18 22",
+      "points": 2,
+      "isHidden": true,
+      "timeout": 3000
+    }
+  ],
+  "editorial": {
+    "approach": "Generic worker pool uses Go's type parameters to provide type-safe job processing. Workers consume from a job channel and produce results concurrently.",
+    "complexity": {
+      "time": "O(n/w) where n is jobs and w is workers",
+      "space": "O(n) for storing jobs and results"
+    },
+    "keyPoints": [
+      "Go generics with type parameters [T any]",
+      "Channel-based job distribution pattern",
+      "Concurrent result collection with mutex",
+      "Proper resource cleanup with channel closing"
+    ]
+  }
+}

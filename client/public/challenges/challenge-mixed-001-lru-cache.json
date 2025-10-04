@@ -1,0 +1,93 @@
+{
+  "id": "mixed-lru-cache",
+  "metadata": {
+    "title": "LRU Cache Implementation",
+    "description": "Implement a Least Recently Used (LRU) cache with O(1) get and put operations.\n\n## Learning Objectives\n- Cache algorithms and data structures\n- Hash map and doubly linked list combination\n- Memory management and eviction policies\n- Algorithm optimization techniques",
+    "difficulty": "hard",
+    "points": 3,
+    "timeLimit": 30,
+    "tags": ["algorithms", "cache", "data-structures", "optimization", "system-design"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-05T10:45:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["javascript", "python", "java", "cpp", "go"]
+  },
+  "problem": {
+    "statement": "Design and implement an LRU (Least Recently Used) cache with specified capacity. Support get(key) and put(key, value) operations, both in O(1) time complexity.",
+    "inputFormat": "First line: cache capacity. Following lines: operations 'get key' or 'put key value'",
+    "outputFormat": "For get operations: return value if exists, -1 if not found. For put operations: no output unless eviction occurs",
+    "constraints": "- Capacity between 1 and 1000\n- Both operations must be O(1)\n- Evict least recently used item when full",
+    "examples": [
+      {
+        "input": "2\\nput 1 10\\nput 2 20\\nget 1\\nput 3 30\\nget 2",
+        "output": "10\\n-1",
+        "explanation": "Cache capacity 2: put(1,10), put(2,20), get(1)→10, put(3,30) evicts 2, get(2)→-1"
+      }
+    ]
+  },
+  "languages": {
+    "javascript": {
+      "starterCode": "class LRUCache {\n    constructor(capacity) {\n        this.capacity = capacity;\n        // Your implementation here\n    }\n    \n    get(key) {\n        // Your implementation here\n        return -1;\n    }\n    \n    put(key, value) {\n        // Your implementation here\n    }\n}\n\nfunction main() {\n    const input = require('fs').readFileSync('/dev/stdin', 'utf8').trim().split('\\n');\n    const capacity = parseInt(input[0]);\n    const cache = new LRUCache(capacity);\n    \n    for (let i = 1; i < input.length; i++) {\n        const parts = input[i].split(' ');\n        const operation = parts[0];\n        \n        if (operation === 'get') {\n            const key = parseInt(parts[1]);\n            console.log(cache.get(key));\n        } else if (operation === 'put') {\n            const key = parseInt(parts[1]);\n            const value = parseInt(parts[2]);\n            cache.put(key, value);\n        }\n    }\n}\n\nmain();",
+      "solutionCode": "class Node {\n    constructor(key = 0, value = 0) {\n        this.key = key;\n        this.value = value;\n        this.prev = null;\n        this.next = null;\n    }\n}\n\nclass LRUCache {\n    constructor(capacity) {\n        this.capacity = capacity;\n        this.cache = new Map();\n        \n        // Dummy head and tail nodes\n        this.head = new Node();\n        this.tail = new Node();\n        this.head.next = this.tail;\n        this.tail.prev = this.head;\n    }\n    \n    addToHead(node) {\n        node.prev = this.head;\n        node.next = this.head.next;\n        this.head.next.prev = node;\n        this.head.next = node;\n    }\n    \n    removeNode(node) {\n        node.prev.next = node.next;\n        node.next.prev = node.prev;\n    }\n    \n    moveToHead(node) {\n        this.removeNode(node);\n        this.addToHead(node);\n    }\n    \n    popTail() {\n        const lastNode = this.tail.prev;\n        this.removeNode(lastNode);\n        return lastNode;\n    }\n    \n    get(key) {\n        const node = this.cache.get(key);\n        if (node === undefined) {\n            return -1;\n        }\n        \n        // Move accessed node to head\n        this.moveToHead(node);\n        return node.value;\n    }\n    \n    put(key, value) {\n        const node = this.cache.get(key);\n        \n        if (node === undefined) {\n            const newNode = new Node(key, value);\n            \n            if (this.cache.size >= this.capacity) {\n                // Remove least recently used\n                const tail = this.popTail();\n                this.cache.delete(tail.key);\n            }\n            \n            this.cache.set(key, newNode);\n            this.addToHead(newNode);\n        } else {\n            // Update existing node\n            node.value = value;\n            this.moveToHead(node);\n        }\n    }\n}\n\nfunction main() {\n    const input = require('fs').readFileSync('/dev/stdin', 'utf8').trim().split('\\n');\n    const capacity = parseInt(input[0]);\n    const cache = new LRUCache(capacity);\n    \n    for (let i = 1; i < input.length; i++) {\n        const parts = input[i].split(' ');\n        const operation = parts[0];\n        \n        if (operation === 'get') {\n            const key = parseInt(parts[1]);\n            console.log(cache.get(key));\n        } else if (operation === 'put') {\n            const key = parseInt(parts[1]);\n            const value = parseInt(parts[2]);\n            cache.put(key, value);\n        }\n    }\n}\n\nmain();",
+      "hints": [
+        "Use HashMap for O(1) key lookup",
+        "Use doubly linked list for O(1) insertion/deletion",
+        "Maintain head (most recent) and tail (least recent)",
+        "Move accessed nodes to head, evict from tail"
+      ],
+      "judge0Id": 93,
+      "compilerType": "judge0"
+    },
+    "python": {
+      "starterCode": "class LRUCache:\n    def __init__(self, capacity):\n        self.capacity = capacity\n        # Your implementation here\n    \n    def get(self, key):\n        # Your implementation here\n        return -1\n    \n    def put(self, key, value):\n        # Your implementation here\n        pass\n\ndef main():\n    import sys\n    lines = sys.stdin.read().strip().split('\\n')\n    capacity = int(lines[0])\n    cache = LRUCache(capacity)\n    \n    for i in range(1, len(lines)):\n        parts = lines[i].split()\n        operation = parts[0]\n        \n        if operation == 'get':\n            key = int(parts[1])\n            print(cache.get(key))\n        elif operation == 'put':\n            key = int(parts[1])\n            value = int(parts[2])\n            cache.put(key, value)\n\nif __name__ == '__main__':\n    main()",
+      "solutionCode": "class Node:\n    def __init__(self, key=0, value=0):\n        self.key = key\n        self.value = value\n        self.prev = None\n        self.next = None\n\nclass LRUCache:\n    def __init__(self, capacity):\n        self.capacity = capacity\n        self.cache = {}\n        \n        # Dummy head and tail\n        self.head = Node()\n        self.tail = Node()\n        self.head.next = self.tail\n        self.tail.prev = self.head\n    \n    def add_to_head(self, node):\n        node.prev = self.head\n        node.next = self.head.next\n        self.head.next.prev = node\n        self.head.next = node\n    \n    def remove_node(self, node):\n        node.prev.next = node.next\n        node.next.prev = node.prev\n    \n    def move_to_head(self, node):\n        self.remove_node(node)\n        self.add_to_head(node)\n    \n    def pop_tail(self):\n        last_node = self.tail.prev\n        self.remove_node(last_node)\n        return last_node\n    \n    def get(self, key):\n        node = self.cache.get(key)\n        if not node:\n            return -1\n        \n        self.move_to_head(node)\n        return node.value\n    \n    def put(self, key, value):\n        node = self.cache.get(key)\n        \n        if not node:\n            new_node = Node(key, value)\n            \n            if len(self.cache) >= self.capacity:\n                tail = self.pop_tail()\n                del self.cache[tail.key]\n            \n            self.cache[key] = new_node\n            self.add_to_head(new_node)\n        else:\n            node.value = value\n            self.move_to_head(node)\n\ndef main():\n    import sys\n    lines = sys.stdin.read().strip().split('\\n')\n    capacity = int(lines[0])\n    cache = LRUCache(capacity)\n    \n    for i in range(1, len(lines)):\n        parts = lines[i].split()\n        operation = parts[0]\n        \n        if operation == 'get':\n            key = int(parts[1])\n            print(cache.get(key))\n        elif operation == 'put':\n            key = int(parts[1])\n            value = int(parts[2])\n            cache.put(key, value)\n\nif __name__ == '__main__':\n    main()",
+      "hints": [
+        "Combine dict/HashMap with doubly linked list",
+        "Use dummy head/tail nodes to simplify edge cases",
+        "Always move accessed items to front",
+        "Evict from rear when capacity exceeded"
+      ],
+      "judge0Id": 92,
+      "compilerType": "judge0"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-basic",
+      "input": "2\\nput 1 10\\nput 2 20\\nget 1\\nput 3 30\\nget 2",
+      "output": "10\\n-1",
+      "points": 5,
+      "isHidden": false,
+      "timeout": 3000
+    },
+    {
+      "id": "test-update",
+      "input": "2\\nput 1 10\\nput 1 20\\nget 1",
+      "output": "20",
+      "points": 3,
+      "isHidden": false,
+      "timeout": 2000
+    },
+    {
+      "id": "test-eviction",
+      "input": "1\\nput 1 10\\nput 2 20\\nget 1",
+      "output": "-1",
+      "points": 2,
+      "isHidden": true,
+      "timeout": 2000
+    }
+  ],
+  "editorial": {
+    "approach": "LRU Cache combines HashMap for O(1) key access with doubly linked list for O(1) insertion/deletion. Most recent items stay at head, least recent at tail.",
+    "complexity": {
+      "time": "O(1) for both get and put operations",
+      "space": "O(capacity) for storing cache entries"
+    },
+    "keyPoints": [
+      "HashMap + Doubly Linked List combination",
+      "Dummy head/tail nodes simplify edge cases",
+      "Move-to-head operation for access tracking",
+      "Tail eviction when capacity exceeded"
+    ]
+  }
+}
