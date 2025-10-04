@@ -1,6 +1,5 @@
 import { AuthModal } from '@/components/AuthModal';
 import {
-  Navigation,
   ChallengesHeader,
   SearchAndFilters,
   ChallengeCard,
@@ -17,7 +16,6 @@ export const ChallengesPage: React.FC = () => {
     loading,
     error,
     seeding,
-    user,
     supportedLanguages,
     showAuthModal,
 
@@ -28,12 +26,7 @@ export const ChallengesPage: React.FC = () => {
 
     // Handlers
     handleSeedChallenges,
-    handleNavigateHome,
-    handleNavigateChallenges,
-    handleNavigateLeaderboard,
     handleChallengeClick,
-    handleSignIn,
-    handleSignOut,
     handleCloseAuthModal,
     handleSearchChange,
     handleDifficultyChange,
@@ -41,16 +34,7 @@ export const ChallengesPage: React.FC = () => {
   } = useChallenges();
 
   return (
-    <div className="min-h-screen bg-[var(--background-primary)]">
-      <Navigation
-        user={user}
-        onNavigateHome={handleNavigateHome}
-        onNavigateChallenges={handleNavigateChallenges}
-        onNavigateLeaderboard={handleNavigateLeaderboard}
-        onSignIn={handleSignIn}
-        onSignOut={handleSignOut}
-      />
-
+    <>
       <div className="max-w-7xl mx-auto px-4 py-8">
         <ChallengesHeader
           onSeedChallenges={handleSeedChallenges}
@@ -87,6 +71,6 @@ export const ChallengesPage: React.FC = () => {
       </div>
 
       <AuthModal isOpen={showAuthModal} onClose={handleCloseAuthModal} />
-    </div>
+    </>
   );
 };

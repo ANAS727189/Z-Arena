@@ -1,8 +1,8 @@
-# Z-Challenge Platform - Multi-Language Programming Challenge System
+# Z-Arena - Multi-Language Programming Challenge System
 
 ## 🎯 Project Overview
 
-Z-Challenge Platform is a competitive programming platform. It supports both the custom Z-- programming language and popular languages like C++, Python, Java, JavaScript, and Rust through Judge0 API integration.
+Z-Arena is a competitive programming platform. It supports both the custom Z-- programming language and popular languages like C++, Python, Java, JavaScript, and Rust through Judge0 API integration.
 
 ## 🚀 Key Features
 

@@ -3,4 +3,5 @@ export { ChallengesPage } from './ChallengesPage';
 export { ChallengePage } from './ChallengePage';
 export { LeaderboardPage } from './LeaderboardPage';
 export { ProfilePage } from './ProfilePage';
+export { SettingsPage } from './SettingsPage';
 export { NotFoundPage } from './NotFoundPage';
