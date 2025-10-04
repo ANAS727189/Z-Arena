@@ -260,7 +260,7 @@ export const ProblemDescription: React.FC<ProblemDescriptionProps> = ({
         {activeTab === 'submissions' && (
           <div className="space-y-4">
             {showSubmissionResult && submissionResult ? (
-              <SubmissionResult 
+              <SubmissionResult
                 submissionResult={submissionResult}
                 challenge={challenge}
               />

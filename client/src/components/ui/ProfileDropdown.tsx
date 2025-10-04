@@ -8,7 +8,9 @@ interface ProfileDropdownProps {
   className?: string;
 }
 
-export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ className = '' }) => {
+export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
+  className = '',
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { user, logout } = useAuth();
@@ -17,7 +19,10 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({ className = ''
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };

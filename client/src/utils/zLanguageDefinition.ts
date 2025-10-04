@@ -35,52 +35,55 @@ export const defineZLanguage = (monaco: any) => {
     tokenizer: {
       root: [
         // Keywords
-        [/(function|if|else|while|for|return|var|let|const|main|print|input|true|false|null|int|float|string|bool|void)/, 'keyword'],
-        
+        [
+          /(function|if|else|while|for|return|var|let|const|main|print|input|true|false|null|int|float|string|bool|void)/,
+          'keyword',
+        ],
+
         // Comments
         [/\/\/.*$/, 'comment'],
         [/\/\*/, 'comment', '@comment'],
-        
+
         // Strings
         [/"([^"\\]|\\.)*$/, 'string.invalid'],
         [/"/, 'string', '@string'],
         [/'([^'\\]|\\.)*$/, 'string.invalid'],
         [/'/, 'string', '@stringSingle'],
-        
+
         // Numbers
         [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
         [/\d+/, 'number'],
-        
+
         // Identifiers
         [/[a-zA-Z_$][\w$]*/, 'identifier'],
-        
+
         // Operators
         [/[=><!~?:&|+\-*\/\^%]+/, 'operator'],
-        
+
         // Brackets and delimiters
         [/[{}()\[\]]/, 'delimiter.bracket'],
         [/[;,.]/, 'delimiter'],
-        
+
         // Whitespace
         [/[ \t\r\n]+/, 'white'],
       ],
-      
+
       comment: [
         [/[^\/*]+/, 'comment'],
         [/\*\//, 'comment', '@pop'],
-        [/[\/*]/, 'comment']
+        [/[\/*]/, 'comment'],
       ],
-      
+
       string: [
         [/[^\\"]+/, 'string'],
         [/\\./, 'string.escape'],
-        [/"/, 'string', '@pop']
+        [/"/, 'string', '@pop'],
       ],
-      
+
       stringSingle: [
         [/[^\\']+/, 'string'],
         [/\\./, 'string.escape'],
-        [/'/, 'string', '@pop']
+        [/'/, 'string', '@pop'],
       ],
     },
   });

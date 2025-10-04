@@ -42,8 +42,16 @@ class CloudinaryService {
     this.cloudName = CLOUDINARY_CLOUD_NAME;
     this.uploadPreset = CLOUDINARY_UPLOAD_PRESET;
 
+    // Debug logging
+    console.log('Cloudinary Config:', {
+      cloudName: this.cloudName,
+      uploadPreset: this.uploadPreset,
+    });
+
     if (!this.cloudName || !this.uploadPreset) {
-      console.warn('Cloudinary configuration is missing. Please set VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET in your .env file');
+      console.error(
+        'Cloudinary configuration is missing. Please set VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET in your .env file'
+      );
     }
   }
 
@@ -74,22 +82,21 @@ class CloudinaryService {
       throw new Error('File size must be less than 10MB');
     }
 
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', this.uploadPreset);
-    
-    if (folder) {
-      formData.append('folder', folder);
-    }
-
-    if (transformation) {
-      formData.append('transformation', transformation);
-    }
-
-    // Add tags for better organization
-    formData.append('tags', 'z-challenge,profile-picture');
-
     try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', this.uploadPreset);
+      
+      // Only allowed parameters for unsigned uploads
+      formData.append('folder', 'z-challenge/profiles');
+      formData.append('public_id_prefix', 'profile_');
+      
+      console.log('Uploading to Cloudinary with:', {
+        cloudName: this.cloudName,
+        uploadPreset: this.uploadPreset,
+        url: `https://api.cloudinary.com/v1_1/${this.cloudName}/image/upload`
+      });
+
       const response = await fetch(
         `https://api.cloudinary.com/v1_1/${this.cloudName}/image/upload`,
         {
@@ -100,10 +107,12 @@ class CloudinaryService {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error?.message || 'Upload failed');
+        console.error('Cloudinary error response:', errorData);
+        throw new Error(errorData.error?.message || `Upload failed with status ${response.status}`);
       }
 
       const result: CloudinaryUploadResponse = await response.json();
+      console.log('Cloudinary upload success:', result);
       return result;
     } catch (error) {
       console.error('Cloudinary upload error:', error);
@@ -126,8 +135,10 @@ class CloudinaryService {
 
     // Note: For security reasons, image deletion typically requires backend implementation
     // with API key and secret. This is a placeholder for the frontend.
-    console.warn('Image deletion should be implemented on the backend for security');
-    
+    console.warn(
+      'Image deletion should be implemented on the backend for security'
+    );
+
     // In a real implementation, you would call your backend API endpoint
     // that handles Cloudinary deletion with proper authentication
     throw new Error('Image deletion must be implemented on the backend');
@@ -160,7 +171,7 @@ class CloudinaryService {
       crop = 'fill',
       quality = 'auto',
       format = 'auto',
-      radius
+      radius,
     } = transformations;
 
     let transformationString = '';
@@ -190,20 +201,20 @@ class CloudinaryService {
       const urlParts = url.split('/');
       const uploadIndex = urlParts.findIndex(part => part === 'upload');
       if (uploadIndex === -1) return '';
-      
+
       // Skip transformation parameters and get the public ID
       let publicIdParts = urlParts.slice(uploadIndex + 1);
-      
+
       // Remove transformation parameters (they start with w_, h_, c_, etc.)
       while (publicIdParts.length > 0 && publicIdParts[0].includes('_')) {
         publicIdParts.shift();
       }
-      
+
       // Join the remaining parts and remove file extension
       const publicIdWithExtension = publicIdParts.join('/');
       const lastDotIndex = publicIdWithExtension.lastIndexOf('.');
-      
-      return lastDotIndex > 0 
+
+      return lastDotIndex > 0
         ? publicIdWithExtension.substring(0, lastDotIndex)
         : publicIdWithExtension;
     } catch (error) {

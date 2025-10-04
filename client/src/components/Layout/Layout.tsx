@@ -8,9 +8,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen bg-[var(--background-primary)] text-[var(--text-primary)]">
       <Navigation />
-      <main className="pt-4">
-        {children}
-      </main>
+      <main className="pt-4">{children}</main>
     </div>
   );
 };

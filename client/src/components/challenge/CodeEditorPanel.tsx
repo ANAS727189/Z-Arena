@@ -23,7 +23,7 @@ import {
   solarizedDarkTheme,
   solarizedLightTheme,
   monokaiTheme,
-  nightOwlTheme
+  nightOwlTheme,
 } from '../../themes/page';
 import type { editor as MonacoEditor } from 'monaco-editor';
 import { TestResults } from './TestResults';
@@ -87,65 +87,89 @@ export const CodeEditorPanel: React.FC<CodeEditorPanelProps> = ({
         tokenizer: {
           root: [
             // Keywords
-            [/(function|if|else|while|for|return|var|let|const|main|print|input|true|false|null|int|float|string|bool|void)/, 'keyword'],
-            
+            [
+              /(function|if|else|while|for|return|var|let|const|main|print|input|true|false|null|int|float|string|bool|void)/,
+              'keyword',
+            ],
+
             // Comments
             [/\/\/.*$/, 'comment'],
             [/\/\*/, 'comment', '@comment'],
-            
+
             // Strings
             [/"([^"\\]|\\.)*$/, 'string.invalid'],
             [/"/, 'string', '@string'],
             [/'([^'\\]|\\.)*$/, 'string.invalid'],
             [/'/, 'string', '@stringSingle'],
-            
+
             // Numbers
             [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
             [/\d+/, 'number'],
-            
+
             // Identifiers
             [/[a-zA-Z_$][\w$]*/, 'identifier'],
-            
+
             // Operators
             [/[=><!~?:&|+\-*\/\^%]+/, 'operator'],
-            
+
             // Brackets and delimiters
             [/[{}()\[\]]/, 'delimiter.bracket'],
             [/[;,.]/, 'delimiter'],
-            
+
             // Whitespace
             [/[ \t\r\n]+/, 'white'],
           ],
-          
+
           comment: [
             [/[^\/*]+/, 'comment'],
             [/\*\//, 'comment', '@pop'],
-            [/[\/*]/, 'comment']
+            [/[\/*]/, 'comment'],
           ],
-          
+
           string: [
             [/[^\\"]+/, 'string'],
             [/\\./, 'string.escape'],
-            [/"/, 'string', '@pop']
+            [/"/, 'string', '@pop'],
           ],
-          
+
           stringSingle: [
             [/[^\\']+/, 'string'],
             [/\\./, 'string.escape'],
-            [/'/, 'string', '@pop']
+            [/'/, 'string', '@pop'],
           ],
         },
       });
 
       // Define themes exactly like main Z Studio
-      monaco.editor.defineTheme('dracula', draculaTheme as MonacoEditor.IStandaloneThemeData);
-      monaco.editor.defineTheme('github-dark', githubDarkTheme as MonacoEditor.IStandaloneThemeData);
-      monaco.editor.defineTheme('github-light', githubLightTheme as MonacoEditor.IStandaloneThemeData);
-      monaco.editor.defineTheme('solarized-dark', solarizedDarkTheme as MonacoEditor.IStandaloneThemeData);
-      monaco.editor.defineTheme('solarized-light', solarizedLightTheme as MonacoEditor.IStandaloneThemeData);
-      monaco.editor.defineTheme('monokai', monokaiTheme as MonacoEditor.IStandaloneThemeData);
-      monaco.editor.defineTheme('night-owl', nightOwlTheme as MonacoEditor.IStandaloneThemeData);
-      
+      monaco.editor.defineTheme(
+        'dracula',
+        draculaTheme as MonacoEditor.IStandaloneThemeData
+      );
+      monaco.editor.defineTheme(
+        'github-dark',
+        githubDarkTheme as MonacoEditor.IStandaloneThemeData
+      );
+      monaco.editor.defineTheme(
+        'github-light',
+        githubLightTheme as MonacoEditor.IStandaloneThemeData
+      );
+      monaco.editor.defineTheme(
+        'solarized-dark',
+        solarizedDarkTheme as MonacoEditor.IStandaloneThemeData
+      );
+      monaco.editor.defineTheme(
+        'solarized-light',
+        solarizedLightTheme as MonacoEditor.IStandaloneThemeData
+      );
+      monaco.editor.defineTheme(
+        'monokai',
+        monokaiTheme as MonacoEditor.IStandaloneThemeData
+      );
+      monaco.editor.defineTheme(
+        'night-owl',
+        nightOwlTheme as MonacoEditor.IStandaloneThemeData
+      );
+
       // Set the current theme
       monaco.editor.setTheme(editorTheme);
     } catch (error) {
@@ -187,8 +211,7 @@ export const CodeEditorPanel: React.FC<CodeEditorPanelProps> = ({
   ];
 
   return (
-    <div className="h-full bg-gray-900/30 backdrop-blur-sm flex flex-col"
-    >
+    <div className="h-full bg-gray-900/30 backdrop-blur-sm flex flex-col">
       {/* Editor Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-700/50 bg-gray-900/80">
         <div className="flex items-center gap-4">
@@ -330,7 +353,9 @@ export const CodeEditorPanel: React.FC<CodeEditorPanelProps> = ({
       </div>
 
       {/* Monaco Editor */}
-      <div className={`relative ${showTestResults ? 'flex-1 min-h-0' : 'flex-1'}`}>
+      <div
+        className={`relative ${showTestResults ? 'flex-1 min-h-0' : 'flex-1'}`}
+      >
         <Editor
           height="100%"
           language={selectedLanguage}

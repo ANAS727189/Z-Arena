@@ -23,7 +23,8 @@ export const TestResults: React.FC<TestResultsProps> = ({
   if (!testResults.length) return null;
 
   // Check if it's an error result
-  const isError = testResults.length === 1 && testResults[0].testCaseId === 'error';
+  const isError =
+    testResults.length === 1 && testResults[0].testCaseId === 'error';
 
   return (
     <div className="bg-gray-900/95 border-t border-gray-700 flex flex-col max-h-72">
@@ -45,7 +46,9 @@ export const TestResults: React.FC<TestResultsProps> = ({
           <div className="flex items-start gap-3 p-4 bg-red-900/20 border border-red-500/30 rounded-lg">
             <AlertTriangle className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
             <div>
-              <div className="text-red-400 font-medium mb-1">Compilation Error</div>
+              <div className="text-red-400 font-medium mb-1">
+                Compilation Error
+              </div>
               <div className="text-gray-300 text-sm font-mono whitespace-pre-wrap">
                 {testResults[0].error}
               </div>
@@ -56,7 +59,7 @@ export const TestResults: React.FC<TestResultsProps> = ({
             {testResults.map((result, index) => {
               const testCase = challenge.testCases[index];
               const isPassed = result.passed;
-              
+
               return (
                 <div
                   key={index}
@@ -106,10 +109,15 @@ export const TestResults: React.FC<TestResultsProps> = ({
 
                     <div>
                       <div className="text-gray-400 mb-1">Your Output:</div>
-                      <div className={`p-2 rounded font-mono whitespace-pre-wrap ${
-                        isPassed ? 'bg-green-900/30 text-green-200' : 'bg-red-900/30 text-red-200'
-                      }`}>
-                        {result.actualOutput || (result.error ? 'Runtime Error' : 'No output')}
+                      <div
+                        className={`p-2 rounded font-mono whitespace-pre-wrap ${
+                          isPassed
+                            ? 'bg-green-900/30 text-green-200'
+                            : 'bg-red-900/30 text-red-200'
+                        }`}
+                      >
+                        {result.actualOutput ||
+                          (result.error ? 'Runtime Error' : 'No output')}
                       </div>
                     </div>
 

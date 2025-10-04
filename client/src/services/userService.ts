@@ -17,7 +17,9 @@ class UserService {
    * @param preferences - The preferences to update
    * @returns Promise<UserPreferences>
    */
-  async updatePreferences(preferences: Partial<UserPreferences>): Promise<UserPreferences> {
+  async updatePreferences(
+    preferences: Partial<UserPreferences>
+  ): Promise<UserPreferences> {
     try {
       // Get current preferences
       const user = await account.get();

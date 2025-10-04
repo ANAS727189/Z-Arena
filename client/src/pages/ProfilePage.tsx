@@ -1,20 +1,20 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  Camera, 
-  User, 
-  Mail, 
-  Calendar, 
-  Trophy, 
-  Target, 
+import {
+  Camera,
+  User,
+  Mail,
+  Calendar,
+  Trophy,
+  Target,
   Star,
   Upload,
   Loader2,
   Check,
   X,
   Edit3,
-  ArrowLeft
+  ArrowLeft,
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { account } from '../lib/appwrite';
@@ -72,7 +72,9 @@ export const ProfilePage: React.FC = () => {
     return `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&backgroundColor=transparent`;
   };
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -83,7 +85,7 @@ export const ProfilePage: React.FC = () => {
     try {
       // Upload to Cloudinary
       const result = await cloudinaryService.uploadImage(
-        file, 
+        file,
         'z-challenge/profile-pictures',
         'c_fill,w_200,h_200,q_auto,f_auto'
       );
@@ -97,7 +99,8 @@ export const ProfilePage: React.FC = () => {
       // Refresh the page to show the new image
       window.location.reload();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to upload image';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to upload image';
       setUploadError(errorMessage);
       setTimeout(() => setUploadError(null), 5000);
     } finally {
@@ -129,19 +132,25 @@ export const ProfilePage: React.FC = () => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
   const getStarLevel = (points: number) => {
-    if (points >= 7) return { level: 'Z-Master', stars: 5, color: 'text-yellow-400' };
-    if (points >= 5) return { level: 'Expert', stars: 4, color: 'text-purple-400' };
-    if (points >= 3) return { level: 'Rookie', stars: 3, color: 'text-blue-400' };
-    if (points >= 2) return { level: 'Pookie', stars: 2, color: 'text-green-400' };
+    if (points >= 7)
+      return { level: 'Z-Master', stars: 5, color: 'text-yellow-400' };
+    if (points >= 5)
+      return { level: 'Expert', stars: 4, color: 'text-purple-400' };
+    if (points >= 3)
+      return { level: 'Rookie', stars: 3, color: 'text-blue-400' };
+    if (points >= 2)
+      return { level: 'Pookie', stars: 2, color: 'text-green-400' };
     return { level: 'Noob', stars: 1, color: 'text-gray-400' };
   };
 
-  const starInfo = userStats ? getStarLevel(userStats.totalPoints) : { level: 'Noob', stars: 1, color: 'text-gray-400' };
+  const starInfo = userStats
+    ? getStarLevel(userStats.totalPoints)
+    : { level: 'Noob', stars: 1, color: 'text-gray-400' };
 
   return (
     <div className="py-8 px-4">
@@ -191,7 +200,7 @@ export const ProfilePage: React.FC = () => {
                       alt={user.name || user.email}
                       className="w-32 h-32 rounded-full border-4 border-[var(--accent-purple)]/30 object-cover mx-auto transition-opacity group-hover:opacity-75"
                     />
-                    
+
                     {/* Hover Edit Overlay */}
                     <motion.div
                       initial={{ opacity: 0 }}
@@ -252,10 +261,12 @@ export const ProfilePage: React.FC = () => {
                       <input
                         type="text"
                         value={newName}
-                        onChange={(e) => setNewName(e.target.value)}
+                        onChange={e => setNewName(e.target.value)}
                         className="flex-1 bg-[var(--background-primary)] border border-[var(--border-primary)] rounded-lg px-3 py-2 text-white text-center min-w-0"
                         placeholder="Enter your name"
-                        onKeyPress={(e) => e.key === 'Enter' && handleNameUpdate()}
+                        onKeyPress={e =>
+                          e.key === 'Enter' && handleNameUpdate()
+                        }
                         autoFocus
                       />
                       <button
@@ -292,7 +303,9 @@ export const ProfilePage: React.FC = () => {
                       </button>
                     </div>
                   )}
-                  <p className="text-[var(--text-secondary)] mt-1">{user.email}</p>
+                  <p className="text-[var(--text-secondary)] mt-1">
+                    {user.email}
+                  </p>
                 </div>
 
                 {/* Star Level */}
@@ -302,8 +315,8 @@ export const ProfilePage: React.FC = () => {
                       <Star
                         key={i}
                         className={`w-5 h-5 ${
-                          i < starInfo.stars 
-                            ? `${starInfo.color} fill-current` 
+                          i < starInfo.stars
+                            ? `${starInfo.color} fill-current`
                             : 'text-gray-600'
                         }`}
                       />
@@ -321,7 +334,9 @@ export const ProfilePage: React.FC = () => {
                 <div className="space-y-3 pt-4 border-t border-[var(--border-primary)]/30">
                   <div className="flex items-center space-x-3 text-[var(--text-secondary)]">
                     <User className="w-4 h-4" />
-                    <span className="text-sm">User ID: {user.$id.slice(-8)}</span>
+                    <span className="text-sm">
+                      User ID: {user.$id.slice(-8)}
+                    </span>
                   </div>
                   <div className="flex items-center space-x-3 text-[var(--text-secondary)]">
                     <Mail className="w-4 h-4" />
@@ -329,7 +344,9 @@ export const ProfilePage: React.FC = () => {
                   </div>
                   <div className="flex items-center space-x-3 text-[var(--text-secondary)]">
                     <Calendar className="w-4 h-4" />
-                    <span className="text-sm">Joined {formatDate(user.$createdAt)}</span>
+                    <span className="text-sm">
+                      Joined {formatDate(user.$createdAt)}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -374,7 +391,14 @@ export const ProfilePage: React.FC = () => {
                   <Star className="w-6 h-6 text-yellow-400" />
                 </div>
                 <h3 className="font-heading text-xl font-bold text-white mb-1">
-                  {userStats ? Math.round((userStats.successfulSubmissions / Math.max(userStats.totalSubmissions, 1)) * 100) : 0}%
+                  {userStats
+                    ? Math.round(
+                        (userStats.successfulSubmissions /
+                          Math.max(userStats.totalSubmissions, 1)) *
+                          100
+                      )
+                    : 0}
+                  %
                 </h3>
                 <p className="text-[var(--text-secondary)] text-sm">
                   Success Rate
@@ -387,7 +411,7 @@ export const ProfilePage: React.FC = () => {
               <h3 className="font-heading text-xl font-bold text-white mb-4">
                 Progress Overview
               </h3>
-              
+
               <div className="space-y-4">
                 {/* Points Progress */}
                 <div>
@@ -396,24 +420,37 @@ export const ProfilePage: React.FC = () => {
                       Points to Next Level
                     </span>
                     <span className="text-white font-semibold">
-                      {userStats?.totalPoints || 0} / {
-                        starInfo.stars === 5 ? 'MAX' : 
-                        starInfo.stars === 4 ? '7' :
-                        starInfo.stars === 3 ? '5' :
-                        starInfo.stars === 2 ? '3' : '2'
-                      }
+                      {userStats?.totalPoints || 0} /{' '}
+                      {starInfo.stars === 5
+                        ? 'MAX'
+                        : starInfo.stars === 4
+                          ? '7'
+                          : starInfo.stars === 3
+                            ? '5'
+                            : starInfo.stars === 2
+                              ? '3'
+                              : '2'}
                     </span>
                   </div>
                   <div className="w-full bg-[var(--background-primary)] rounded-full h-2">
-                    <div 
+                    <div
                       className="bg-gradient-to-r from-[var(--accent-purple)] to-[var(--accent-cyan)] h-2 rounded-full transition-all duration-500"
-                      style={{ 
-                        width: starInfo.stars === 5 ? '100%' : 
-                          `${Math.min((userStats?.totalPoints || 0) / (
-                            starInfo.stars === 4 ? 7 :
-                            starInfo.stars === 3 ? 5 :
-                            starInfo.stars === 2 ? 3 : 2
-                          ) * 100, 100)}%`
+                      style={{
+                        width:
+                          starInfo.stars === 5
+                            ? '100%'
+                            : `${Math.min(
+                                ((userStats?.totalPoints || 0) /
+                                  (starInfo.stars === 4
+                                    ? 7
+                                    : starInfo.stars === 3
+                                      ? 5
+                                      : starInfo.stars === 2
+                                        ? 3
+                                        : 2)) *
+                                  100,
+                                100
+                              )}%`,
                       }}
                     />
                   </div>
@@ -427,7 +464,9 @@ export const ProfilePage: React.FC = () => {
                   {userStats && userStats.solvedChallenges.length > 0 ? (
                     <div className="space-y-2">
                       <p className="text-[var(--text-secondary)] text-sm">
-                        🎉 Completed {userStats.solvedChallenges.length} challenge{userStats.solvedChallenges.length !== 1 ? 's' : ''}
+                        🎉 Completed {userStats.solvedChallenges.length}{' '}
+                        challenge
+                        {userStats.solvedChallenges.length !== 1 ? 's' : ''}
                       </p>
                       <p className="text-[var(--text-secondary)] text-sm">
                         ⭐ Earned {userStats.totalPoints} total points
@@ -438,7 +477,8 @@ export const ProfilePage: React.FC = () => {
                     </div>
                   ) : (
                     <p className="text-[var(--text-secondary)] text-sm">
-                      No challenges completed yet. Start coding to see your progress!
+                      No challenges completed yet. Start coding to see your
+                      progress!
                     </p>
                   )}
                 </div>
@@ -455,7 +495,8 @@ export const ProfilePage: React.FC = () => {
                   </h4>
                 </div>
                 <p className="text-yellow-300 text-sm">
-                  To enable profile picture uploads, please configure Cloudinary settings in your .env file:
+                  To enable profile picture uploads, please configure Cloudinary
+                  settings in your .env file:
                 </p>
                 <ul className="text-yellow-300 text-sm mt-2 space-y-1 ml-4">
                   <li>• VITE_CLOUDINARY_CLOUD_NAME</li>

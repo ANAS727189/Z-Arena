@@ -6,13 +6,12 @@ import solarizedLightTheme from './solarized-light.json';
 import monokaiTheme from './monokai.json';
 import nightOwlTheme from './night-owl.json';
 
-
 export {
-    draculaTheme,
-    githubDarkTheme,
-    githubLightTheme,
-    solarizedDarkTheme,
-    solarizedLightTheme,
-    monokaiTheme,
-    nightOwlTheme
-}
+  draculaTheme,
+  githubDarkTheme,
+  githubLightTheme,
+  solarizedDarkTheme,
+  solarizedLightTheme,
+  monokaiTheme,
+  nightOwlTheme,
+};

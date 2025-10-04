@@ -161,27 +161,31 @@ export const useChallenge = () => {
       // Store test results and show the results panel
       setTestResults(result.testResults || []);
       setShowTestResults(true);
-      
+
       if (!result.success && result.error) {
         // If there's a compilation error, show it in the results
-        setTestResults([{
-          testCaseId: 'error',
-          passed: false,
-          actualOutput: '',
-          executionTime: 0,
-          error: result.error
-        }]);
+        setTestResults([
+          {
+            testCaseId: 'error',
+            passed: false,
+            actualOutput: '',
+            executionTime: 0,
+            error: result.error,
+          },
+        ]);
       }
     } catch (error) {
       console.error('Failed to test code:', error);
       // Show error in test results instead of alert
-      setTestResults([{
-        testCaseId: 'error',
-        passed: false,
-        actualOutput: '',
-        executionTime: 0,
-        error: 'Failed to test code. Please check your syntax and try again.'
-      }]);
+      setTestResults([
+        {
+          testCaseId: 'error',
+          passed: false,
+          actualOutput: '',
+          executionTime: 0,
+          error: 'Failed to test code. Please check your syntax and try again.',
+        },
+      ]);
       setShowTestResults(true);
     } finally {
       setTesting(false);
@@ -229,7 +233,7 @@ export const useChallenge = () => {
         status: 'failed',
         error: 'Failed to submit solution. Please try again.',
         testResults: [],
-        score: 0
+        score: 0,
       });
       setShowSubmissionResult(true);
       setActiveTab('submissions');

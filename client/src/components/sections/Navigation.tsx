@@ -13,11 +13,8 @@ const Navigation = () => {
 
   return (
     <>
-      <motion.nav
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="bg-[var(--background-secondary)]/80 backdrop-blur-md border-b border-[var(--border-primary)] px-4 py-4 sticky top-0 z-50"
+      <div 
+      className="bg-[var(--background-secondary)]/80 backdrop-blur-md border-b border-[var(--border-primary)] px-4 py-4 sticky top-0 z-50"
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <motion.div
@@ -69,9 +66,8 @@ const Navigation = () => {
             )}
           </div>
         </div>
-      </motion.nav>
+      </div>
 
-      {/* Auth Modal */}
       {/* Auth Modal */}
       <AuthModal
         isOpen={showAuthModal}

@@ -1,6 +1,13 @@
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Settings, User, Bell, Shield, Database, ArrowLeft } from 'lucide-react';
+import {
+  Settings,
+  User,
+  Bell,
+  Shield,
+  Database,
+  ArrowLeft,
+} from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -55,9 +62,8 @@ export const SettingsPage: React.FC = () => {
             <div className="text-[var(--text-secondary)]">
               <p>Account settings are available on your profile page.</p>
               <p className="text-sm mt-2">
-                • Update profile picture
-                • Change display name
-                • View account information
+                • Update profile picture • Change display name • View account
+                information
               </p>
             </div>
           </motion.div>
@@ -80,9 +86,8 @@ export const SettingsPage: React.FC = () => {
             <div className="text-[var(--text-secondary)]">
               <p>Notification preferences coming soon...</p>
               <p className="text-sm mt-2">
-                • Challenge completion alerts
-                • Leaderboard position updates
-                • New challenge notifications
+                • Challenge completion alerts • Leaderboard position updates •
+                New challenge notifications
               </p>
             </div>
           </motion.div>
@@ -105,9 +110,8 @@ export const SettingsPage: React.FC = () => {
             <div className="text-[var(--text-secondary)]">
               <p>Privacy and security settings coming soon...</p>
               <p className="text-sm mt-2">
-                • Profile visibility controls
-                • Account security settings
-                • Data export options
+                • Profile visibility controls • Account security settings • Data
+                export options
               </p>
             </div>
           </motion.div>
@@ -130,15 +134,12 @@ export const SettingsPage: React.FC = () => {
             <div className="text-[var(--text-secondary)]">
               <p>Data management options coming soon...</p>
               <p className="text-sm mt-2">
-                • Export submission history
-                • Download profile data
-                • Account deletion request
+                • Export submission history • Download profile data • Account
+                deletion request
               </p>
             </div>
           </motion.div>
         </div>
-
-
       </div>
     </div>
   );
