@@ -21,6 +21,12 @@ export const useChallenge = () => {
   const [submitting, setSubmitting] = useState(false);
   const [testing, setTesting] = useState(false);
 
+  // Test and submission results
+  const [testResults, setTestResults] = useState<any[]>([]);
+  const [submissionResult, setSubmissionResult] = useState<any>(null);
+  const [showTestResults, setShowTestResults] = useState(false);
+  const [showSubmissionResult, setShowSubmissionResult] = useState(false);
+
   // UI State
   const [activeTab, setActiveTab] = useState<
     'description' | 'editorial' | 'submissions'
@@ -152,26 +158,31 @@ export const useChallenge = () => {
         timeLimit: challenge.metadata.timeLimit * 60 * 1000,
       });
 
-      const passedTests = result.testResults.filter(r => r.passed).length;
-      const totalTests = result.testResults.length;
-
-      if (result.success) {
-        const details = result.testResults
-          .map(
-            (test, i) =>
-              `Test ${i + 1}: ${test.passed ? '✅ Passed' : '❌ Failed'} (${test.executionTime}ms)`
-          )
-          .join('\n');
-
-        alert(
-          `🧪 Test Results:\n${details}\n\nPassed: ${passedTests}/${totalTests} tests\nScore: ${result.totalScore} points`
-        );
-      } else {
-        alert(`❌ Test failed: ${result.error}`);
+      // Store test results and show the results panel
+      setTestResults(result.testResults || []);
+      setShowTestResults(true);
+      
+      if (!result.success && result.error) {
+        // If there's a compilation error, show it in the results
+        setTestResults([{
+          testCaseId: 'error',
+          passed: false,
+          actualOutput: '',
+          executionTime: 0,
+          error: result.error
+        }]);
       }
     } catch (error) {
       console.error('Failed to test code:', error);
-      alert('Failed to test code. Please check your syntax and try again.');
+      // Show error in test results instead of alert
+      setTestResults([{
+        testCaseId: 'error',
+        passed: false,
+        actualOutput: '',
+        executionTime: 0,
+        error: 'Failed to test code. Please check your syntax and try again.'
+      }]);
+      setShowTestResults(true);
     } finally {
       setTesting(false);
     }
@@ -207,34 +218,21 @@ export const useChallenge = () => {
         selectedLanguage
       );
 
-      if (submission.status === 'success') {
-        const passedTests = submission.testResults.filter(
-          (r: any) => r.passed
-        ).length;
-        const totalTests = submission.testResults.length;
-
-        if (passedTests === totalTests) {
-          alert(
-            `🎉 Congratulations!\n\nAll tests passed!\nScore: ${submission.score} points`
-          );
-        } else {
-          const details = submission.testResults
-            .map(
-              (test: any, i: number) =>
-                `Test ${i + 1}: ${test.passed ? '✅ Passed' : '❌ Failed'} ${test.error ? `- ${test.error}` : ''}`
-            )
-            .join('\n');
-
-          alert(
-            `📊 Submission Results:\n${details}\n\nPassed: ${passedTests}/${totalTests} tests\nScore: ${submission.score} points`
-          );
-        }
-      } else {
-        alert(`❌ Submission failed: ${submission.status}`);
-      }
+      // Store submission result and show the result panel
+      setSubmissionResult(submission);
+      setShowSubmissionResult(true);
+      setActiveTab('submissions'); // Switch to submissions tab to show "Your Solution"
     } catch (error) {
       console.error('Failed to submit solution:', error);
-      alert('Failed to submit solution. Please try again.');
+      // Show error in submission result instead of alert
+      setSubmissionResult({
+        status: 'failed',
+        error: 'Failed to submit solution. Please try again.',
+        testResults: [],
+        score: 0
+      });
+      setShowSubmissionResult(true);
+      setActiveTab('submissions');
     } finally {
       setSubmitting(false);
     }
@@ -274,6 +272,14 @@ export const useChallenge = () => {
     toggleSection,
     handleTestCode,
     handleSubmit,
+
+    // Test and submission results
+    testResults,
+    submissionResult,
+    showTestResults,
+    setShowTestResults,
+    showSubmissionResult,
+    setShowSubmissionResult,
 
     // Navigation
     navigate,

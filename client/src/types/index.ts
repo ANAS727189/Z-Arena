@@ -71,7 +71,7 @@ export interface Submission {
   challengeId: string;
   userId: string;
   code: string;
-  status: 'pending' | 'success' | 'failed' | 'timeout' | 'error';
+  status: 'pending' | 'running' | 'completed' | 'failed';
   score: number;
   executionTime: number;
   createdAt: Date;

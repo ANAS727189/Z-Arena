@@ -2,7 +2,7 @@
 
 ## 🎯 Project Overview
 
-Z-Challenge Platform is a competitive programming platform designed for the **Appwrite Hacktoberfest 2025 Hackathon**. It supports both the custom Z-- programming language and popular languages like C++, Python, Java, JavaScript, and Rust through Judge0 API integration.
+Z-Challenge Platform is a competitive programming platform. It supports both the custom Z-- programming language and popular languages like C++, Python, Java, JavaScript, and Rust through Judge0 API integration.
 
 ## 🚀 Key Features
 
@@ -141,56 +141,4 @@ npm run build
 - **Body**: Inter (readable, professional)
 - **Code**: JetBrains Mono (monospace)
 
-## 🔄 Next Steps (Development Roadmap)
-
-### Phase 1: Core Functionality
-- [ ] Individual challenge page with Monaco Editor
-- [ ] Code submission and execution system
-- [ ] Real-time result display
-- [ ] User authentication integration
-
-### Phase 2: Appwrite Integration
-- [ ] User management and profiles
-- [ ] Challenge database integration
-- [ ] Submission tracking and history
-- [ ] Leaderboard system
-
-### Phase 3: Advanced Features
-- [ ] Real-time competitions and contests
-- [ ] Code sharing and discussions
-- [ ] Achievement system and badges
-- [ ] Advanced analytics and progress tracking
-
-### Phase 4: Z-- Language Features
-- [ ] Enhanced Z-- compiler integration
-- [ ] Z-- specific tutorials and documentation
-- [ ] Advanced Z-- challenges and concepts
-- [ ] Community Z-- challenge creation
-
-## 🏆 Hackathon Alignment
-
-This project is specifically designed for **Appwrite Hacktoberfest 2025** with the following alignments:
-
-- **Appwrite Services**: Plans to use Auth, Databases, Functions, Realtime, and Storage
-- **Open Source**: Full repository available for community contributions
-- **Innovation**: Unique focus on Z-- language education through gamification
-- **Community**: Designed to foster learning and collaboration
-- **Technical Excellence**: Modern stack with TypeScript, comprehensive testing
-
-## 🤝 Contributing
-
-This project welcomes contributions for the Hacktoberfest event:
-
-1. **Challenge Creation**: Add new programming challenges
-2. **Language Support**: Extend support for additional programming languages
-3. **UI/UX Improvements**: Enhance the user interface and experience
-4. **Documentation**: Improve docs, tutorials, and guides
-5. **Testing**: Add comprehensive test coverage
-
-## 📝 License
-
-This project is open source and available under the MIT License.
-
 ---
-
-**Built with ❤️ for Appwrite Hacktoberfest 2025**

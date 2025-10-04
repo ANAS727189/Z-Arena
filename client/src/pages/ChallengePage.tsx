@@ -36,6 +36,11 @@ export const ChallengePage: React.FC = () => {
     toggleSection,
     handleTestCode,
     handleSubmit,
+    testResults,
+    showTestResults,
+    setShowTestResults,
+    submissionResult,
+    showSubmissionResult,
     navigate,
   } = useChallenge();
 
@@ -57,37 +62,46 @@ export const ChallengePage: React.FC = () => {
         onToggleFullscreen={() => setIsFullscreen(!isFullscreen)}
       />
 
-      <div className="flex h-[calc(100vh-64px)]">
+      <div className="flex h-[calc(100vh-64px)] overflow-hidden">
         {!isFullscreen && (
-          <ProblemDescription
-            challenge={challenge}
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            expandedSections={expandedSections}
-            toggleSection={toggleSection}
-          />
+          <div className="w-1/2 flex flex-col">
+            <ProblemDescription
+              challenge={challenge}
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              expandedSections={expandedSections}
+              toggleSection={toggleSection}
+              submissionResult={submissionResult}
+              showSubmissionResult={showSubmissionResult}
+            />
+          </div>
         )}
 
-        <CodeEditorPanel
-          challenge={challenge}
-          selectedLanguage={selectedLanguage}
-          code={code}
-          setCode={setCode}
-          handleLanguageChange={handleLanguageChange}
-          fontSize={fontSize}
-          setFontSize={setFontSize}
-          showMinimap={showMinimap}
-          setShowMinimap={setShowMinimap}
-          editorTheme={editorTheme}
-          setEditorTheme={setEditorTheme}
-          isFullscreen={isFullscreen}
-          setIsFullscreen={setIsFullscreen}
-          handleEditorDidMount={handleEditorDidMount}
-          testing={testing}
-          submitting={submitting}
-          handleTestCode={handleTestCode}
-          handleSubmit={handleSubmit}
-        />
+        <div className={`${isFullscreen ? 'w-full' : 'w-1/2'} flex flex-col`}>
+          <CodeEditorPanel
+            challenge={challenge}
+            selectedLanguage={selectedLanguage}
+            code={code}
+            setCode={setCode}
+            handleLanguageChange={handleLanguageChange}
+            fontSize={fontSize}
+            setFontSize={setFontSize}
+            showMinimap={showMinimap}
+            setShowMinimap={setShowMinimap}
+            editorTheme={editorTheme}
+            setEditorTheme={setEditorTheme}
+            isFullscreen={isFullscreen}
+            setIsFullscreen={setIsFullscreen}
+            handleEditorDidMount={handleEditorDidMount}
+            testing={testing}
+            submitting={submitting}
+            handleTestCode={handleTestCode}
+            handleSubmit={handleSubmit}
+            testResults={testResults}
+            showTestResults={showTestResults}
+            setShowTestResults={setShowTestResults}
+          />
+        </div>
       </div>
 
       <AuthModal

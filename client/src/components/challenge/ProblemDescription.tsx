@@ -9,6 +9,7 @@ import {
   User,
 } from 'lucide-react';
 import type { Challenge } from '@/types';
+import { SubmissionResult } from './SubmissionResult';
 
 interface ProblemDescriptionProps {
   challenge: Challenge;
@@ -20,6 +21,8 @@ interface ProblemDescriptionProps {
     hints: boolean;
   };
   toggleSection: (section: 'examples' | 'constraints' | 'hints') => void;
+  submissionResult?: any;
+  showSubmissionResult?: boolean;
 }
 
 export const ProblemDescription: React.FC<ProblemDescriptionProps> = ({
@@ -28,9 +31,11 @@ export const ProblemDescription: React.FC<ProblemDescriptionProps> = ({
   setActiveTab,
   expandedSections,
   toggleSection,
+  submissionResult,
+  showSubmissionResult,
 }) => {
   return (
-    <div className="w-1/2 border-r border-gray-700/50 bg-gray-900/50 backdrop-blur-sm overflow-hidden flex flex-col">
+    <div className="h-full border-r border-gray-700/50 bg-gray-900/50 backdrop-blur-sm overflow-hidden flex flex-col">
       {/* Tabs */}
       <div className="flex border-b border-gray-700/50 bg-gray-900/80">
         {(['description', 'editorial', 'submissions'] as const).map(tab => (
@@ -254,15 +259,22 @@ export const ProblemDescription: React.FC<ProblemDescriptionProps> = ({
 
         {activeTab === 'submissions' && (
           <div className="space-y-4">
-            <div className="text-center py-12">
-              <User className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-400 mb-2">
-                Your Submissions
-              </h3>
-              <p className="text-gray-500 text-sm">
-                Submit your solution to see your submission history here.
-              </p>
-            </div>
+            {showSubmissionResult && submissionResult ? (
+              <SubmissionResult 
+                submissionResult={submissionResult}
+                challenge={challenge}
+              />
+            ) : (
+              <div className="text-center py-12">
+                <User className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-400 mb-2">
+                  Your Submissions
+                </h3>
+                <p className="text-gray-500 text-sm">
+                  Submit your solution to see your submission history here.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -570,7 +570,7 @@ class ChallengeService {
         result => result.passed
       );
       const status =
-        executionResult.success && allPassed ? 'success' : 'failed';
+        executionResult.success && allPassed ? 'completed' : 'failed';
 
       // Create submission document
       const submissionDoc = {
@@ -578,7 +578,7 @@ class ChallengeService {
         challengeId,
         language,
         code,
-        status: status as 'success' | 'failed',
+        status: status as 'completed' | 'failed',
         score: executionResult.totalScore,
         runtime: executionResult.executionTime,
         memoryUsed: 0, // TODO: Implement memory tracking
@@ -595,7 +595,7 @@ class ChallengeService {
       );
 
       // Update user stats if successful
-      if (status === 'success') {
+      if (status === 'completed') {
         await this.updateUserStats(
           userId,
           challengeId,
@@ -609,7 +609,7 @@ class ChallengeService {
         challengeId,
         userId,
         code,
-        status: status as 'success' | 'failed',
+        status: status as 'completed' | 'failed',
         score: executionResult.totalScore,
         executionTime: executionResult.executionTime,
         createdAt: new Date(response.$createdAt),

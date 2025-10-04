@@ -26,6 +26,7 @@ import {
   nightOwlTheme
 } from '../../themes/page';
 import type { editor as MonacoEditor } from 'monaco-editor';
+import { TestResults } from './TestResults';
 
 interface CodeEditorPanelProps {
   challenge: Challenge;
@@ -46,6 +47,9 @@ interface CodeEditorPanelProps {
   submitting: boolean;
   handleTestCode: () => void;
   handleSubmit: () => void;
+  testResults?: any[];
+  showTestResults?: boolean;
+  setShowTestResults?: (show: boolean) => void;
 }
 
 export const CodeEditorPanel: React.FC<CodeEditorPanelProps> = ({
@@ -67,6 +71,9 @@ export const CodeEditorPanel: React.FC<CodeEditorPanelProps> = ({
   submitting,
   handleTestCode,
   handleSubmit,
+  testResults = [],
+  showTestResults = false,
+  setShowTestResults,
 }) => {
   const [showSettings, setShowSettings] = useState(false);
   const settingsRef = useRef<HTMLDivElement>(null);
@@ -180,10 +187,7 @@ export const CodeEditorPanel: React.FC<CodeEditorPanelProps> = ({
   ];
 
   return (
-    <div
-      className={`${
-        isFullscreen ? 'w-full' : 'w-1/2'
-      } bg-gray-900/30 backdrop-blur-sm flex flex-col`}
+    <div className="h-full bg-gray-900/30 backdrop-blur-sm flex flex-col"
     >
       {/* Editor Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-700/50 bg-gray-900/80">
@@ -326,7 +330,7 @@ export const CodeEditorPanel: React.FC<CodeEditorPanelProps> = ({
       </div>
 
       {/* Monaco Editor */}
-      <div className="flex-1 relative">
+      <div className={`relative ${showTestResults ? 'flex-1 min-h-0' : 'flex-1'}`}>
         <Editor
           height="100%"
           language={selectedLanguage}
@@ -368,6 +372,15 @@ export const CodeEditorPanel: React.FC<CodeEditorPanelProps> = ({
           }
         />
       </div>
+
+      {/* Test Results Panel */}
+      {showTestResults && (
+        <TestResults
+          testResults={testResults}
+          challenge={challenge}
+          onClose={() => setShowTestResults?.(false)}
+        />
+      )}
 
       {/* Action Bar */}
       <div className="border-t border-gray-700/50 bg-gray-900/90 backdrop-blur-sm p-3">
