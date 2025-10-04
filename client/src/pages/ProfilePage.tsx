@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  Camera,
   User,
   Mail,
   Calendar,
@@ -17,7 +16,6 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { account } from '../lib/appwrite';
 import { cloudinaryService } from '../services/cloudinaryService';
 import { challengeService } from '../services/challengeService';
 import { userService } from '../services/userService';
@@ -100,11 +98,7 @@ export const ProfilePage: React.FC = () => {
 
     try {
       // Upload to Cloudinary
-      const result = await cloudinaryService.uploadImage(
-        file,
-        'z-challenge/profile-pictures',
-        'c_fill,w_200,h_200,q_auto,f_auto'
-      );
+      const result = await cloudinaryService.uploadImage(file);
 
       // Update user preferences with the new image URL
       await userService.updateProfileImage(result.secure_url);

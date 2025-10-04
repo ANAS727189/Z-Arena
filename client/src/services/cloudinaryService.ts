@@ -122,10 +122,10 @@ class CloudinaryService {
 
   /**
    * Delete an image from Cloudinary
-   * @param publicId - The public ID of the image to delete
+   * @param _publicId - The public ID of the image to delete (unused in frontend)
    * @returns Promise<void>
    */
-  async deleteImage(publicId: string): Promise<void> {
+  async deleteImage(_publicId: string): Promise<void> {
     if (!this.cloudName) {
       throw new Error('Cloudinary configuration is missing');
     }
