@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Z-Arena Database Schema Visualization</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #8b5cf6;
+            font-size: 2.5rem;
+            margin-bottom: 40px;
+        }
+        
+        .schema-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        
+        .collection-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid;
+            border-radius: 12px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .collection-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+        }
+        
+        .collection-box.primary {
+            border-color: #8b5cf6;
+        }
+        
+        .collection-box.secondary {
+            border-color: #06b6d4;
+        }
+        
+        .collection-box.system {
+            border-color: #f59e0b;
+        }
+        
+        .collection-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .collection-icon {
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+        
+        .collection-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin: 0;
+        }
+        
+        .collection-subtitle {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin: 5px 0 0 0;
+        }
+        
+        .columns-list {
+            display: grid;
+            gap: 8px;
+        }
+        
+        .column-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+        
+        .column-name {
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+        
+        .column-type {
+            color: #94a3b8;
+            font-size: 0.8rem;
+        }
+        
+        .required {
+            color: #ef4444;
+        }
+        
+        .relationships {
+            margin: 50px 0;
+            text-align: center;
+        }
+        
+        .relationships h2 {
+            color: #06b6d4;
+            font-size: 2rem;
+            margin-bottom: 30px;
+        }
+        
+        .flow-diagram {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .flow-box {
+            background: rgba(139, 92, 246, 0.1);
+            border: 2px solid #8b5cf6;
+            border-radius: 8px;
+            padding: 15px 20px;
+            text-align: center;
+            min-width: 120px;
+        }
+        
+        .arrow {
+            font-size: 2rem;
+            color: #06b6d4;
+        }
+        
+        .use-cases {
+            margin: 50px 0;
+        }
+        
+        .use-cases h2 {
+            color: #f59e0b;
+            font-size: 2rem;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .use-case {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid #f59e0b;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .use-case h3 {
+            margin: 0 0 10px 0;
+            color: #f59e0b;
+        }
+        
+        .use-case-steps {
+            display: grid;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .step {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 6px;
+            border-left: 3px solid #06b6d4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏆 Z-Arena Database Schema</h1>
+        
+        <div class="schema-grid">
+            <!-- Users Collection -->
+            <div class="collection-box primary">
+                <div class="collection-header">
+                    <span class="collection-icon">👤</span>
+                    <div>
+                        <h3 class="collection-title">Users Collection</h3>
+                        <p class="collection-subtitle">Central user profile and statistics</p>
+                    </div>
+                </div>
+                <div class="columns-list">
+                    <div class="column-item">
+                        <span class="column-name required">$id</span>
+                        <span class="column-type">String (PK)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name required">userId</span>
+                        <span class="column-type">String(50)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">totalSubmissions</span>
+                        <span class="column-type">Integer (0)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">successfulSubmissions</span>
+                        <span class="column-type">Integer (0)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">totalPoints</span>
+                        <span class="column-type">Integer (0)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">solvedChallenges</span>
+                        <span class="column-type">Array(50)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">preferredLanguages</span>
+                        <span class="column-type">Array(20)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">rank</span>
+                        <span class="column-type">Integer (0)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">level</span>
+                        <span class="column-type">String (beginner)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">globalRank</span>
+                        <span class="column-type">Integer (0)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">weeklyRank</span>
+                        <span class="column-type">Integer (0)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">monthlyRank</span>
+                        <span class="column-type">Integer (0)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">streak</span>
+                        <span class="column-type">Integer (0)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">bestStreak</span>
+                        <span class="column-type">Integer (0)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">starPoints</span>
+                        <span class="column-type">Integer (0)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">currentStars</span>
+                        <span class="column-type">Integer (0)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">starTitle</span>
+                        <span class="column-type">String (Noob)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">profilePicture</span>
+                        <span class="column-type">String(10000)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">isPublic</span>
+                        <span class="column-type">Boolean (true)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">achievements</span>
+                        <span class="column-type">Array(100000)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">badgesEarned</span>
+                        <span class="column-type">Array(10000)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submissions Collection -->
+            <div class="collection-box secondary">
+                <div class="collection-header">
+                    <span class="collection-icon">📝</span>
+                    <div>
+                        <h3 class="collection-title">Submissions Collection</h3>
+                        <p class="collection-subtitle">Code submission records and results</p>
+                    </div>
+                </div>
+                <div class="columns-list">
+                    <div class="column-item">
+                        <span class="column-name required">$id</span>
+                        <span class="column-type">String (PK)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name required">userId</span>
+                        <span class="column-type">String(50) (FK)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name required">challengeId</span>
+                        <span class="column-type">String(50)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name required">language</span>
+                        <span class="column-type">String(20)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name required">code</span>
+                        <span class="column-type">String(50000)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name required">status</span>
+                        <span class="column-type">String</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">score</span>
+                        <span class="column-type">Integer (0)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">runtime</span>
+                        <span class="column-type">Integer (0)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">memoryUsed</span>
+                        <span class="column-type">Integer (0)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name required">testResults</span>
+                        <span class="column-type">String(10000)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">starPointsEarned</span>
+                        <span class="column-type">Integer (0)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">difficultyLevel</span>
+                        <span class="column-type">String(1000)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">solveTime</span>
+                        <span class="column-type">Integer (0)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">attempts</span>
+                        <span class="column-type">Integer (1)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">hintsUsed</span>
+                        <span class="column-type">Integer (0)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">isFirstSolve</span>
+                        <span class="column-type">Boolean (false)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Achievements Collection -->
+            <div class="collection-box secondary">
+                <div class="collection-header">
+                    <span class="collection-icon">🏆</span>
+                    <div>
+                        <h3 class="collection-title">User Achievements</h3>
+                        <p class="collection-subtitle">Achievement tracking and badges</p>
+                    </div>
+                </div>
+                <div class="columns-list">
+                    <div class="column-item">
+                        <span class="column-name required">$id</span>
+                        <span class="column-type">String (PK)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name required">userId</span>
+                        <span class="column-type">String(10000) (FK)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name required">achievementId</span>
+                        <span class="column-type">String(1000)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name required">achievementType</span>
+                        <span class="column-type">String(1000)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name required">title</span>
+                        <span class="column-type">String(1000)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name required">description</span>
+                        <span class="column-type">String(1000)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name required">earnedAt</span>
+                        <span class="column-type">DateTime</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">metadata</span>
+                        <span class="column-type">String(1000)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stars Collection -->
+            <div class="collection-box system">
+                <div class="collection-header">
+                    <span class="collection-icon">⭐</span>
+                    <div>
+                        <h3 class="collection-title">Stars Collection</h3>
+                        <p class="collection-subtitle">Star level definitions and requirements</p>
+                    </div>
+                </div>
+                <div class="columns-list">
+                    <div class="column-item">
+                        <span class="column-name required">$id</span>
+                        <span class="column-type">String (PK)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name required">starLevel</span>
+                        <span class="column-type">Integer (0-7)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name required">title</span>
+                        <span class="column-type">String(1000)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name required">pointsRequired</span>
+                        <span class="column-type">Integer</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name required">color</span>
+                        <span class="column-type">String(1000)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">icon</span>
+                        <span class="column-type">String(1000)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Rankings Collection -->
+            <div class="collection-box secondary">
+                <div class="collection-header">
+                    <span class="collection-icon">📈</span>
+                    <div>
+                        <h3 class="collection-title">User Rankings</h3>
+                        <p class="collection-subtitle">Historical ranking data by period</p>
+                    </div>
+                </div>
+                <div class="columns-list">
+                    <div class="column-item">
+                        <span class="column-name required">$id</span>
+                        <span class="column-type">String (PK)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name required">userId</span>
+                        <span class="column-type">String(10000) (FK)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name required">rankingType</span>
+                        <span class="column-type">String(1000)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name required">rank</span>
+                        <span class="column-type">Integer</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name required">points</span>
+                        <span class="column-type">Integer</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name required">starPoints</span>
+                        <span class="column-type">Integer</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name required">challengesSolved</span>
+                        <span class="column-type">Integer</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name required">period</span>
+                        <span class="column-type">String(1000)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leaderboard Collection -->
+            <div class="collection-box system">
+                <div class="collection-header">
+                    <span class="collection-icon">🏅</span>
+                    <div>
+                        <h3 class="collection-title">Leaderboard</h3>
+                        <p class="collection-subtitle">Cached leaderboard data with TTL</p>
+                    </div>
+                </div>
+                <div class="columns-list">
+                    <div class="column-item">
+                        <span class="column-name required">$id</span>
+                        <span class="column-type">String (PK)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name required">type</span>
+                        <span class="column-type">String(1000)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name">filter</span>
+                        <span class="column-type">String(1000)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name required">data</span>
+                        <span class="column-type">String(10000)</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name required">lastUpdated</span>
+                        <span class="column-type">DateTime</span>
+                    </div>
+                    <div class="column-item">
+                        <span class="column-name required">expiresAt</span>
+                        <span class="column-type">DateTime</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="relationships">
+            <h2>🔗 Data Flow Relationships</h2>
+            <div class="flow-diagram">
+                <div class="flow-box">👤 Users</div>
+                <span class="arrow">→</span>
+                <div class="flow-box">📝 Submissions</div>
+                <span class="arrow">→</span>
+                <div class="flow-box">🏆 Achievements</div>
+                <span class="arrow">→</span>
+                <div class="flow-box">📈 Rankings</div>
+                <span class="arrow">→</span>
+                <div class="flow-box">🏅 Leaderboard</div>
+            </div>
+            <div class="flow-diagram">
+                <div class="flow-box">⭐ Stars</div>
+                <span class="arrow">↗</span>
+                <div class="flow-box">👤 Users</div>
+                <span class="arrow">↘</span>
+                <div class="flow-box">🏅 Leaderboard</div>
+            </div>
+        </div>
+
+        <div class="use-cases">
+            <h2>🎯 Use Case Flows</h2>
+            
+            <div class="use-case">
+                <h3>1. User Registration & Profile Setup</h3>
+                <p>New user joins the platform and sets up their profile</p>
+                <div class="use-case-steps">
+                    <div class="step">1. Create record in <strong>Users</strong> collection with default values</div>
+                    <div class="step">2. Initialize user stats (totalSubmissions: 0, currentStars: 0, etc.)</div>
+                    <div class="step">3. Set initial star level based on <strong>Stars</strong> collection</div>
+                    <div class="step">4. Add profile picture to profilePicture field</div>
+                </div>
+            </div>
+
+            <div class="use-case">
+                <h3>2. Code Submission & Evaluation</h3>
+                <p>User submits code for a challenge and gets evaluated</p>
+                <div class="use-case-steps">
+                    <div class="step">1. Create record in <strong>Submissions</strong> collection</div>
+                    <div class="step">2. Execute code and populate testResults, score, runtime</div>
+                    <div class="step">3. Update <strong>Users</strong> collection: increment totalSubmissions</div>
+                    <div class="step">4. If successful: increment successfulSubmissions, add to solvedChallenges</div>
+                    <div class="step">5. Update totalPoints, starPoints, and check for level progression</div>
+                    <div class="step">6. Trigger achievement evaluation</div>
+                </div>
+            </div>
+
+            <div class="use-case">
+                <h3>3. Achievement System</h3>
+                <p>User earns achievements based on their activity</p>
+                <div class="use-case-steps">
+                    <div class="step">1. Monitor <strong>Users</strong> and <strong>Submissions</strong> for achievement triggers</div>
+                    <div class="step">2. Create record in <strong>User Achievements</strong> when earned</div>
+                    <div class="step">3. Update <strong>Users</strong> achievements array with new achievement ID</div>
+                    <div class="step">4. Update badgesEarned array if achievement includes badge</div>
+                </div>
+            </div>
+
+            <div class="use-case">
+                <h3>4. Leaderboard Generation</h3>
+                <p>System generates and caches leaderboard data</p>
+                <div class="use-case-steps">
+                    <div class="step">1. Query <strong>Users</strong> collection for ranking data</div>
+                    <div class="step">2. Calculate rankings based on totalPoints, starPoints, etc.</div>
+                    <div class="step">3. Store results in <strong>Leaderboard</strong> collection as JSON data</div>
+                    <div class="step">4. Set expiresAt timestamp for cache invalidation</div>
+                    <div class="step">5. Create historical snapshot in <strong>User Rankings</strong></div>
+                </div>
+            </div>
+
+            <div class="use-case">
+                <h3>5. Star Level Progression</h3>
+                <p>User advances to next star level based on points</p>
+                <div class="use-case-steps">
+                    <div class="step">1. Check user's starPoints against <strong>Stars</strong> collection requirements</div>
+                    <div class="step">2. Update <strong>Users</strong> currentStars and starTitle fields</div>
+                    <div class="step">3. Calculate nextStarRequirement from next level in <strong>Stars</strong></div>
+                    <div class="step">4. Trigger star-level achievement if applicable</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

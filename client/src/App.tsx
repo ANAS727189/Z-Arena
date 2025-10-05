@@ -8,6 +8,7 @@ import {
   LeaderboardPage,
   ProfilePage,
   SettingsPage,
+  AchievementsPage,
   NotFoundPage,
 } from './pages';
 
@@ -44,6 +45,14 @@ function App() {
             element={
               <Layout>
                 <ProfilePage />
+              </Layout>
+            }
+          />
+          <Route
+            path="/achievements"
+            element={
+              <Layout>
+                <AchievementsPage />
               </Layout>
             }
           />

@@ -1,0 +1,13 @@
+{
+  "name": "challenge-seeder",
+  "version": "1.0.0",
+  "description": "Appwrite function to seed challenges from JSON files to database",
+  "main": "src/main.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/main.js"
+  },
+  "dependencies": {
+    "node-appwrite": "^13.0.0"
+  }
+}

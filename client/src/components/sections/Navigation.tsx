@@ -47,6 +47,14 @@ const Navigation = () => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              onClick={() => navigate('/achievements')}
+              className="text-[var(--text-secondary)] hover:text-white transition-colors font-medium"
+            >
+              Achievements
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => navigate('/leaderboard')}
               className="text-[var(--text-secondary)] hover:text-white transition-colors font-medium"
             >

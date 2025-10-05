@@ -35,11 +35,15 @@ export const ProfilePage: React.FC = () => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [newName, setNewName] = useState('');
   const [isUpdatingName, setIsUpdatingName] = useState(false);
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(
+    (user?.prefs as any)?.profileImage || null
+  );
 
   useEffect(() => {
     if (user) {
       loadUserStats();
       setNewName(user.name || '');
+      setProfileImageUrl((user?.prefs as any)?.profileImage || null);
     }
   }, [user]);
 
@@ -83,10 +87,6 @@ export const ProfilePage: React.FC = () => {
     const seed = user.$id || user.email;
     return `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&backgroundColor=transparent`;
   };
-
-  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(
-    (user?.prefs as any)?.profileImage || null
-  );
 
   const handleImageUpload = async (
     event: React.ChangeEvent<HTMLInputElement>

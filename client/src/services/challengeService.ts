@@ -287,6 +287,36 @@ class ChallengeService {
   async executeCode(request: ExecutionRequest): Promise<ExecutionResult> {
     const { code, language, testCases } = request;
 
+    console.log('🚀 Executing code:', {
+      language,
+      testCasesCount: testCases?.length || 0,
+      testCases: testCases?.map(tc => ({ id: tc?.id, hasId: !!tc?.id }))
+    });
+
+    // Validate test cases
+    if (!testCases || testCases.length === 0) {
+      return {
+        success: false,
+        testResults: [],
+        totalScore: 0,
+        executionTime: 0,
+        error: 'No test cases provided for code execution',
+      };
+    }
+
+    // Check for test cases without IDs
+    const invalidTestCases = testCases.filter(tc => !tc || !tc.id);
+    if (invalidTestCases.length > 0) {
+      console.error('❌ Found test cases without IDs:', invalidTestCases);
+      return {
+        success: false,
+        testResults: [],
+        totalScore: 0,
+        executionTime: 0,
+        error: `Invalid test cases found: ${invalidTestCases.length} test cases are missing IDs`,
+      };
+    }
+
     try {
       if (language === 'z--') {
         return await this.executeZLangCode(code, testCases);
@@ -310,7 +340,7 @@ class ChallengeService {
     testCases: TestCase[]
   ): Promise<ExecutionResult> {
     const serverUrl =
-      import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
+      import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
     const testResults: TestResult[] = [];
     let totalScore = 0;
     let totalExecutionTime = 0;
@@ -363,7 +393,8 @@ class ChallengeService {
         const passed = actualOutput === expectedOutput;
 
         if (passed) {
-          totalScore += testCase.points;
+          // Use proportional scoring: each test case contributes equally
+          totalScore += 1; // Count passed tests, will calculate final score later
         }
 
         testResults.push({
@@ -377,10 +408,16 @@ class ChallengeService {
         });
       }
 
+      // Calculate final score as percentage of passed tests
+      const passedTests = totalScore; // totalScore now represents number of passed tests
+      const totalTests = testCases.length;
+      const scorePercentage = totalTests > 0 ? passedTests / totalTests : 0;
+      const finalScore = Math.round(scorePercentage * 100); // Convert to percentage (0-100)
+
       return {
         success: true,
         testResults,
-        totalScore,
+        totalScore: finalScore,
         executionTime: totalExecutionTime,
       };
     } catch (error: any) {
@@ -400,7 +437,7 @@ class ChallengeService {
     testCases: TestCase[]
   ): Promise<ExecutionResult> {
     const serverUrl =
-      import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
+      import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
     const languageId =
       JUDGE0_LANGUAGE_IDS[language as keyof typeof JUDGE0_LANGUAGE_IDS];
 
@@ -413,8 +450,33 @@ class ChallengeService {
     let totalExecutionTime = 0;
 
     try {
-      for (const testCase of testCases) {
+      console.log('🔄 Starting Judge0 execution for', testCases.length, 'test cases');
+      
+      for (let i = 0; i < testCases.length; i++) {
+        const testCase = testCases[i];
+        console.log(`🧪 Processing test case ${i + 1}:`, {
+          id: testCase?.id,
+          hasInput: !!testCase?.input,
+          hasOutput: !!testCase?.output,
+          hasExpectedOutput: !!(testCase as any)?.expectedOutput,
+          properties: Object.keys(testCase || {}),
+          testCase: testCase
+        });
+        
+        if (!testCase || !testCase.id) {
+          console.error('❌ Invalid test case encountered:', testCase);
+          testResults.push({
+            testCaseId: 'unknown',
+            passed: false,
+            actualOutput: '',
+            executionTime: 0,
+            error: 'Test case is missing or has no ID',
+          });
+          continue;
+        }
+
         const startTime = Date.now();
+        console.log(`📤 Sending request to ${serverUrl}/api/judge0/compile`);
 
         const response = await fetch(`${serverUrl}/api/judge0/compile`, {
           method: 'POST',
@@ -425,7 +487,7 @@ class ChallengeService {
             language_id: languageId,
             source_code: code,
             stdin: testCase.input,
-            expected_output: testCase.output,
+            expected_output: testCase.output || (testCase as any).expectedOutput,
           }),
         });
 
@@ -445,7 +507,18 @@ class ChallengeService {
           continue;
         }
 
-        const result: Judge0Response = await response.json();
+        const responseData = await response.json();
+        console.log(`📥 Raw server response for test case ${i + 1}:`, responseData);
+        
+        // Extract the actual Judge0 result from the server response
+        const result: Judge0Response = responseData.output || responseData;
+        console.log(`📥 Judge0 response for test case ${i + 1}:`, result);
+        console.log(`🔍 Response structure check:`, {
+          hasStatus: !!result.status,
+          hasStatusId: !!result.status?.id,
+          statusValue: result.status,
+          responseKeys: Object.keys(result)
+        });
 
         // Handle compilation errors
         if (result.compile_output && result.compile_output.trim()) {
@@ -472,25 +545,25 @@ class ChallengeService {
         }
 
         // Handle execution status
-        if (result.status.id !== 3) {
+        if (!result.status || result.status.id !== 3) {
           // 3 = Accepted
-          let errorMessage = result.status.description;
-          if (result.status.id === 5) errorMessage = 'Time Limit Exceeded';
-          else if (result.status.id === 6) errorMessage = 'Compilation Error';
-          else if (result.status.id === 7)
+          let errorMessage = result.status?.description || 'Unknown execution error';
+          if (result.status?.id === 5) errorMessage = 'Time Limit Exceeded';
+          else if (result.status?.id === 6) errorMessage = 'Compilation Error';
+          else if (result.status?.id === 7)
             errorMessage = 'Runtime Error (SIGSEGV)';
-          else if (result.status.id === 8)
+          else if (result.status?.id === 8)
             errorMessage = 'Runtime Error (SIGXFSZ)';
-          else if (result.status.id === 9)
+          else if (result.status?.id === 9)
             errorMessage = 'Runtime Error (SIGFPE)';
-          else if (result.status.id === 10)
+          else if (result.status?.id === 10)
             errorMessage = 'Runtime Error (SIGABRT)';
-          else if (result.status.id === 11)
+          else if (result.status?.id === 11)
             errorMessage = 'Runtime Error (NZEC)';
-          else if (result.status.id === 12)
+          else if (result.status?.id === 12)
             errorMessage = 'Runtime Error (Other)';
-          else if (result.status.id === 13) errorMessage = 'Internal Error';
-          else if (result.status.id === 14) errorMessage = 'Exec Format Error';
+          else if (result.status?.id === 13) errorMessage = 'Internal Error';
+          else if (result.status?.id === 14) errorMessage = 'Exec Format Error';
 
           testResults.push({
             testCaseId: testCase.id,
@@ -504,11 +577,13 @@ class ChallengeService {
 
         // Compare outputs
         const actualOutput = (result.stdout || '').trim();
-        const expectedOutput = testCase.output.trim();
+        const expectedOutput = (testCase.output || (testCase as any).expectedOutput || '').trim();
         const passed = actualOutput === expectedOutput;
 
         if (passed) {
-          totalScore += testCase.points;
+          // Use proportional scoring: each test case contributes equally
+          // regardless of individual test case points
+          totalScore += 1; // Count passed tests, will calculate final score later
         }
 
         testResults.push({
@@ -522,13 +597,24 @@ class ChallengeService {
         });
       }
 
+      // Calculate final score as percentage of passed tests
+      const passedTests = totalScore; // totalScore now represents number of passed tests
+      const totalTests = testCases.length;
+      const scorePercentage = totalTests > 0 ? passedTests / totalTests : 0;
+      
+      // Note: Final score will be calculated in submitSolution based on challenge.metadata.points
+      // For now, return the percentage (0-1) as totalScore
+      const finalScore = Math.round(scorePercentage * 100); // Convert to percentage (0-100)
+
       return {
         success: true,
         testResults,
-        totalScore,
+        totalScore: finalScore,
         executionTime: totalExecutionTime,
       };
     } catch (error: any) {
+      console.error('❌ Judge0 execution failed with error:', error);
+      console.error('Error stack:', error.stack);
       return {
         success: false,
         testResults: [],
@@ -594,16 +680,22 @@ class ChallengeService {
       const status =
         executionResult.success && allPassed ? 'completed' : 'failed';
       
+      // Calculate actual score based on challenge points and percentage passed
+      const scorePercentage = executionResult.totalScore / 100; // Convert from 0-100 to 0-1
+      const actualScore = Math.round(challenge.metadata.points * scorePercentage);
+      
       console.log('🧪 Submission status determination:', {
         executionSuccess: executionResult.success,
         allTestsPassed: allPassed,
+        scorePercentage: scorePercentage,
+        challengePoints: challenge.metadata.points,
+        actualScore: actualScore,
         testResults: executionResult.testResults.map(t => ({ 
           id: t.testCaseId, 
           passed: t.passed,
           error: t.error 
         })),
-        finalStatus: status,
-        points: challenge.metadata.points
+        finalStatus: status
       });
 
       // Create submission document
@@ -613,7 +705,7 @@ class ChallengeService {
         language,
         code,
         status: status as 'completed' | 'failed',
-        score: executionResult.totalScore,
+        score: actualScore,
         runtime: executionResult.executionTime,
         memoryUsed: 0, // TODO: Implement memory tracking
         testResults: JSON.stringify(executionResult.testResults),
@@ -628,25 +720,17 @@ class ChallengeService {
         submissionDoc
       );
 
-      // Update user stats if successful
+      // Note: User stats, achievements, and rankings are now automatically handled 
+      // by the submission-processor Appwrite Function when a submission is created
       if (status === 'completed') {
-        console.log('🏆 Challenge completed! Updating user stats...');
-        await this.updateUserStats(
-          userId,
-          challengeId,
-          challenge.metadata.points
-        );
-
-        // Update user rankings
-        const userStats = await this.getUserStats(userId);
-        if (userStats) {
-          const { leaderboardService } = await import('./leaderboardService');
-          await leaderboardService.updateUserRanking(
-            userId,
-            userStats.totalPoints,
-            userStats.solvedChallenges.length
-          );
-        }
+        console.log('🏆 Challenge completed! Functions will process stats and achievements...');
+        
+        // Trigger achievement check after a short delay to allow function processing
+        setTimeout(() => {
+          import('./achievementPollingService').then(({ achievementPollingService }) => {
+            achievementPollingService.forceCheck();
+          });
+        }, 3000); // 3 second delay
       }
 
       // Return formatted submission
@@ -699,7 +783,11 @@ class ChallengeService {
     }
   }
 
-  private async updateUserStats(
+  /**
+   * Legacy method - now handled by submission-processor Appwrite Function
+   * This method provides immediate user stats updates as a fallback
+   */
+  async updateUserStatsLegacy(
     userId: string,
     challengeId: string,
     points: number

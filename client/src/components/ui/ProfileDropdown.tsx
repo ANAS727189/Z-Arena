@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Settings, LogOut, ChevronDown } from 'lucide-react';
+import { User, Settings, LogOut, ChevronDown, Trophy } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -133,6 +133,18 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
               >
                 <User className="w-4 h-4 text-white" />
                 <span className="text-sm text-white">View Profile</span>
+              </motion.button>
+
+              <motion.button
+                whileHover={{ backgroundColor: 'rgba(139, 92, 246, 0.1)' }}
+                onClick={() => {
+                  navigate('/achievements');
+                  setIsOpen(false);
+                }}
+                className="w-full flex items-center space-x-3 px-4 py-3 text-white text-left hover:bg-[var(--accent-purple)]/10 transition-colors"
+              >
+                <Trophy className="w-4 h-4 text-white" />
+                <span className="text-sm text-white">Achievements</span>
               </motion.button>
 
               <motion.button
