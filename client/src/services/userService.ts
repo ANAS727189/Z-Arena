@@ -191,7 +191,37 @@ class UserService {
    */
   async updateProfileImage(imageUrl: string): Promise<void> {
     try {
-      await this.updatePreferences({ profilePicture: imageUrl });
+      const user = await account.get();
+      if (!user) throw new Error('User not authenticated');
+
+      // Update Appwrite user preferences with profileImage (not profilePicture)
+      await account.updatePrefs({
+        ...user.prefs,
+        profileImage: imageUrl,
+      });
+
+      // Also update user stats document if it exists
+      try {
+        const userStats = await databases.listDocuments(
+          DATABASE_ID,
+          COLLECTIONS.USERS,
+          [Query.equal('userId', user.$id)]
+        );
+
+        if (userStats.documents.length > 0) {
+          await databases.updateDocument(
+            DATABASE_ID,
+            COLLECTIONS.USERS,
+            userStats.documents[0].$id,
+            {
+              profilePicture: imageUrl,
+              updatedAt: new Date().toISOString(),
+            }
+          );
+        }
+      } catch (error) {
+        console.warn('Failed to update user stats document:', error);
+      }
     } catch (error) {
       console.error('Failed to update profile image:', error);
       throw error;

@@ -48,8 +48,8 @@ export const ChallengesPage: React.FC = () => {
         />
 
         {/* View Mode Toggle */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
+        <div className="flex items-center justify-between mb-6 bg-black text-white">
+          <div className="flex items-center gap-2 bg-black text-white rounded-lg p-1">
             <Button
               variant={viewMode === 'table' ? 'default' : 'ghost'}
               size="sm"

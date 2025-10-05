@@ -78,13 +78,15 @@ export const ProfilePage: React.FC = () => {
     );
   }
 
-  const profileImageUrl = (user.prefs as any)?.profileImage || null;
-
   // Generate a random avatar if no profile image
   const getRandomAvatar = () => {
     const seed = user.$id || user.email;
     return `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&backgroundColor=transparent`;
   };
+
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(
+    (user?.prefs as any)?.profileImage || null
+  );
 
   const handleImageUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -103,11 +105,11 @@ export const ProfilePage: React.FC = () => {
       // Update user preferences with the new image URL
       await userService.updateProfileImage(result.secure_url);
 
+      // Update local state immediately for better UX
+      setProfileImageUrl(result.secure_url);
+
       setUploadSuccess(true);
       setTimeout(() => setUploadSuccess(false), 3000);
-
-      // Refresh the page to show the new image
-      window.location.reload();
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Failed to upload image';
@@ -115,6 +117,10 @@ export const ProfilePage: React.FC = () => {
       setTimeout(() => setUploadError(null), 5000);
     } finally {
       setIsUploading(false);
+      // Clear the file input
+      if (event.target) {
+        event.target.value = '';
+      }
     }
   };
 

@@ -131,7 +131,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
                 onClick={handleViewProfile}
                 className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-[var(--accent-purple)]/10 transition-colors"
               >
-                <User className="w-4 h-4 text-[var(--accent-purple)]" />
+                <User className="w-4 h-4 text-white" />
                 <span className="text-sm text-white">View Profile</span>
               </motion.button>
 
@@ -141,9 +141,9 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
                   navigate('/settings');
                   setIsOpen(false);
                 }}
-                className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-[var(--accent-purple)]/10 transition-colors"
+                className="w-full flex items-center space-x-3 px-4 py-3 text-white text-left hover:bg-[var(--accent-purple)]/10 transition-colors"
               >
-                <Settings className="w-4 h-4 text-[var(--accent-cyan)]" />
+                <Settings className="w-4 h-4 text-white" />
                 <span className="text-sm text-white">Settings</span>
               </motion.button>
 
