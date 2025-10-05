@@ -40,7 +40,6 @@ export const ChallengePage: React.FC = () => {
     handleStartChallenge,
     handleBackToMenu,
     showTimerWarning,
-    challengeStarted,
     timer,
     testResults,
     showTestResults,

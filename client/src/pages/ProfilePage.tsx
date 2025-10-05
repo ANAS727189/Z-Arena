@@ -21,7 +21,6 @@ import { cloudinaryService } from '../services/cloudinaryService';
 import { challengeService } from '../services/challengeService';
 import { userService } from '../services/userService';
 import { leaderboardService } from '../services/leaderboardService';
-import { StreakDisplay } from '../components/ui/StreakDisplay';
 import type { UserStatsDocument } from '../services/challengeService';
 import type { StarLevel } from '../services/leaderboardService';
 
