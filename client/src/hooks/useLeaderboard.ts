@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { leaderboardService } from '../services/leaderboardService';
 import { userService } from '../services/userService';
+import { LeaderboardCache } from '../utils/leaderboardCache';
 import type { LeaderboardUser, LeaderboardFilters } from '../services/leaderboardService';
 import { useAuth } from './useAuth';
 
@@ -32,10 +33,28 @@ export const useLeaderboard = (): UseLeaderboardReturn => {
     category: 'points'
   });
 
-  const loadLeaderboard = async () => {
+  const loadLeaderboard = async (forceRefresh = false) => {
     try {
+      // First, try to load from cache if not forcing refresh
+      if (!forceRefresh) {
+        const cached = LeaderboardCache.getCachedLeaderboard(filters);
+        if (cached.leaderboard && cached.stats) {
+          console.log('🏆 Loading leaderboard from cache');
+          setLeaderboard(cached.leaderboard);
+          setCurrentUserRank(cached.userRank);
+          setStats(cached.stats);
+          setLoading(false);
+          setError(null);
+          
+          // Still fetch from server in background to check for updates
+          setTimeout(() => loadLeaderboard(true), 100);
+          return;
+        }
+      }
+
       setLoading(true);
       setError(null);
+      console.log('🔄 Loading leaderboard from database');
 
       // Initialize user stats if user is logged in
       if (user) {
@@ -55,6 +74,9 @@ export const useLeaderboard = (): UseLeaderboardReturn => {
       setLeaderboard(leaderboardData);
       setCurrentUserRank(userRank);
       setStats(leaderboardStats);
+      
+      // Cache the loaded data
+      LeaderboardCache.setCachedLeaderboard(filters, leaderboardData, userRank, leaderboardStats);
     } catch (err) {
       console.error('Failed to load leaderboard:', err);
       setError(err instanceof Error ? err.message : 'Failed to load leaderboard');
@@ -64,7 +86,8 @@ export const useLeaderboard = (): UseLeaderboardReturn => {
   };
 
   const refreshLeaderboard = async () => {
-    await loadLeaderboard();
+    LeaderboardCache.clearCache();
+    await loadLeaderboard(true);
   };
 
   useEffect(() => {

@@ -2,14 +2,36 @@ import { motion } from 'framer-motion';
 import { Code2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AuthModal } from '../AuthModal';
 import { ProfileDropdown } from '../ui/ProfileDropdown';
+import { StreakDisplay } from '../ui/StreakDisplay';
+import { challengeService } from '../../services/challengeService';
+import type { UserStatsDocument } from '../../services/challengeService';
 
 const Navigation = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [userStats, setUserStats] = useState<UserStatsDocument | null>(null);
+
+  // Load user stats when user is available
+  useEffect(() => {
+    const loadUserStats = async () => {
+      if (user) {
+        try {
+          const stats = await challengeService.getUserStats(user.$id);
+          setUserStats(stats);
+        } catch (error) {
+          console.error('Failed to load user stats in navigation:', error);
+        }
+      } else {
+        setUserStats(null);
+      }
+    };
+
+    loadUserStats();
+  }, [user]);
 
   return (
     <>
@@ -60,6 +82,21 @@ const Navigation = () => {
             >
               Leaderboard
             </motion.button>
+            
+            {/* Streak Display for logged-in users */}
+            {user && userStats && (
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-500/30 rounded-lg"
+              >
+                <StreakDisplay
+                  currentStreak={userStats.currentStreak || 0}
+                  maxStreak={userStats.maxStreak || 0}
+                  size="sm"
+                />
+              </motion.div>
+            )}
+            
             {user ? (
               <ProfileDropdown />
             ) : (

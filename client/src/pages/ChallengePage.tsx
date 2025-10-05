@@ -7,6 +7,7 @@ import {
   CodeEditorPanel,
   LoadingState,
   ErrorState,
+  TimerWarningModal,
 } from '@/components/challenge';
 
 export const ChallengePage: React.FC = () => {
@@ -36,6 +37,11 @@ export const ChallengePage: React.FC = () => {
     toggleSection,
     handleTestCode,
     handleSubmit,
+    handleStartChallenge,
+    handleBackToMenu,
+    showTimerWarning,
+    challengeStarted,
+    timer,
     testResults,
     showTestResults,
     setShowTestResults,
@@ -60,6 +66,15 @@ export const ChallengePage: React.FC = () => {
         challenge={challenge}
         isFullscreen={isFullscreen}
         onToggleFullscreen={() => setIsFullscreen(!isFullscreen)}
+        timerIsRunning={timer.isRunning}
+        timerFormattedTime={timer.formattedTime}
+      />
+
+      <TimerWarningModal
+        isOpen={showTimerWarning}
+        challengeTitle={challenge?.metadata?.title || 'Challenge'}
+        onContinue={handleStartChallenge}
+        onBack={handleBackToMenu}
       />
 
       <div className="flex h-[calc(100vh-64px)] overflow-hidden">

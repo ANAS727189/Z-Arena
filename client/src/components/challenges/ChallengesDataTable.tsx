@@ -44,6 +44,7 @@ import type { Challenge } from '@/types';
 interface ChallengesDataTableProps {
   challenges: Challenge[];
   loading?: boolean;
+  solvedChallenges?: string[];
   onChallengeClick: (challenge: Challenge) => void;
 }
 
@@ -56,6 +57,7 @@ const difficultyColors = {
 export const ChallengesDataTable: React.FC<ChallengesDataTableProps> = ({
   challenges,
   loading: isLoading = false,
+  solvedChallenges = [],
   onChallengeClick,
 }) => {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -93,9 +95,21 @@ export const ChallengesDataTable: React.FC<ChallengesDataTableProps> = ({
             <div className="py-4">
               {/* Title and difficulty on same line */}
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-bold text-white text-lg group-hover:text-blue-400 transition-colors">
-                  {challenge.metadata.title}
-                </h3>
+                <div className="flex items-center gap-3">
+                  <h3 className="font-bold text-white text-lg group-hover:text-blue-400 transition-colors">
+                    {challenge.metadata.title}
+                  </h3>
+                  {/* Solved/Unsolved Status */}
+                  {solvedChallenges.includes(challenge.id) ? (
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-400 border border-green-500/50">
+                      ✓ Solved
+                    </span>
+                  ) : (
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400 border border-gray-500/50">
+                      Unsolved
+                    </span>
+                  )}
+                </div>
                 <span className={`px-3 py-1 rounded-full text-xs font-medium border ${difficultyColors[difficulty as keyof typeof difficultyColors]}`}>
                   {difficulty}
                 </span>

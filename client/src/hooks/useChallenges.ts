@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { challengeService } from '@/services/challengeService';
 import { seedChallenges } from '@/utils/seedChallenges';
 import { useAuth } from '@/hooks/useAuth';
+import { ChallengesCache } from '@/utils/challengesCache';
 import type { Challenge } from '@/types';
 
 export const useChallenges = () => {
@@ -14,6 +15,7 @@ export const useChallenges = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [seeding, setSeeding] = useState(false);
+  const [solvedChallenges, setSolvedChallenges] = useState<string[]>([]);
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
@@ -25,13 +27,30 @@ export const useChallenges = () => {
   // UI states
   const [showAuthModal, setShowAuthModal] = useState(false);
 
-  // Load challenges from Appwrite
+  // Load challenges from cache first, then from Appwrite if needed
   useEffect(() => {
     async function fetchChallenges() {
       try {
+        // First, try to load from cache
+        const cachedChallenges = ChallengesCache.getCachedChallenges();
+        if (cachedChallenges && cachedChallenges.length > 0) {
+          console.log('📚 Loading challenges from cache');
+          setChallenges(cachedChallenges);
+          setLoading(false);
+          setError(null);
+          return;
+        }
+
+        // If no cache or cache is invalid, fetch from database
+        console.log('🔄 Loading challenges from database');
         const loadedChallenges = await challengeService.getChallenges();
         setChallenges(loadedChallenges);
         setError(null);
+        
+        // Cache the loaded challenges
+        if (loadedChallenges.length > 0) {
+          ChallengesCache.setCachedChallenges(loadedChallenges);
+        }
       } catch (error: any) {
         console.error('Failed to load challenges from database:', error);
 
@@ -59,6 +78,25 @@ export const useChallenges = () => {
 
     fetchChallenges();
   }, []);
+
+  // Load user's solved challenges
+  useEffect(() => {
+    async function fetchUserStats() {
+      if (user) {
+        try {
+          const userStats = await challengeService.getUserStats(user.$id);
+          setSolvedChallenges(userStats?.solvedChallenges || []);
+        } catch (error) {
+          console.error('Failed to load user stats:', error);
+          setSolvedChallenges([]);
+        }
+      } else {
+        setSolvedChallenges([]);
+      }
+    }
+
+    fetchUserStats();
+  }, [user]);
 
   // Filter challenges based on search criteria
   const filteredChallenges = challenges.filter(challenge => {
@@ -107,9 +145,15 @@ export const useChallenges = () => {
     setSeeding(true);
     try {
       await seedChallenges();
+      // Clear cache since we're adding new challenges
+      ChallengesCache.clearCache();
       // Refresh challenges after seeding
       const loadedChallenges = await challengeService.getChallenges();
       setChallenges(loadedChallenges);
+      // Update cache with new challenges
+      if (loadedChallenges.length > 0) {
+        ChallengesCache.setCachedChallenges(loadedChallenges);
+      }
     } catch (error) {
       console.error('Failed to seed challenges:', error);
     } finally {
@@ -128,6 +172,25 @@ export const useChallenges = () => {
   const handleSignOut = () => logout();
   const handleCloseAuthModal = () => setShowAuthModal(false);
 
+  // Refresh challenges from database (clears cache)
+  const handleRefreshChallenges = async () => {
+    setLoading(true);
+    try {
+      ChallengesCache.clearCache();
+      const loadedChallenges = await challengeService.getChallenges();
+      setChallenges(loadedChallenges);
+      setError(null);
+      if (loadedChallenges.length > 0) {
+        ChallengesCache.setCachedChallenges(loadedChallenges);
+      }
+    } catch (error: any) {
+      console.error('Failed to refresh challenges:', error);
+      setError(`Failed to refresh challenges: ${error.message || 'Unknown error'}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Filter handlers
   const handleSearchChange = (value: string) => setSearchTerm(value);
   const handleDifficultyChange = (
@@ -144,6 +207,7 @@ export const useChallenges = () => {
     user,
     supportedLanguages,
     showAuthModal,
+    solvedChallenges,
 
     // Filter states
     searchTerm,
@@ -152,6 +216,7 @@ export const useChallenges = () => {
 
     // Handlers
     handleSeedChallenges,
+    handleRefreshChallenges,
     handleNavigateHome,
     handleNavigateChallenges,
     handleNavigateLeaderboard,

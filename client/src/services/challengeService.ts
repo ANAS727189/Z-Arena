@@ -58,6 +58,9 @@ export interface UserStatsDocument extends Models.Document {
   monthlyRank: number;
   weeklyPoints: number;
   monthlyPoints: number;
+  currentStreak: number;
+  maxStreak: number;
+  lastSolvedDate: string;
   lastActive?: string;
   streak: number;
   bestStreak: number;
@@ -248,6 +251,51 @@ class ChallengeService {
       console.error('Error fetching user stats:', error);
       return null;
     }
+  }
+
+  // Check if user has solved a challenge
+  async hasUserSolvedChallenge(userId: string, challengeId: string): Promise<boolean> {
+    try {
+      const userStats = await this.getUserStats(userId);
+      return userStats?.solvedChallenges?.includes(challengeId) || false;
+    } catch (error) {
+      console.error('Error checking if user solved challenge:', error);
+      return false;
+    }
+  }
+
+  // Calculate streak based on user's submission history
+  private calculateStreak(userStats: UserStatsDocument): { currentStreak: number; maxStreak: number } {
+    const today = new Date();
+    const lastSolvedDate = userStats.lastSolvedDate ? new Date(userStats.lastSolvedDate) : null;
+    
+    // If no last solved date, streak is 0
+    if (!lastSolvedDate) {
+      return { currentStreak: 0, maxStreak: userStats.maxStreak || 0 };
+    }
+    
+    // Calculate days difference
+    const timeDiff = today.getTime() - lastSolvedDate.getTime();
+    const daysDiff = Math.floor(timeDiff / (1000 * 3600 * 24));
+    
+    let currentStreak = userStats.currentStreak || 0;
+    
+    // If solved today (same day), maintain streak
+    if (daysDiff === 0) {
+      // Already solved today, no change to streak
+    }
+    // If solved yesterday, increment streak
+    else if (daysDiff === 1) {
+      currentStreak += 1;
+    }
+    // If more than 1 day gap, reset streak
+    else if (daysDiff > 1) {
+      currentStreak = 1; // Reset to 1 for today's solve
+    }
+    
+    const maxStreak = Math.max(currentStreak, userStats.maxStreak || 0);
+    
+    return { currentStreak, maxStreak };
   }
 
   // Helper method to map Appwrite document to Challenge type
@@ -836,6 +884,10 @@ class ChallengeService {
           }
         });
 
+        // Calculate streak for existing user
+        const { currentStreak, maxStreak } = this.calculateStreak(stats);
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+
         const updateResult = await databases.updateDocument(
           DATABASE_ID,
           COLLECTIONS.USERS,
@@ -853,6 +905,9 @@ class ChallengeService {
             starPoints: stats.starPoints + points,
             currentStars: (stats.starPoints + points) >= 30 ? 7 : (stats.starPoints + points) >= 25 ? 5 : (stats.starPoints + points) >= 15 ? 3 : (stats.starPoints + points) >= 5 ? 2 : 1,
             starTitle: (stats.starPoints + points) >= 30 ? 'ZMaster' : (stats.starPoints + points) >= 25 ? 'Expert' : (stats.starPoints + points) >= 15 ? 'Rookie' : (stats.starPoints + points) >= 5 ? 'Pookie' : 'Noob',
+            currentStreak,
+            maxStreak,
+            lastSolvedDate: today,
           }
         );
         
@@ -860,6 +915,8 @@ class ChallengeService {
       } else {
         // Create new user stats
         console.log('🆕 Creating new user stats document');
+        
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
         
         const createResult = await databases.createDocument(
           DATABASE_ID,
@@ -882,8 +939,9 @@ class ChallengeService {
             weeklyPoints: points,
             monthlyPoints: points,
             lastActive: new Date().toISOString(),
-            streak: 1,
-            bestStreak: 1,
+            currentStreak: 1,
+            maxStreak: 1,
+            lastSolvedDate: today,
             avgSolveTime: 0,
             country: 'India',
             profilePicture: (user.prefs as any)?.profileImage || null,

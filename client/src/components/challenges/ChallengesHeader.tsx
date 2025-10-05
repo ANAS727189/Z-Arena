@@ -1,4 +1,5 @@
 import { Database, Loader2 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ChallengesHeaderProps {
   onSeedChallenges: () => void;
@@ -9,14 +10,17 @@ export const ChallengesHeader: React.FC<ChallengesHeaderProps> = ({
   onSeedChallenges,
   seeding,
 }) => {
+  const { user } = useAuth();
+  const isAdmin = user?.email === 'anas23khan083@gmail.com';
+
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between mb-4">
         <h1 className="font-heading text-4xl md:text-5xl font-bold text-white">
           Code Challenges
         </h1>
-        {/* Development Seeding Button */}
-        {import.meta.env.DEV && (
+        {/* Admin-only Seeding Button */}
+        {isAdmin && (
           <button
             onClick={onSeedChallenges}
             disabled={seeding}

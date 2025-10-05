@@ -64,9 +64,17 @@ export const LeaderboardPage: React.FC = () => {
           transition={{ duration: 0.5 }}
           className="text-center mb-8"
         >
-          <h1 className="font-heading text-4xl font-bold text-white mb-2">
-            Leaderboard
-          </h1>
+          <div className="flex items-center justify-center gap-4 mb-2">
+            <h1 className="font-heading text-4xl font-bold text-white">
+              Leaderboard
+            </h1>
+            {loading && leaderboard.length > 0 && (
+              <div className="flex items-center gap-2 text-blue-400">
+                <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                <span className="text-sm">updating</span>
+              </div>
+            )}
+          </div>
           <p className="text-[var(--text-secondary)]">
             Compete with developers worldwide and climb the ranks
           </p>

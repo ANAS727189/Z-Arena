@@ -9,7 +9,8 @@ import { achievementService } from '../services/achievementService';
 const AchievementsPage: React.FC = () => {
   const { achievements, stats, loading, error } = useAchievements();
 
-  if (loading) {
+  // Only show full loading screen if no achievements loaded yet
+  if (loading && achievements.length === 0) {
     return (
       <div className="min-h-screen bg-[var(--background-primary)] flex items-center justify-center">
         <div className="text-center">
@@ -40,10 +41,18 @@ const AchievementsPage: React.FC = () => {
           transition={{ duration: 0.5 }}
           className="text-center mb-12"
         >
-          <h1 className="text-4xl font-bold text-white mb-4">
-            <Trophy className="inline-block w-10 h-10 mr-3 text-yellow-500" />
-            Achievements
-          </h1>
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <h1 className="text-4xl font-bold text-white">
+              <Trophy className="inline-block w-10 h-10 mr-3 text-yellow-500" />
+              Achievements
+            </h1>
+            {loading && achievements.length > 0 && (
+              <div className="flex items-center gap-2 text-blue-400">
+                <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                <span className="text-sm">updating</span>
+              </div>
+            )}
+          </div>
           <p className="text-[var(--text-secondary)] text-lg">
             Track your progress and celebrate your coding milestones
           </p>

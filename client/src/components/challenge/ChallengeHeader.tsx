@@ -9,11 +9,14 @@ import {
   Minimize2,
 } from 'lucide-react';
 import type { Challenge } from '@/types';
+import { ChallengeTimerDisplay } from './ChallengeTimerDisplay';
 
 interface ChallengeHeaderProps {
   challenge: Challenge;
   isFullscreen: boolean;
   onToggleFullscreen: () => void;
+  timerIsRunning?: boolean;
+  timerFormattedTime?: string;
 }
 
 const getDifficultyStyles = (difficulty: string) => {
@@ -33,6 +36,8 @@ export const ChallengeHeader: React.FC<ChallengeHeaderProps> = ({
   challenge,
   isFullscreen,
   onToggleFullscreen,
+  timerIsRunning = false,
+  timerFormattedTime = '00:00',
 }) => {
   const navigate = useNavigate();
 
@@ -58,6 +63,12 @@ export const ChallengeHeader: React.FC<ChallengeHeaderProps> = ({
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Challenge Timer */}
+            <ChallengeTimerDisplay
+              isRunning={timerIsRunning}
+              formattedTime={timerFormattedTime}
+            />
+            
             <div
               className={`px-3 py-1 rounded-full border text-xs font-medium ${getDifficultyStyles(challenge.metadata.difficulty)}`}
             >

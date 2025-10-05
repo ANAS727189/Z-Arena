@@ -24,6 +24,7 @@ export const ChallengesPage: React.FC = () => {
     seeding,
     supportedLanguages,
     showAuthModal,
+    solvedChallenges,
 
     // Filter states (still used for grid view)
     searchTerm,
@@ -70,25 +71,34 @@ export const ChallengesPage: React.FC = () => {
             </Button>
           </div>
           
-          <div className="text-sm text-gray-500">
-            {challenges.length} challenge{challenges.length !== 1 ? 's' : ''} available
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <span>
+              {challenges.length} challenge{challenges.length !== 1 ? 's' : ''} available
+            </span>
+            {loading && challenges.length > 0 && (
+              <div className="flex items-center gap-1 text-blue-400">
+                <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                <span className="text-xs">refreshing</span>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Loading State */}
-        {loading && <LoadingState />}
+        {/* Loading State - only show if no challenges loaded yet */}
+        {loading && challenges.length === 0 && <LoadingState />}
 
         {/* Error State */}
         {!loading && error && <ErrorState error={error} />}
 
-        {/* Content */}
-        {!loading && !error && (
+        {/* Content - show immediately if challenges are available */}
+        {((challenges.length > 0) || (!loading && !error)) && (
           <>
             {viewMode === 'table' ? (
               /* Table View */
               <ChallengesDataTable
                 challenges={challenges}
                 loading={loading}
+                solvedChallenges={solvedChallenges}
                 onChallengeClick={(challenge) => handleChallengeClick(challenge.id)}
               />
             ) : (

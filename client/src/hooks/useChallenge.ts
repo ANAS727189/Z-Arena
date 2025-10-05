@@ -5,6 +5,7 @@ import { challengeService } from '@/services/challengeService';
 import { useAuth } from '@/hooks/useAuth';
 import type { Challenge } from '@/types';
 import { getStarterCode } from '@/utils/starterCodes';
+import { useChallengeTimer } from '@/hooks/useChallengeTimer';
 
 export const useChallenge = () => {
   const { id } = useParams<{ id: string }>();
@@ -42,6 +43,11 @@ export const useChallenge = () => {
   });
   const [showAuthModal, setShowAuthModal] = useState(false);
 
+  // Timer state
+  const [showTimerWarning, setShowTimerWarning] = useState(true);
+  const [challengeStarted, setChallengeStarted] = useState(false);
+  const timer = useChallengeTimer();
+
   // Editor refs
   const editorRef = useRef<any>(null);
 
@@ -56,6 +62,26 @@ export const useChallenge = () => {
       const challengeData = await challengeService.getChallenge(challengeId);
       if (challengeData) {
         setChallenge(challengeData);
+        
+        // Check if user has already solved this challenge
+        if (user) {
+          const hasSolved = await challengeService.hasUserSolvedChallenge(user.$id, challengeId);
+          if (hasSolved) {
+            // User has solved this challenge before, start timer automatically
+            setShowTimerWarning(false);
+            setChallengeStarted(true);
+            timer.startTimer();
+          } else {
+            // User hasn't solved this challenge, show timer warning
+            setShowTimerWarning(true);
+            setChallengeStarted(false);
+          }
+        } else {
+          // User not logged in, show timer warning
+          setShowTimerWarning(true);
+          setChallengeStarted(false);
+        }
+        
         // Set default language and starter code
         const firstLang =
           challengeData.metadata.supportedLanguages?.[0] || 'z--';
@@ -192,6 +218,17 @@ export const useChallenge = () => {
     }
   };
 
+  // Timer functions
+  const handleStartChallenge = () => {
+    setShowTimerWarning(false);
+    setChallengeStarted(true);
+    timer.startTimer();
+  };
+
+  const handleBackToMenu = () => {
+    navigate('/challenges');
+  };
+
   const handleSubmit = async () => {
     if (!user) {
       setShowAuthModal(true);
@@ -212,6 +249,9 @@ export const useChallenge = () => {
       alert('Please write some code before submitting!');
       return;
     }
+
+    // Stop the timer when submitting
+    timer.stopTimer();
 
     setSubmitting(true);
     try {
@@ -276,6 +316,13 @@ export const useChallenge = () => {
     toggleSection,
     handleTestCode,
     handleSubmit,
+
+    // Timer functions
+    handleStartChallenge,
+    handleBackToMenu,
+    showTimerWarning,
+    challengeStarted,
+    timer,
 
     // Test and submission results
     testResults,

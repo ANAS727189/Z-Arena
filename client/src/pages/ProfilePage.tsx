@@ -14,12 +14,14 @@ import {
   X,
   Edit3,
   ArrowLeft,
+  Flame,
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { cloudinaryService } from '../services/cloudinaryService';
 import { challengeService } from '../services/challengeService';
 import { userService } from '../services/userService';
 import { leaderboardService } from '../services/leaderboardService';
+import { StreakDisplay } from '../components/ui/StreakDisplay';
 import type { UserStatsDocument } from '../services/challengeService';
 import type { StarLevel } from '../services/leaderboardService';
 
@@ -373,7 +375,7 @@ export const ProfilePage: React.FC = () => {
             className="lg:col-span-2 space-y-6"
           >
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-[var(--background-secondary)] border border-[var(--border-primary)] rounded-xl p-6 text-center">
                 <div className="w-12 h-12 bg-[var(--accent-purple)]/20 rounded-full flex items-center justify-center mx-auto mb-3">
                   <Trophy className="w-6 h-6 text-[var(--accent-purple)]" />
@@ -415,6 +417,74 @@ export const ProfilePage: React.FC = () => {
                 <p className="text-[var(--text-secondary)] text-sm">
                   Success Rate
                 </p>
+              </div>
+
+              {/* Streak Card */}
+              <div className="bg-gradient-to-br from-orange-500/10 to-red-500/10 border border-orange-500/30 rounded-xl p-6">
+                <div className="space-y-4">
+                  {/* Current Streak */}
+                  <div className="text-center">
+                    <div className="flex justify-center items-center mb-2">
+                      <motion.div
+                        animate={(userStats?.currentStreak || 0) > 0 ? { 
+                          scale: [1, 1.1, 1],
+                          rotate: [0, 5, -5, 0] 
+                        } : {}}
+                        transition={{ 
+                          duration: 0.6,
+                          repeat: (userStats?.currentStreak || 0) > 7 ? Infinity : 0,
+                          repeatDelay: 3
+                        }}
+                      >
+                        <Flame className={`w-6 h-6 mr-2 ${
+                          (userStats?.currentStreak || 0) === 0 ? 'text-gray-400' :
+                          (userStats?.currentStreak || 0) < 3 ? 'text-orange-400' :
+                          (userStats?.currentStreak || 0) < 7 ? 'text-orange-500' :
+                          (userStats?.currentStreak || 0) < 30 ? 'text-red-500' :
+                          'text-purple-500'
+                        }`} />
+                      </motion.div>
+                      <motion.span 
+                        key={userStats?.currentStreak || 0}
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="font-heading text-2xl font-bold text-white"
+                      >
+                        {userStats?.currentStreak || 0}
+                      </motion.span>
+                    </div>
+                    <p className="text-orange-400 text-sm font-medium">
+                      Current Streak
+                      {(userStats?.currentStreak || 0) > 0 && 
+                       (userStats?.currentStreak === userStats?.maxStreak) && (
+                        <span className="ml-2 text-xs bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-full border border-yellow-500/30">
+                          Personal Best! 🔥
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                  
+                  {/* Divider */}
+                  <div className="border-t border-orange-500/20"></div>
+                  
+                  {/* Max Streak */}
+                  <div className="text-center">
+                    <div className="flex justify-center items-center mb-2">
+                      <Trophy className="w-5 h-5 text-yellow-400 mr-2" />
+                      <motion.span 
+                        key={userStats?.maxStreak || 0}
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        className="font-heading text-lg font-bold text-white"
+                      >
+                        {userStats?.maxStreak || 0}
+                      </motion.span>
+                    </div>
+                    <p className="text-yellow-400 text-sm font-medium">
+                      Best Streak
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 
