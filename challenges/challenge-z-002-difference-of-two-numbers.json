@@ -1,0 +1,57 @@
+{
+  "id": "difference-of-two-numbers-z",
+  "metadata": {
+    "title": "Difference of Two Numbers (Z--)",
+    "description": "Write a Z-- program that declares two variables, assigns them values, computes their difference, and prints the result.\n\n## Learning Objectives\n- Variable declaration\n- Arithmetic operations (subtraction)\n- Using `print()`\n- Understanding Z-- syntax",
+    "difficulty": "easy",
+    "points": 1,
+    "timeLimit": 5,
+    "tags": ["basics", "variables", "arithmetic", "print", "z--"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-06T00:10:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["z--"]
+  },
+  "problem": {
+    "statement": "Declare two variables `x` and `y`, assign them the values 10 and 3, compute their difference, and print the result in the format:\n\nDifference is: \n7.00\n\n(Each value on its own line, as shown.)",
+    "inputFormat": "No input required.",
+    "outputFormat": "First line: Difference is: \nSecond line: 7.00",
+    "constraints": "Use only Z-- syntax.",
+    "examples": [
+      {
+        "input": "",
+        "output": "Difference is: \n7.00",
+        "explanation": "The program should output the label and the difference, each on its own line."
+      }
+    ]
+  },
+  "languages": {
+    "z--": {
+      "starterCode": "start\n  // Declare variables and compute difference\n  \nend",
+      "solutionCode": "start\n  let x = 10\n  let y = 3\n  let diff = x - y\n  print(\"Difference is: \")\n  print(diff)\nend",
+      "hints": [
+        "Use `let` to declare variables.",
+        "Use `print()` to output both the label and the difference.",
+        "No input is required."
+      ],
+      "compilerType": "z-studio"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-basic-diff",
+      "input": "",
+      "output": "Difference is: \n7.00",
+      "points": 10,
+      "isHidden": false,
+      "timeout": 1000
+    }
+  ],
+  "editorial": {
+    "approach": "Declare two variables, compute their difference, and print the result using Z-- syntax.",
+    "complexity": {
+      "time": "O(1)",
+      "space": "O(1)"
+    }
+  }
+}

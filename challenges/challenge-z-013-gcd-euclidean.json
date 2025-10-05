@@ -1,0 +1,57 @@
+{
+  "id": "gcd-euclidean-z",
+  "metadata": {
+    "title": "GCD using Euclidean Algorithm (Z--)",
+    "description": "Write a Z-- program that defines a function to compute the greatest common divisor (GCD) of two numbers using the Euclidean algorithm and prints the GCD of 48 and 18.\n\n## Learning Objectives\n- Function definition\n- Loops\n- Modulo operation\n- Using `print()`\n- Understanding Z-- syntax",
+    "difficulty": "hard",
+    "points": 3,
+    "timeLimit": 20,
+    "tags": ["function", "gcd", "euclidean", "print", "z--"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-06T01:20:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["z--"]
+  },
+  "problem": {
+    "statement": "Define a function `gcd(a, b)` that returns the greatest common divisor of a and b using the Euclidean algorithm. Print the GCD of 48 and 18 in the format:\n\nGCD of 48 and 18 is: \n6.00\n\n(Each value on its own line, as shown.)",
+    "inputFormat": "No input required.",
+    "outputFormat": "First line: GCD of 48 and 18 is: \nSecond line: 6.00",
+    "constraints": "Use only Z-- syntax, a function, and a while loop.",
+    "examples": [
+      {
+        "input": "",
+        "output": "GCD of 48 and 18 is: \n6.00",
+        "explanation": "The program should output the label and the GCD, each on its own line."
+      }
+    ]
+  },
+  "languages": {
+    "z--": {
+      "starterCode": "start\n  // Define a function to compute GCD using Euclidean algorithm\n  \nend",
+      "solutionCode": "start\n  fun gcd {\n    arg = (a, b)\n    while b != 0 {\n      let temp = b\n      b = a % b\n      a = temp\n    }\n    return a\n  }\n  let a = 48\n  let b = 18\n  print(\"GCD of 48 and 18 is: \")\n  print(gcd(a, b))\nend",
+      "hints": [
+        "Use a function to compute GCD.",
+        "Use a while loop and modulo operation.",
+        "No input is required."
+      ],
+      "compilerType": "z-studio"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-advanced-gcd-euclidean",
+      "input": "",
+      "output": "GCD of 48 and 18 is: \n6.00",
+      "points": 20,
+      "isHidden": false,
+      "timeout": 4000
+    }
+  ],
+  "editorial": {
+    "approach": "Define a function for GCD using the Euclidean algorithm, use a while loop and modulo operation, print the result.",
+    "complexity": {
+      "time": "O(log(min(a, b)))",
+      "space": "O(1)"
+    }
+  }
+}

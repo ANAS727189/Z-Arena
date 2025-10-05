@@ -1,0 +1,57 @@
+{
+  "id": "remainder-of-two-numbers-z",
+  "metadata": {
+    "title": "Remainder of Two Numbers (Z--)",
+    "description": "Write a Z-- program that declares two variables, assigns them values, computes their remainder (modulo), and prints the result.\n\n## Learning Objectives\n- Variable declaration\n- Arithmetic operations (modulo)\n- Using `print()`\n- Understanding Z-- syntax",
+    "difficulty": "easy",
+    "points": 1,
+    "timeLimit": 5,
+    "tags": ["basics", "variables", "arithmetic", "print", "modulo", "z--"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-06T00:25:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["z--"]
+  },
+  "problem": {
+    "statement": "Declare two variables `a` and `b`, assign them the values 15 and 4, compute their remainder (a % b), and print the result in the format:\n\nRemainder is: \n3.00\n\n(Each value on its own line, as shown.)",
+    "inputFormat": "No input required.",
+    "outputFormat": "First line: Remainder is: \nSecond line: 3.00",
+    "constraints": "Use only Z-- syntax.",
+    "examples": [
+      {
+        "input": "",
+        "output": "Remainder is: \n3.00",
+        "explanation": "The program should output the label and the remainder, each on its own line."
+      }
+    ]
+  },
+  "languages": {
+    "z--": {
+      "starterCode": "start\n  // Declare variables and compute remainder\n  \nend",
+      "solutionCode": "start\n  let a = 15\n  let b = 4\n  let remainder = a % b\n  print(\"Remainder is: \")\n  print(remainder)\nend",
+      "hints": [
+        "Use `let` to declare variables.",
+        "Use `print()` to output both the label and the remainder.",
+        "No input is required."
+      ],
+      "compilerType": "z-studio"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-basic-remainder",
+      "input": "",
+      "output": "Remainder is: \n3.00",
+      "points": 10,
+      "isHidden": false,
+      "timeout": 1000
+    }
+  ],
+  "editorial": {
+    "approach": "Declare two variables, compute their remainder, and print the result using Z-- syntax.",
+    "complexity": {
+      "time": "O(1)",
+      "space": "O(1)"
+    }
+  }
+}

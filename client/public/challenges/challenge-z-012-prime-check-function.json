@@ -1,0 +1,57 @@
+{
+  "id": "prime-check-function-z",
+  "metadata": {
+    "title": "Prime Number Check (Function, Z--)",
+    "description": "Write a Z-- program that defines a function to check if a number is prime and prints whether 11 is prime.\n\n## Learning Objectives\n- Function definition\n- Loops\n- Conditionals\n- Using `print()`\n- Understanding Z-- syntax",
+    "difficulty": "hard",
+    "points": 3,
+    "timeLimit": 20,
+    "tags": ["function", "prime", "conditionals", "print", "z--"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-06T01:10:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["z--"]
+  },
+  "problem": {
+    "statement": "Define a function `isPrime(n)` that returns true if n is prime, false otherwise. Print whether 11 is prime in the format:\n\n11 is prime\n\n(Or '11 is not prime' if not.)",
+    "inputFormat": "No input required.",
+    "outputFormat": "Single line: 11 is prime",
+    "constraints": "Use only Z-- syntax, a function, and a while loop.",
+    "examples": [
+      {
+        "input": "",
+        "output": "11 is prime",
+        "explanation": "The program should output the result of the prime check."
+      }
+    ]
+  },
+  "languages": {
+    "z--": {
+      "starterCode": "start\n  // Define a function to check if a number is prime\n  \nend",
+      "solutionCode": "start\n  fun isPrime {\n    arg = (n)\n    if n <= 1 {\n      return false\n    }\n    let i = 2\n    while i * i <= n {\n      if n % i == 0 {\n        return false\n      }\n      i = i + 1\n    }\n    return true\n  }\n  let n = 11\n  if isPrime(n) {\n    print(\"11 is prime\")\n  } else {\n    print(\"11 is not prime\")\n  }\nend",
+      "hints": [
+        "Use a function to check for primality.",
+        "Use a while loop to check divisibility.",
+        "No input is required."
+      ],
+      "compilerType": "z-studio"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-advanced-prime-check",
+      "input": "",
+      "output": "11 is prime",
+      "points": 20,
+      "isHidden": false,
+      "timeout": 4000
+    }
+  ],
+  "editorial": {
+    "approach": "Define a function for primality check, use a while loop for divisibility, print the result.",
+    "complexity": {
+      "time": "O(\\sqrt{n})",
+      "space": "O(1)"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+start
+  let n = 10
+  let sum = 0
+  for i = 1, i <= n, i++ {
+    if i % 2 == 0 {
+      sum = sum + i
+    }
+  }
+  print("Sum of even numbers from 1 to 10: ")
+  print(sum)
+end

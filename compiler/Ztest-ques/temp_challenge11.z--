@@ -1,0 +1,17 @@
+start
+  fun fib {
+    arg = (n)
+    if n <= 1 {
+      return n
+    } else {
+      return fib(n - 1) + fib(n - 2)
+    }
+  }
+  let n = 7
+  let i = 0
+  print("Fibonacci sequence up to 7:")
+  while i < n {
+    print(fib(i))
+    i = i + 1
+  }
+end

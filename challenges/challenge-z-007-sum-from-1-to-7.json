@@ -1,0 +1,57 @@
+{
+  "id": "sum-from-1-to-7-z",
+  "metadata": {
+    "title": "Sum from 1 to 7 (Z--)",
+    "description": "Write a Z-- program that computes the sum of numbers from 1 to 7 using a while loop and prints the result.\n\n## Learning Objectives\n- Loops (while)\n- Accumulation pattern\n- Using `print()`\n- Understanding Z-- syntax",
+    "difficulty": "medium",
+    "points": 2,
+    "timeLimit": 10,
+    "tags": ["loops", "while", "sum", "print", "z--"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-06T00:35:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["z--"]
+  },
+  "problem": {
+    "statement": "Compute the sum of numbers from 1 to 7 using a while loop and print the result in the format:\n\nSum from 1 to 7 is: \n28.00\n\n(Each value on its own line, as shown.)",
+    "inputFormat": "No input required.",
+    "outputFormat": "First line: Sum from 1 to 7 is: \nSecond line: 28.00",
+    "constraints": "Use only Z-- syntax and a while loop.",
+    "examples": [
+      {
+        "input": "",
+        "output": "Sum from 1 to 7 is: \n28.00",
+        "explanation": "The program should output the label and the sum, each on its own line."
+      }
+    ]
+  },
+  "languages": {
+    "z--": {
+      "starterCode": "start\n  // Compute sum from 1 to 7 using a while loop\n  \nend",
+      "solutionCode": "start\n  let n = 7\n  let sum = 0\n  let i = 1\n  while i <= n {\n    sum = sum + i\n    i = i + 1\n  }\n  print(\"Sum from 1 to 7 is: \")\n  print(sum)\nend",
+      "hints": [
+        "Use a while loop to add numbers from 1 to n.",
+        "Update the sum variable inside the loop.",
+        "No input is required."
+      ],
+      "compilerType": "z-studio"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-medium-sum-1-7",
+      "input": "",
+      "output": "Sum from 1 to 7 is: \n28.00",
+      "points": 15,
+      "isHidden": false,
+      "timeout": 2000
+    }
+  ],
+  "editorial": {
+    "approach": "Use a while loop to add numbers from 1 to n and print the result using Z-- syntax.",
+    "complexity": {
+      "time": "O(n)",
+      "space": "O(1)"
+    }
+  }
+}

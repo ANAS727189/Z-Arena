@@ -271,3 +271,8 @@ appwrite functions updateVariable \
   --key APPWRITE_FUNCTION_API_KEY \
   --value NEW_API_KEY
 ```
+
+
+# Imp point to redeploy lets say submission function- 
+cd /path/to/submission-processor
+appwrite functions create-deployment --function-id submission-processor --code . --activate true --entrypoint src/main.js

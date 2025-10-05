@@ -1,0 +1,22 @@
+start
+  fun isPrime {
+    arg = (n)
+    if n <= 1 {
+      return false
+    }
+    let i = 2
+    while i * i <= n {
+      if n % i == 0 {
+        return false
+      }
+      i = i + 1
+    }
+    return true
+  }
+  let n = 11
+  if isPrime(n) {
+    print("11 is prime")
+  } else {
+    print("11 is not prime")
+  }
+end

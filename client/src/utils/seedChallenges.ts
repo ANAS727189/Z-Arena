@@ -13,42 +13,9 @@ async function loadChallengeFile(filename: string): Promise<Challenge> {
 }
 
 export async function seedChallenges() {
-  // Get all challenge files dynamically
-  const challengeFiles = [
-    'challenge-001-hello-world.json',
-    'challenge-002-two-sum-array.json',
-    'challenge-003-fibonacci-sequence.json',
-    'challenge-004-reverse-string.json',
-    'challenge-cpp-001-smart-pointers.json',
-    'challenge-cpp-002-template-metaprogramming.json',
-    'challenge-cpp-003-concurrent-futures.json',
-    'challenge-cpp-004-custom-allocator.json',
-    'challenge-cpp-005-expression-templates.json',
-    'challenge-go-001-http-server.json',
-    'challenge-go-002-concurrent-processor.json',
-    'challenge-go-003-jwt-auth.json',
-    'challenge-go-004-rate-limiter.json',
-    'challenge-go-005-json-stream.json',
-    'challenge-go-006-context-timeout.json',
-    'challenge-go-007-worker-pool.json',
-    'challenge-go-008-circuit-breaker.json',
-    'challenge-js-001-promise-pool.json',
-    'challenge-js-002-event-emitter.json',
-    'challenge-js-003-debounce-throttle.json',
-    'challenge-js-004-async-queue.json',
-    'challenge-mixed-001-lru-cache.json',
-    'challenge-mixed-002-consistent-hashing.json',
-    'challenge-py-001-decorator-cache.json',
-    'challenge-py-002-async-scraper.json',
-    'challenge-py-003-metaclass-orm.json',
-    'challenge-py-004-context-manager.json',
-    'challenge-py-005-generator-pipeline.json',
-    'challenge-py-006-multiprocessing.json',
-    'challenge-py-007-advanced-descriptors.json',
-    'challenge-py-008-coroutine-scheduler.json',
-    'challenge-py-009-graph-algorithms.json',
-    'challenge-py-010-machine-learning-framework.json',
-  ];
+  const challengeFiles = Object.keys(
+    import.meta.glob('/public/challenges/challenge-*.json', { eager: false })
+  ).map((path) => path.split('/').pop()!);
 
   console.log(`🌱 Starting challenge seeding process... (${challengeFiles.length} challenges)`);
 

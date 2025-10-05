@@ -1,0 +1,57 @@
+{
+  "id": "sum-of-two-numbers-z",
+  "metadata": {
+    "title": "Sum of Two Numbers (Z--)",
+    "description": "Write a Z-- program that declares two variables, assigns them values, computes their sum, and prints the result.\n\n## Learning Objectives\n- Variable declaration\n- Arithmetic operations\n- Using `print()`\n- Understanding Z-- syntax\n\n## Z-- Notes\n- Use `let` to declare variables.\n- Use `print()` to output values.",
+    "difficulty": "easy",
+    "points": 1,
+    "timeLimit": 5,
+    "tags": ["basics", "variables", "arithmetic", "print", "z--"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-06T00:00:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["z--"]
+  },
+  "problem": {
+    "statement": "Declare two variables `a` and `b`, assign them the values 7 and 5, compute their sum, and print the result in the format:\n\nSum is: \n12.00\n\n(Each value on its own line, as shown.)",
+    "inputFormat": "No input required.",
+    "outputFormat": "First line: Sum is: \nSecond line: 12.00",
+    "constraints": "Use only Z-- syntax.",
+    "examples": [
+      {
+        "input": "",
+        "output": "Sum is: \n12.00",
+        "explanation": "The program should output the label and the sum, each on its own line."
+      }
+    ]
+  },
+  "languages": {
+    "z--": {
+      "starterCode": "start\n  // Declare variables and compute sum\n  \nend",
+      "solutionCode": "start\n  let a = 7\n  let b = 5\n  let sum = a + b\n  print(\"Sum is: \")\n  print(sum)\nend",
+      "hints": [
+        "Use `let` to declare variables.",
+        "Use `print()` to output both the label and the sum.",
+        "No input is required."
+      ],
+      "compilerType": "z-studio"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-basic-sum",
+      "input": "",
+      "output": "Sum is: \n12.00",
+      "points": 10,
+      "isHidden": false,
+      "timeout": 1000
+    }
+  ],
+  "editorial": {
+    "approach": "Declare two variables, compute their sum, and print the result using Z-- syntax.",
+    "complexity": {
+      "time": "O(1)",
+      "space": "O(1)"
+    }
+  }
+}

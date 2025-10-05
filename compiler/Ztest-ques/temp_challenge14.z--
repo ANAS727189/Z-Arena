@@ -1,0 +1,16 @@
+start
+  fun reverse {
+    arg = (n)
+    let rev = 0
+    let x = n
+    while x > 0 {
+      let digit = x % 10
+      rev = rev * 10 + digit
+      x = (x - (x % 10)) / 10
+    }
+    return rev
+  }
+  let n = 12345
+  print("Reverse of 12345 is: ")
+  print(reverse(n))
+end

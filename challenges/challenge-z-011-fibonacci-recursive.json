@@ -1,0 +1,57 @@
+{
+  "id": "fibonacci-recursive-z",
+  "metadata": {
+    "title": "Fibonacci Sequence (Recursive, Z--)",
+    "description": "Write a Z-- program that defines a recursive function to compute Fibonacci numbers and prints the sequence up to n=7.\n\n## Learning Objectives\n- Function definition\n- Recursion\n- Loops\n- Using `print()`\n- Understanding Z-- syntax",
+    "difficulty": "hard",
+    "points": 3,
+    "timeLimit": 20,
+    "tags": ["recursion", "function", "fibonacci", "print", "z--"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-06T01:00:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["z--"]
+  },
+  "problem": {
+    "statement": "Define a recursive function `fib(n)` that returns the nth Fibonacci number. Print the Fibonacci sequence from 0 to 6 (n=7) in the format:\n\nFibonacci sequence up to 7:\n0.00\n1.00\n1.00\n2.00\n3.00\n5.00\n8.00\n\n(Each value on its own line, as shown.)",
+    "inputFormat": "No input required.",
+    "outputFormat": "First line: Fibonacci sequence up to 7:\nNext 7 lines: Fibonacci numbers from 0 to 6, each on its own line.",
+    "constraints": "Use only Z-- syntax, recursion, and a while loop.",
+    "examples": [
+      {
+        "input": "",
+        "output": "Fibonacci sequence up to 7:\n0.00\n1.00\n1.00\n2.00\n3.00\n5.00\n8.00",
+        "explanation": "The program should output the label and the Fibonacci numbers, each on its own line."
+      }
+    ]
+  },
+  "languages": {
+    "z--": {
+      "starterCode": "start\n  // Define a recursive function for Fibonacci\n  \nend",
+      "solutionCode": "start\n  fun fib {\n    arg = (n)\n    if n <= 1 {\n      return n\n    } else {\n      return fib(n - 1) + fib(n - 2)\n    }\n  }\n  let n = 7\n  let i = 0\n  print(\"Fibonacci sequence up to 7:\")\n  while i < n {\n    print(fib(i))\n    i = i + 1\n  }\nend",
+      "hints": [
+        "Use a recursive function to compute Fibonacci numbers.",
+        "Use a while loop to print the sequence.",
+        "No input is required."
+      ],
+      "compilerType": "z-studio"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-advanced-fibonacci-recursive",
+      "input": "",
+      "output": "Fibonacci sequence up to 7:\n0.00\n1.00\n1.00\n2.00\n3.00\n5.00\n8.00",
+      "points": 20,
+      "isHidden": false,
+      "timeout": 4000
+    }
+  ],
+  "editorial": {
+    "approach": "Define a recursive function for Fibonacci, use a while loop to print the sequence.",
+    "complexity": {
+      "time": "O(2^n)",
+      "space": "O(n)"
+    }
+  }
+}

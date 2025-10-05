@@ -1,0 +1,57 @@
+{
+  "id": "sum-digits-z",
+  "metadata": {
+    "title": "Sum of Digits of a Number (Z--)",
+    "description": "Write a Z-- program that defines a function to sum the digits of a number and prints the sum of digits of 98765.\n\n## Learning Objectives\n- Function definition\n- Loops\n- Modulo and integer division\n- Using `print()`\n- Understanding Z-- syntax\n\n## Z-- Note\nZ-- treats all numbers as floating point (double) by default. To avoid issues with floating point division, use a separate integer variable for the loop and perform integer division by subtracting the remainder before dividing.",
+    "difficulty": "hard",
+    "points": 3,
+    "timeLimit": 20,
+    "tags": ["function", "sum", "digits", "print", "z--"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-06T01:40:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["z--"]
+  },
+  "problem": {
+    "statement": "Define a function `sumDigits(n)` that returns the sum of the digits of n. Print the sum of digits of 98765 in the format:\n\nSum of digits of 98765 is: \n35.00\n\n(Each value on its own line, as shown.)",
+    "inputFormat": "No input required.",
+    "outputFormat": "First line: Sum of digits of 98765 is: \nSecond line: 35.00",
+    "constraints": "Use only Z-- syntax, a function, and a while loop.",
+    "examples": [
+      {
+        "input": "",
+        "output": "Sum of digits of 98765 is: \n35.00",
+        "explanation": "The program should output the label and the sum, each on its own line."
+      }
+    ]
+  },
+  "languages": {
+    "z--": {
+      "starterCode": "start\n  // Define a function to sum digits\n  \nend",
+      "solutionCode": "start\n  fun sumDigits {\n    arg = (n)\n    let sum = 0\n    let x = n\n    while x > 0 {\n      let digit = x % 10\n      sum = sum + digit\n      x = (x - (x % 10)) / 10\n    }\n    return sum\n  }\n  let n = 98765\n  print(\"Sum of digits of 98765 is: \")\n  print(sumDigits(n))\nend",
+      "hints": [
+        "Use a function to sum digits.",
+        "Use a while loop and modulo operation.",
+        "No input is required."
+      ],
+      "compilerType": "z-studio"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-advanced-sum-digits",
+      "input": "",
+      "output": "Sum of digits of 98765 is: \n35.00",
+      "points": 20,
+      "isHidden": false,
+      "timeout": 4000
+    }
+  ],
+  "editorial": {
+    "approach": "Define a function to sum digits, use a while loop and modulo operation, print the result.\n\n### Z-- Float/Integer Division Issue\nZ-- currently treats all numbers as doubles, so using `n = n / 10` will result in floating point division and can cause the value to become non-integer, eventually leading to `inf` or incorrect results. To avoid this, use a separate variable (e.g., `x = n`) and update it with `x = (x - (x % 10)) / 10` to ensure integer division is performed.",
+    "complexity": {
+      "time": "O(d)",
+      "space": "O(1)"
+    }
+  }
+}

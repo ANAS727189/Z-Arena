@@ -1,0 +1,57 @@
+{
+  "id": "factorial-reverse-for-loop-z",
+  "metadata": {
+    "title": "Factorial using Reverse For Loop (Z--)",
+    "description": "Write a Z-- program that computes the factorial of 5 using a reverse for loop (counting down) and prints the result.\n\n## Learning Objectives\n- Loops (for, decrementing)\n- Variable update\n- Using `print()`\n- Understanding Z-- syntax",
+    "difficulty": "medium",
+    "points": 2,
+    "timeLimit": 10,
+    "tags": ["loops", "for", "reverse", "factorial", "print", "z--"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-06T00:50:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["z--"]
+  },
+  "problem": {
+    "statement": "Compute the factorial of 5 using a reverse for loop (counting down) and print the result in the format:\n\nFactorial (reverse for loop): \n120.00\n\n(Each value on its own line, as shown.)",
+    "inputFormat": "No input required.",
+    "outputFormat": "First line: Factorial (reverse for loop): \nSecond line: 120.00",
+    "constraints": "Use only Z-- syntax and a for loop that decrements.",
+    "examples": [
+      {
+        "input": "",
+        "output": "Factorial (reverse for loop): \n120.00",
+        "explanation": "The program should output the label and the factorial, each on its own line."
+      }
+    ]
+  },
+  "languages": {
+    "z--": {
+      "starterCode": "start\n  // Compute factorial using a reverse for loop\n  \nend",
+      "solutionCode": "start\n  let n = 5\n  let result = 1\n  for i = n, i >= 1, i-- {\n    result = result * i\n  }\n  print(\"Factorial (reverse for loop): \")\n  print(result)\nend",
+      "hints": [
+        "Use a for loop that decrements from n to 1.",
+        "Update the result variable inside the loop.",
+        "No input is required."
+      ],
+      "compilerType": "z-studio"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-medium-factorial-reverse-for",
+      "input": "",
+      "output": "Factorial (reverse for loop): \n120.00",
+      "points": 15,
+      "isHidden": false,
+      "timeout": 2000
+    }
+  ],
+  "editorial": {
+    "approach": "Use a for loop that decrements from n to 1 and print the result using Z-- syntax.",
+    "complexity": {
+      "time": "O(n)",
+      "space": "O(1)"
+    }
+  }
+}

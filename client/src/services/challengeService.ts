@@ -152,6 +152,8 @@ class ChallengeService {
 
       if (filters?.limit) {
         queries.push(Query.limit(filters.limit));
+      } else {
+        queries.push(Query.limit(100));
       }
 
       if (filters?.offset) {

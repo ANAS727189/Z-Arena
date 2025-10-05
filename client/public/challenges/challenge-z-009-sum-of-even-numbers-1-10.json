@@ -1,0 +1,58 @@
+{
+  "id": "sum-of-even-numbers-1-10-z",
+  "metadata": {
+    "title": "Sum of Even Numbers 1 to 10 (Z--)",
+    "description": "Write a Z-- program that computes the sum of even numbers from 1 to 10 using a for loop and prints the result.\n\n## Learning Objectives\n- Loops (for)\n- Conditional statements\n- Using `print()`\n- Understanding Z-- syntax",
+    "difficulty": "medium",
+    "points": 2,
+    "timeLimit": 10,
+    "tags": ["loops", "for", "even", "sum", "print", "z--"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-06T00:45:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["z--"]
+  },
+  "problem": {
+    "statement": "Compute the sum of even numbers from 1 to 10 using a for loop and print the result in the format:\n\nSum of even numbers from 1 to 10: \n30.00\n\n(Each value on its own line, as shown.)",
+    "inputFormat": "No input required.",
+    "outputFormat": "First line: Sum of even numbers from 1 to 10: \nSecond line: 30.00",
+    "constraints": "Use only Z-- syntax, a for loop, and an if statement.",
+    "examples": [
+      {
+        "input": "",
+        "output": "Sum of even numbers from 1 to 10: \n30.00",
+        "explanation": "The program should output the label and the sum, each on its own line."
+      }
+    ]
+  },
+  "languages": {
+    "z--": {
+      "starterCode": "start\n  // Compute sum of even numbers from 1 to 10 using a for loop\n  \nend",
+      "solutionCode": "start\n  let n = 10\n  let sum = 0\n  for i = 1, i <= n, i++ {\n    if i % 2 == 0 {\n      sum = sum + i\n    }\n  }\n  print(\"Sum of even numbers from 1 to 10: \")\n  print(sum)\nend",
+      "hints": [
+        "Use a for loop to iterate from 1 to n.",
+        "Use an if statement to check if a number is even.",
+        "Add even numbers to the sum variable.",
+        "No input is required."
+      ],
+      "compilerType": "z-studio"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-medium-sum-even-1-10",
+      "input": "",
+      "output": "Sum of even numbers from 1 to 10: \n30.00",
+      "points": 15,
+      "isHidden": false,
+      "timeout": 2000
+    }
+  ],
+  "editorial": {
+    "approach": "Use a for loop to iterate from 1 to n, check if each number is even, and add it to the sum. Print the result using Z-- syntax.",
+    "complexity": {
+      "time": "O(n)",
+      "space": "O(1)"
+    }
+  }
+}

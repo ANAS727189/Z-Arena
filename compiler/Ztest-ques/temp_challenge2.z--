@@ -1,0 +1,7 @@
+start
+  let x = 10
+  let y = 3
+  let diff = x - y
+  print("Difference is: ")
+  print(diff)
+end

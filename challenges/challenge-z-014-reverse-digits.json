@@ -1,0 +1,57 @@
+{
+  "id": "reverse-digits-z",
+  "metadata": {
+    "title": "Reverse Digits of a Number (Z--)",
+  "description": "Write a Z-- program that defines a function to reverse the digits of a number and prints the reverse of 12345.\n\n## Learning Objectives\n- Function definition\n- Loops\n- Modulo and integer division\n- Using `print()`\n- Understanding Z-- syntax\n\n## Z-- Note\nZ-- treats all numbers as floating point (double) by default. To avoid issues with floating point division (e.g., getting `inf` instead of the correct integer result), use a separate integer variable for the loop and perform integer division by subtracting the remainder before dividing.",
+    "difficulty": "hard",
+    "points": 3,
+    "timeLimit": 20,
+    "tags": ["function", "reverse", "digits", "print", "z--"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-06T01:30:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["z--"]
+  },
+  "problem": {
+    "statement": "Define a function `reverse(n)` that returns the number formed by reversing the digits of n. Print the reverse of 12345 in the format:\n\nReverse of 12345 is: \n54321.00\n\n(Each value on its own line, as shown.)",
+    "inputFormat": "No input required.",
+    "outputFormat": "First line: Reverse of 12345 is: \nSecond line: 54321.00",
+    "constraints": "Use only Z-- syntax, a function, and a while loop.",
+    "examples": [
+      {
+        "input": "",
+        "output": "Reverse of 12345 is: \n54321.00",
+        "explanation": "The program should output the label and the reversed number, each on its own line."
+      }
+    ]
+  },
+  "languages": {
+    "z--": {
+      "starterCode": "start\n  // Define a function to reverse digits\n  \nend",
+      "solutionCode": "start\n  fun reverse {\n    arg = (n)\n    let rev = 0\n    let x = n\n    while x > 0 {\n      let digit = x % 10\n      rev = rev * 10 + digit\n      x = (x - (x % 10)) / 10\n    }\n    return rev\n  }\n  let n = 12345\n  print(\"Reverse of 12345 is: \")\n  print(reverse(n))\nend",
+      "hints": [
+        "Use a function to reverse digits.",
+        "Use a while loop and modulo operation.",
+        "No input is required."
+      ],
+      "compilerType": "z-studio"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-advanced-reverse-digits",
+      "input": "",
+      "output": "Reverse of 12345 is: \n54321.00",
+      "points": 20,
+      "isHidden": false,
+      "timeout": 4000
+    }
+  ],
+    "editorial": {
+    "approach": "Define a function to reverse digits, use a while loop and modulo operation, print the result.\n\n### Z-- Float/Integer Division Issue\nZ-- currently treats all numbers as doubles, so using `n = n / 10` will result in floating point division and can cause the value to become non-integer, eventually leading to `inf` or incorrect results. To avoid this, use a separate variable (e.g., `x = n`) and update it with `x = (x - (x % 10)) / 10` to ensure integer division is performed.",
+    "complexity": {
+      "time": "O(d)",
+      "space": "O(1)"
+    }
+  }
+}

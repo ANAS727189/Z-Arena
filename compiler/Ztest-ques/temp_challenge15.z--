@@ -1,0 +1,16 @@
+start
+  fun sumDigits {
+    arg = (n)
+    let sum = 0
+    let x = n
+    while x > 0 {
+      let digit = x % 10
+      sum = sum + digit
+      x = (x - (x % 10)) / 10
+    }
+    return sum
+  }
+  let n = 98765
+  print("Sum of digits of 98765 is: ")
+  print(sumDigits(n))
+end

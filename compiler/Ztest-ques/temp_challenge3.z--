@@ -1,0 +1,7 @@
+start
+  let a = 4
+  let b = 6
+  let product = a * b
+  print("Product is: ")
+  print(product)
+end

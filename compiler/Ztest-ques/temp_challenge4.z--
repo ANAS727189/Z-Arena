@@ -1,0 +1,7 @@
+start
+  let a = 20
+  let b = 4
+  let quotient = a / b
+  print("Quotient is: ")
+  print(quotient)
+end

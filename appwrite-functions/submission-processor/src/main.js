@@ -195,18 +195,21 @@ function calculateUpdatedStats(userDoc, submission, challenge) {
     preferredLangs.push(submission.language);
   }
 
-  // Calculate streak
   const lastActive = new Date(userDoc.lastActive || userDoc.createdAt);
   const submissionTime = new Date(submission.submittedAt);
   const daysDiff = Math.floor((submissionTime - lastActive) / (1000 * 60 * 60 * 24));
   
   let newStreak = userDoc.streak || 0;
-  if (daysDiff === 1) {
-    newStreak += 1; // Consecutive day
-  } else if (daysDiff > 1) {
-    newStreak = 1; // Reset streak
+  if (userDoc.successfulSubmissions === 0) {
+    newStreak = 1;
   }
-  // Same day doesn't change streak
+  else if (daysDiff === 1) {
+    newStreak += 1;
+  }
+  else if (daysDiff === 0) {}
+  else if (daysDiff > 1) {
+    newStreak = 1;
+  }
 
   const updates = {
     totalSubmissions: (userDoc.totalSubmissions || 0) + 1,

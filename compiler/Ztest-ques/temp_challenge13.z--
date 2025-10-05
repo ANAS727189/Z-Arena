@@ -1,0 +1,15 @@
+start
+  fun gcd {
+    arg = (a, b)
+    while b != 0 {
+      let temp = b
+      b = a % b
+      a = temp
+    }
+    return a
+  }
+  let a = 48
+  let b = 18
+  print("GCD of 48 and 18 is: ")
+  print(gcd(a, b))
+end

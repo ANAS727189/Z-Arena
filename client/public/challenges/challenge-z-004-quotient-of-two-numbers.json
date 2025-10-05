@@ -1,0 +1,57 @@
+{
+  "id": "quotient-of-two-numbers-z",
+  "metadata": {
+    "title": "Quotient of Two Numbers (Z--)",
+    "description": "Write a Z-- program that declares two variables, assigns them values, computes their quotient, and prints the result.\n\n## Learning Objectives\n- Variable declaration\n- Arithmetic operations (division)\n- Using `print()`\n- Understanding Z-- syntax",
+    "difficulty": "easy",
+    "points": 1,
+    "timeLimit": 5,
+    "tags": ["basics", "variables", "arithmetic", "print", "z--"],
+    "author": "Z-Challenge Team",
+    "createdAt": "2025-10-06T00:20:00Z",
+    "version": "1.0",
+    "supportedLanguages": ["z--"]
+  },
+  "problem": {
+    "statement": "Declare two variables `a` and `b`, assign them the values 20 and 4, compute their quotient, and print the result in the format:\n\nQuotient is: \n5.00\n\n(Each value on its own line, as shown.)",
+    "inputFormat": "No input required.",
+    "outputFormat": "First line: Quotient is: \nSecond line: 5.00",
+    "constraints": "Use only Z-- syntax.",
+    "examples": [
+      {
+        "input": "",
+        "output": "Quotient is: \n5.00",
+        "explanation": "The program should output the label and the quotient, each on its own line."
+      }
+    ]
+  },
+  "languages": {
+    "z--": {
+      "starterCode": "start\n  // Declare variables and compute quotient\n  \nend",
+      "solutionCode": "start\n  let a = 20\n  let b = 4\n  let quotient = a / b\n  print(\"Quotient is: \")\n  print(quotient)\nend",
+      "hints": [
+        "Use `let` to declare variables.",
+        "Use `print()` to output both the label and the quotient.",
+        "No input is required."
+      ],
+      "compilerType": "z-studio"
+    }
+  },
+  "testCases": [
+    {
+      "id": "test-basic-quotient",
+      "input": "",
+      "output": "Quotient is: \n5.00",
+      "points": 10,
+      "isHidden": false,
+      "timeout": 1000
+    }
+  ],
+  "editorial": {
+    "approach": "Declare two variables, compute their quotient, and print the result using Z-- syntax.",
+    "complexity": {
+      "time": "O(1)",
+      "space": "O(1)"
+    }
+  }
+}
