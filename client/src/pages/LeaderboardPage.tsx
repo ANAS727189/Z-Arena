@@ -258,7 +258,7 @@ export const LeaderboardPage: React.FC = () => {
                 </p>
               </div>
 
-              {loading ? (
+              {loading && leaderboard.length === 0 ? (
                 <div className="flex items-center justify-center py-20">
                   <Loader2 className="w-8 h-8 text-[var(--accent-purple)] animate-spin" />
                 </div>
