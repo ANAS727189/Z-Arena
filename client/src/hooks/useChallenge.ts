@@ -109,16 +109,28 @@ export const useChallenge = () => {
         // 2. Challenge general starter code
         // 3. Default language starter code template
         let starterCode = '';
+        console.log('🔍 Debug starter code loading:', {
+          challengeId: challengeData.id,
+          firstLang,
+          hasLanguagesProperty: !!challengeData.languages,
+          languages: challengeData.languages,
+          hasCodeProperty: !!challengeData.code,
+          code: challengeData.code,
+        });
+        
         if (challengeData.languages && challengeData.languages[firstLang]) {
           starterCode = challengeData.languages[firstLang].starterCode || '';
+          console.log('✅ Using language-specific starter code:', starterCode);
         } else if (challengeData.code?.starterCode) {
           starterCode = challengeData.code.starterCode;
+          console.log('✅ Using general starter code:', starterCode);
         } else {
           // Use default starter code template for the language
           starterCode = getStarterCode(
             firstLang,
             challengeData.metadata?.title
           );
+          console.log('✅ Using default starter code:', starterCode);
         }
         setCode(starterCode);
       }

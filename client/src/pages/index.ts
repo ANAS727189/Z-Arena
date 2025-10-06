@@ -6,3 +6,4 @@ export { ProfilePage } from './ProfilePage';
 export { SettingsPage } from './SettingsPage';
 export { AchievementsPage } from './AchievementsPage';
 export { NotFoundPage } from './NotFoundPage';
+export { WarPage } from './WarPage';

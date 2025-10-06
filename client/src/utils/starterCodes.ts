@@ -1,14 +1,12 @@
 // Starter code templates for different programming languages
 export const starterCodeTemplates = {
-  'z--': `// Z-- Language Starter Code
-// Write your solution here
-function main() {
-    // Your code goes here
-    
-}
+  'z--': `
+  start
+  // Your code goes here
+  end
 `,
 
-  javascript: `// JavaScript Solution
+  javascript: `
 function solve() {
     // Write your solution here
     
@@ -18,7 +16,7 @@ function solve() {
 // console.log(solve());
 `,
 
-  typescript: `// TypeScript Solution
+  typescript: `
 function solve(): any {
     // Write your solution here
     
@@ -28,7 +26,7 @@ function solve(): any {
 // console.log(solve());
 `,
 
-  python: `# Python Solution
+  python: `
 def solve():
     """
     Write your solution here
@@ -39,7 +37,7 @@ def solve():
 # print(solve())
 `,
 
-  java: `// Java Solution
+  java: `
 import java.util.*;
 import java.io.*;
 
@@ -58,7 +56,7 @@ public class Solution {
 }
 `,
 
-  cpp: `// C++ Solution
+  cpp: `
 #include <iostream>
 #include <vector>
 #include <string>
@@ -73,7 +71,7 @@ int main() {
 }
 `,
 
-  c: `// C Solution
+  c: `
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -85,7 +83,7 @@ int main() {
 }
 `,
 
-  csharp: `// C# Solution
+  csharp: `
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -105,7 +103,7 @@ public class Solution
 }
 `,
 
-  go: `// Go Solution
+  go: `
 package main
 
 import (
@@ -122,7 +120,7 @@ func solve() {
 }
 `,
 
-  rust: `// Rust Solution
+  rust: `
 use std::io::{self, BufRead};
 
 fn main() {
@@ -136,7 +134,6 @@ fn solve() {
 `,
 
   php: `<?php
-// PHP Solution
 
 function solve() {
     // Write your solution here
@@ -148,7 +145,7 @@ function solve() {
 ?>
 `,
 
-  ruby: `# Ruby Solution
+  ruby: `
 def solve
     # Write your solution here
     
@@ -158,7 +155,7 @@ end
 # puts solve()
 `,
 
-  kotlin: `// Kotlin Solution
+  kotlin: `
 fun main() {
     // Write your solution here
     
@@ -169,7 +166,7 @@ fun solve() {
 }
 `,
 
-  scala: `// Scala Solution
+  scala: `
 object Solution {
     def main(args: Array[String]): Unit = {
         // Write your solution here
@@ -182,7 +179,7 @@ object Solution {
 }
 `,
 
-  swift: `// Swift Solution
+  swift: `
 import Foundation
 
 func solve() {
@@ -194,7 +191,7 @@ func solve() {
 solve()
 `,
 
-  r: `# R Solution
+  r: `
 solve <- function() {
     # Write your solution here
     
@@ -206,7 +203,7 @@ solve <- function() {
 `,
 };
 
-// Get starter code for a specific language
+
 export const getStarterCode = (
   language: string,
   challengeTitle?: string
@@ -231,7 +228,7 @@ export const getSupportedLanguages = (): string[] => {
 
 // Language display names
 export const languageDisplayNames: Record<string, string> = {
-  'z--': 'Z-- Language',
+  'z--': 'Z--',
   javascript: 'JavaScript',
   typescript: 'TypeScript',
   python: 'Python',

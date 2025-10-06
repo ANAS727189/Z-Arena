@@ -64,7 +64,7 @@ export async function seedChallenges() {
         constraints: challenge.problem.constraints,
         examples: JSON.stringify(challenge.problem.examples || []),
         starterCodes: JSON.stringify({
-          'z--': challenge.code?.starterCode || '',
+          'z--': { starterCode: challenge.code?.starterCode || '' },
         }),
         solutionCodes: JSON.stringify({
           'z--': challenge.code?.solutionCode || '',

@@ -9,14 +9,9 @@ export async function loadChallenges(): Promise<Challenge[]> {
   const challenges: Challenge[] = [];
 
   try {
-    // For development, we'll manually import our JSON files
-    // In production, this would fetch from Appwrite database
-    const challengeFiles = [
-      'challenge-001-hello-world.json',
-      'challenge-002-two-sum-array.json',
-      'challenge-003-fibonacci-sequence.json',
-      'challenge-004-reverse-string.json',
-    ];
+    const challengeFiles = Object.keys(
+      import.meta.glob('/public/challenges/challenge-*.json', { eager: false })
+    ).map((path) => path.split('/').pop()!);
 
     for (const filename of challengeFiles) {
       try {

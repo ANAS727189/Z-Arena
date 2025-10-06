@@ -36,7 +36,7 @@ export const defineZLanguage = (monaco: any) => {
       root: [
         // Keywords
         [
-          /(function|if|else|while|for|return|var|let|const|main|print|input|true|false|null|int|float|string|bool|void)/,
+          /(start|end|function|if|else|while|for|return|var|let|const|main|print|input|true|false|null|int|float|string|bool|void)/,
           'keyword',
         ],
 

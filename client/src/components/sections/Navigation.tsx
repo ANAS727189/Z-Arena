@@ -101,6 +101,14 @@ const Navigation = () => {
             >
               Leaderboard
             </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => navigate('/compete-wars')}
+              className="text-[var(--text-secondary)] hover:text-white transition-colors font-medium"
+            >
+              Wars
+            </motion.button>
             
             {/* Streak Display for logged-in users */}
             {user && userStats && (

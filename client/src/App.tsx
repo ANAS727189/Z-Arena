@@ -10,20 +10,17 @@ import {
   SettingsPage,
   AchievementsPage,
   NotFoundPage,
+  WarPage
 } from './pages';
+
 
 function App() {
   return (
     <AuthProvider>
       <Router>
         <Routes>
-          {/* Landing page without layout (has its own navigation) */}
           <Route path="/" element={<LandingPage />} />
-
-          {/* ChallengePage without layout (has its own special interface) */}
           <Route path="/challenge/:id" element={<ChallengePage />} />
-
-          {/* All other pages use the layout with fixed navigation */}
           <Route
             path="/challenges"
             element={
@@ -56,6 +53,15 @@ function App() {
               </Layout>
             }
           />
+          <Route
+            path="/compete-wars"
+            element={
+              <Layout>
+                <WarPage />
+              </Layout>
+            }
+          />
+
           <Route
             path="/settings"
             element={

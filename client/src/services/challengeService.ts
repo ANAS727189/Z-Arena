@@ -302,6 +302,10 @@ class ChallengeService {
 
   // Helper method to map Appwrite document to Challenge type
   private mapDocumentToChallenge(doc: ChallengeDocument): Challenge {
+    const starterCodes = JSON.parse(doc.starterCodes || '{}');
+    const solutionCodes = JSON.parse(doc.solutionCodes || '{}');
+    const hints = JSON.parse(doc.hints || '[]');
+    
     return {
       id: doc.challengeId,
       metadata: {
@@ -323,7 +327,14 @@ class ChallengeService {
         constraints: doc.constraints,
         examples: JSON.parse(doc.examples || '[]'),
       },
-      languages: JSON.parse(doc.starterCodes || '{}'),
+      // Map starterCodes to languages property (for per-language starter codes)
+      languages: starterCodes,
+      // Also create a code property for backward compatibility
+      code: {
+        starterCode: starterCodes['z--'] || starterCodes[Object.keys(starterCodes)[0]] || '',
+        solutionCode: solutionCodes['z--'] || solutionCodes[Object.keys(solutionCodes)[0]] || '',
+        hints: hints,
+      },
       testCases: JSON.parse(doc.testCases || '[]'),
       editorial: JSON.parse(doc.editorial || '{}'),
       stats: JSON.parse(

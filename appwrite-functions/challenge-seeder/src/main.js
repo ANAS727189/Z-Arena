@@ -149,7 +149,7 @@ function transformChallengeToDocument(challenge) {
     outputFormat: challenge.problem.outputFormat,
     constraints: challenge.problem.constraints,
     examples: JSON.stringify(challenge.problem.examples || []),
-    starterCodes: JSON.stringify(challenge.languages || { 'z--': challenge.code?.starterCode || '' }),
+    starterCodes: JSON.stringify(challenge.languages || { 'z--': { starterCode: challenge.code?.starterCode || '' } }),
     solutionCodes: JSON.stringify({ 'z--': challenge.code?.solutionCode || '' }),
     hints: JSON.stringify(challenge.code?.hints || []),
     testCases: JSON.stringify(challenge.testCases || []),
