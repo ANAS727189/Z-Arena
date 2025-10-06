@@ -33,6 +33,25 @@ const Navigation = () => {
     loadUserStats();
   }, [user]);
 
+  // Add polling to refresh stats periodically
+  useEffect(() => {
+    if (!user) return;
+
+    const refreshStats = async () => {
+      try {
+        const stats = await challengeService.getUserStats(user.$id);
+        setUserStats(stats);
+      } catch (error) {
+        console.error('Failed to refresh user stats:', error);
+      }
+    };
+
+    // Refresh stats every 30 seconds
+    const interval = setInterval(refreshStats, 30000);
+    
+    return () => clearInterval(interval);
+  }, [user]);
+
   return (
     <>
       <div 
@@ -90,8 +109,8 @@ const Navigation = () => {
                 className="bg-gradient-to-r from-orange-500/20 to-red-500/20 border border-orange-500/30 rounded-lg"
               >
                 <StreakDisplay
-                  currentStreak={userStats.currentStreak || 0}
-                  maxStreak={userStats.maxStreak || 0}
+                  currentStreak={userStats.streak || userStats.currentStreak || 0}
+                  maxStreak={userStats.bestStreak || userStats.maxStreak || 0}
                   size="sm"
                 />
               </motion.div>

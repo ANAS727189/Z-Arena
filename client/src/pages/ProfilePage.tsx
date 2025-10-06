@@ -431,36 +431,40 @@ export const ProfilePage: React.FC = () => {
                         } : {}}
                         transition={{ 
                           duration: 0.6,
-                          repeat: (userStats?.currentStreak || 0) > 7 ? Infinity : 0,
+                          repeat: (userStats?.streak || userStats?.currentStreak || 0) > 7 ? Infinity : 0,
                           repeatDelay: 3
                         }}
                       >
                         <Flame className={`w-6 h-6 mr-2 ${
-                          (userStats?.currentStreak || 0) === 0 ? 'text-gray-400' :
-                          (userStats?.currentStreak || 0) < 3 ? 'text-orange-400' :
-                          (userStats?.currentStreak || 0) < 7 ? 'text-orange-500' :
-                          (userStats?.currentStreak || 0) < 30 ? 'text-red-500' :
+                          (userStats?.streak || userStats?.currentStreak || 0) === 0 ? 'text-gray-400' :
+                          (userStats?.streak || userStats?.currentStreak || 0) < 3 ? 'text-orange-400' :
+                          (userStats?.streak || userStats?.currentStreak || 0) < 7 ? 'text-orange-500' :
+                          (userStats?.streak || userStats?.currentStreak || 0) < 30 ? 'text-red-500' :
                           'text-purple-500'
                         }`} />
                       </motion.div>
                       <motion.span 
-                        key={userStats?.currentStreak || 0}
+                        key={userStats?.streak || userStats?.currentStreak || 0}
                         initial={{ scale: 0.8, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         className="font-heading text-2xl font-bold text-white"
                       >
-                        {userStats?.currentStreak || 0}
+                        {userStats?.streak || userStats?.currentStreak || 0}
                       </motion.span>
                     </div>
-                    <p className="text-orange-400 text-sm font-medium">
+                   <div className='flex flex-col items-center'>
+                     <p className="text-orange-400 text-sm font-medium">
                       Current Streak
-                      {(userStats?.currentStreak || 0) > 0 && 
-                       (userStats?.currentStreak === userStats?.maxStreak) && (
-                        <span className="ml-2 text-xs bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-full border border-yellow-500/30">
-                          Personal Best! 🔥
-                        </span>
-                      )}
                     </p>
+                    {(userStats?.streak || userStats?.currentStreak || 0) > 0 && 
+                      (userStats?.streak || userStats?.currentStreak === userStats?.bestStreak || userStats?.maxStreak) && (
+                        <div className="mt-1 flex justify-center">
+                          <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded-full border border-yellow-500/30">
+                            Personal Best! 🔥
+                          </span>
+                        </div>
+                    )}
+                   </div>
                   </div>
                   
                   {/* Divider */}
@@ -471,12 +475,12 @@ export const ProfilePage: React.FC = () => {
                     <div className="flex justify-center items-center mb-2">
                       <Trophy className="w-5 h-5 text-yellow-400 mr-2" />
                       <motion.span 
-                        key={userStats?.maxStreak || 0}
+                        key={userStats?.bestStreak || userStats?.maxStreak || 0}
                         initial={{ scale: 0.8, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         className="font-heading text-lg font-bold text-white"
                       >
-                        {userStats?.maxStreak || 0}
+                        {userStats?.bestStreak || userStats?.maxStreak || 0}
                       </motion.span>
                     </div>
                     <p className="text-yellow-400 text-sm font-medium">

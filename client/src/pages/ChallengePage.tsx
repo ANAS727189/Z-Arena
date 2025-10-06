@@ -47,6 +47,8 @@ export const ChallengePage: React.FC = () => {
     submissionResult,
     showSubmissionResult,
     navigate,
+    userHasSolved,
+    userSubmissions,
   } = useChallenge();
 
   if (loading) {
@@ -87,6 +89,8 @@ export const ChallengePage: React.FC = () => {
               toggleSection={toggleSection}
               submissionResult={submissionResult}
               showSubmissionResult={showSubmissionResult}
+              userHasSolved={userHasSolved}
+              userSubmissions={userSubmissions}
             />
           </div>
         )}

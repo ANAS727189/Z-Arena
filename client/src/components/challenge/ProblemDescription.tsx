@@ -7,6 +7,10 @@ import {
   FileText,
   Lightbulb,
   User,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Trophy,
 } from 'lucide-react';
 import type { Challenge } from '@/types';
 import { SubmissionResult } from './SubmissionResult';
@@ -23,6 +27,8 @@ interface ProblemDescriptionProps {
   toggleSection: (section: 'examples' | 'constraints' | 'hints') => void;
   submissionResult?: any;
   showSubmissionResult?: boolean;
+  userHasSolved?: boolean;
+  userSubmissions?: any[];
 }
 
 export const ProblemDescription: React.FC<ProblemDescriptionProps> = ({
@@ -33,6 +39,8 @@ export const ProblemDescription: React.FC<ProblemDescriptionProps> = ({
   toggleSection,
   submissionResult,
   showSubmissionResult,
+  userHasSolved = false,
+  userSubmissions = [],
 }) => {
   return (
     <div className="h-full border-r border-gray-700/50 bg-gray-900/50 backdrop-blur-sm overflow-hidden flex flex-col">
@@ -244,37 +252,186 @@ export const ProblemDescription: React.FC<ProblemDescriptionProps> = ({
 
         {activeTab === 'editorial' && (
           <div className="space-y-4">
-            <div className="text-center py-12">
-              <Lightbulb className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-400 mb-2">
-                Editorial Coming Soon
-              </h3>
-              <p className="text-gray-500 text-sm">
-                Complete the challenge to unlock the editorial with detailed
-                solution explanation.
-              </p>
-            </div>
+            {userHasSolved && challenge.editorial ? (
+              <div className="space-y-6">
+                {/* Editorial Header */}
+                <div className="border-b border-gray-700/50 pb-4">
+                  <h2 className="text-2xl font-bold text-white mb-2">
+                    Editorial
+                  </h2>
+                  <p className="text-gray-300 text-sm">
+                    Detailed solution explanation and approach
+                  </p>
+                </div>
+
+                {/* Editorial Content */}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-white mb-3">
+                      Approach
+                    </h3>
+                    <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50">
+                      <p className="text-gray-300 leading-relaxed whitespace-pre-wrap">
+                        {challenge.editorial.approach}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Time & Space Complexity */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-blue-900/20 rounded-lg p-4 border border-blue-500/30">
+                      <h4 className="text-blue-400 font-semibold mb-2">
+                        Time Complexity
+                      </h4>
+                      <code className="text-blue-300 font-mono">
+                        {challenge.editorial.complexity.time}
+                      </code>
+                    </div>
+                    <div className="bg-purple-900/20 rounded-lg p-4 border border-purple-500/30">
+                      <h4 className="text-purple-400 font-semibold mb-2">
+                        Space Complexity
+                      </h4>
+                      <code className="text-purple-300 font-mono">
+                        {challenge.editorial.complexity.space}
+                      </code>
+                    </div>
+                  </div>
+
+                  {/* Keywords */}
+                  {challenge.editorial.keywords && challenge.editorial.keywords.length > 0 && (
+                    <div>
+                      <h4 className="text-lg font-semibold text-white mb-3">
+                        Key Concepts
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {challenge.editorial.keywords.map((keyword, index) => (
+                          <span
+                            key={index}
+                            className="px-3 py-1 bg-gray-700/50 text-gray-300 rounded-full text-sm border border-gray-600/50"
+                          >
+                            {keyword}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <Lightbulb className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-400 mb-2">
+                  {userHasSolved ? 'Editorial Not Available' : 'Editorial Locked'}
+                </h3>
+                <p className="text-gray-500 text-sm">
+                  {userHasSolved 
+                    ? 'Editorial content is not available for this challenge yet.'
+                    : 'Complete the challenge to unlock the editorial with detailed solution explanation.'
+                  }
+                </p>
+              </div>
+            )}
           </div>
         )}
 
         {activeTab === 'submissions' && (
           <div className="space-y-4">
-            {showSubmissionResult && submissionResult ? (
-              <SubmissionResult
-                submissionResult={submissionResult}
-                challenge={challenge}
-              />
-            ) : (
+            {/* Current Submission Result */}
+            {showSubmissionResult && submissionResult && (
+              <div className="border-b border-gray-700/50 pb-6 mb-6">
+                <h3 className="text-lg font-semibold text-white mb-4">
+                  Latest Submission
+                </h3>
+                <SubmissionResult
+                  submissionResult={submissionResult}
+                  challenge={challenge}
+                />
+              </div>
+            )}
+
+            {/* Previous Submissions */}
+            {userSubmissions && userSubmissions.length > 0 ? (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-white">
+                  Submission History
+                </h3>
+                <div className="space-y-3">
+                  {userSubmissions.map((submission, index) => {
+                    const isCompleted = submission.status === 'completed';
+                    const submissionDate = new Date(submission.submittedAt || submission.$createdAt);
+                    
+                    return (
+                      <div
+                        key={submission.$id}
+                        className={`p-4 rounded-lg border ${
+                          isCompleted
+                            ? 'bg-green-900/10 border-green-500/30'
+                            : 'bg-red-900/10 border-red-500/30'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-3">
+                            {isCompleted ? (
+                              <CheckCircle className="w-5 h-5 text-green-400" />
+                            ) : (
+                              <XCircle className="w-5 h-5 text-red-400" />
+                            )}
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                isCompleted
+                                  ? 'bg-green-500/20 text-green-400'
+                                  : 'bg-red-500/20 text-red-400'
+                              }`}
+                            >
+                              {isCompleted ? 'Accepted' : 'Failed'}
+                            </span>
+                            <span className="text-gray-400 text-sm">
+                              {submission.language}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-4 text-sm text-gray-400">
+                            <div className="flex items-center gap-1">
+                              <Trophy className="w-4 h-4" />
+                              <span>{submission.score || 0} pts</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-4 h-4" />
+                              <span>{submissionDate.toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Test Results Summary */}
+                        {submission.testResults && (
+                          <div className="text-sm text-gray-400">
+                            {(() => {
+                              try {
+                                const testResults = JSON.parse(submission.testResults);
+                                const passed = testResults.filter((t: any) => t.passed).length;
+                                const total = testResults.length;
+                                return `${passed}/${total} test cases passed`;
+                              } catch {
+                                return 'Test results unavailable';
+                              }
+                            })()}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : !showSubmissionResult ? (
               <div className="text-center py-12">
                 <User className="w-16 h-16 text-gray-600 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-gray-400 mb-2">
-                  Your Submissions
+                  No Submissions Yet
                 </h3>
                 <p className="text-gray-500 text-sm">
                   Submit your solution to see your submission history here.
                 </p>
               </div>
-            )}
+            ) : null}
           </div>
         )}
       </div>

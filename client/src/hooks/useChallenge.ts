@@ -27,6 +27,10 @@ export const useChallenge = () => {
   const [submissionResult, setSubmissionResult] = useState<any>(null);
   const [showTestResults, setShowTestResults] = useState(false);
   const [showSubmissionResult, setShowSubmissionResult] = useState(false);
+  
+  // User data
+  const [userHasSolved, setUserHasSolved] = useState(false);
+  const [userSubmissions, setUserSubmissions] = useState<any[]>([]);
 
   // UI State
   const [activeTab, setActiveTab] = useState<
@@ -63,9 +67,20 @@ export const useChallenge = () => {
       if (challengeData) {
         setChallenge(challengeData);
         
-        // Check if user has already solved this challenge
+        // Check if user has already solved this challenge and load submissions
         if (user) {
           const hasSolved = await challengeService.hasUserSolvedChallenge(user.$id, challengeId);
+          setUserHasSolved(hasSolved);
+          
+          // Load user submissions for this challenge
+          try {
+            const submissions = await challengeService.getUserSubmissions(user.$id, challengeId);
+            setUserSubmissions(submissions);
+          } catch (error) {
+            console.error('Failed to load user submissions:', error);
+            setUserSubmissions([]);
+          }
+          
           if (hasSolved) {
             // User has solved this challenge before, start timer automatically
             setShowTimerWarning(false);
@@ -80,6 +95,8 @@ export const useChallenge = () => {
           // User not logged in, show timer warning
           setShowTimerWarning(true);
           setChallengeStarted(false);
+          setUserHasSolved(false);
+          setUserSubmissions([]);
         }
         
         // Set default language and starter code
@@ -266,6 +283,18 @@ export const useChallenge = () => {
       setSubmissionResult(submission);
       setShowSubmissionResult(true);
       setActiveTab('submissions'); // Switch to submissions tab to show "Your Solution"
+      
+      // If submission was successful, update user solved status and refresh submissions
+      if (submission.status === 'completed') {
+        setUserHasSolved(true);
+        // Refresh user submissions
+        try {
+          const updatedSubmissions = await challengeService.getUserSubmissions(user.$id, challenge.id);
+          setUserSubmissions(updatedSubmissions);
+        } catch (error) {
+          console.error('Failed to refresh user submissions:', error);
+        }
+      }
     } catch (error) {
       console.error('Failed to submit solution:', error);
       // Show error in submission result instead of alert
@@ -334,5 +363,9 @@ export const useChallenge = () => {
 
     // Navigation
     navigate,
+    
+    // User data
+    userHasSolved,
+    userSubmissions,
   };
 };
