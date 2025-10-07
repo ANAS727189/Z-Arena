@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from './useAuth';
 import { WarService } from '@/services/warService';
 import { databases, DATABASE_ID, COLLECTIONS, Query } from '@/lib/appwrite';
-import type { WarMatch, WarQueue, WarLeaderboard, WarMatchHistory } from '@/types';
+import type { WarMatch, WarLeaderboard, WarMatchHistory } from '@/types';
 
 interface UseWarReturn {
   // User stats

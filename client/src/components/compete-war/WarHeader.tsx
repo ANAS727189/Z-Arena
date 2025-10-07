@@ -3,9 +3,14 @@ import { motion } from 'framer-motion';
 import { Swords, Users, Clock, Zap } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import MatchmakingModal from './MatchmakingModal';
-import { databases, DATABASE_ID, COLLECTIONS, Query } from '@/lib/appwrite';
+import { databases, DATABASE_ID, COLLECTIONS, Query, client } from '@/lib/appwrite';
+import type { WarMatch } from '@/types';
 
-const WarHeader = () => {
+interface WarHeaderProps {
+  onMatchFound?: (match: WarMatch) => void;
+}
+
+const WarHeader = ({ onMatchFound }: WarHeaderProps) => {
   const { user } = useAuth();
   const [openModal, setOpenModal] = useState(false);
   const [isInQueue, setIsInQueue] = useState(false);  
@@ -13,8 +18,20 @@ const WarHeader = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    checkUserStatus();
+    if (user) {
+      checkUserStatus();
+    }
     fetchActiveMatches();
+
+    // Subscribe to match updates to refresh active count
+    const unsubscribe = client.subscribe(`databases.${DATABASE_ID}.collections.${COLLECTIONS.WAR_MATCHES}.documents`, (response: any) => {
+      console.log('Match update received:', response);
+      fetchActiveMatches(); // Refresh active matches count
+    });
+
+    return () => {
+      unsubscribe();
+    };
   }, [user]);
 
   const checkUserStatus = async () => {
@@ -47,6 +64,7 @@ const WarHeader = () => {
         ]
       );
       setActiveMatches(activeDocs.documents.length);
+      console.log('Active matches count:', activeDocs.documents.length);
     } catch (error) {
       console.error('Error fetching active matches:', error);
     }
@@ -142,6 +160,7 @@ const WarHeader = () => {
           setOpenModal={setOpenModal} 
           onQueueJoined={() => setIsInQueue(true)}
           onQueueLeft={() => setIsInQueue(false)}
+          onMatchFound={onMatchFound}
         />
       )}
     </>

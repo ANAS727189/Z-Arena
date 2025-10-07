@@ -356,7 +356,7 @@ export const ProblemDescription: React.FC<ProblemDescriptionProps> = ({
                   Submission History
                 </h3>
                 <div className="space-y-3">
-                  {userSubmissions.map((submission, index) => {
+                  {userSubmissions.map((submission) => {
                     const isCompleted = submission.status === 'completed';
                     const submissionDate = new Date(submission.submittedAt || submission.$createdAt);
                     

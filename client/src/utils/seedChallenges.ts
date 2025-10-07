@@ -63,10 +63,14 @@ export async function seedChallenges() {
         outputFormat: challenge.problem.outputFormat,
         constraints: challenge.problem.constraints,
         examples: JSON.stringify(challenge.problem.examples || []),
-        starterCodes: JSON.stringify({
+        starterCodes: JSON.stringify(challenge.languages || {
           'z--': { starterCode: challenge.code?.starterCode || '' },
         }),
-        solutionCodes: JSON.stringify({
+        solutionCodes: JSON.stringify(challenge.languages ? 
+          Object.keys(challenge.languages).reduce((acc, lang) => {
+            acc[lang] = challenge.languages![lang].solutionCode || '';
+            return acc;
+          }, {} as Record<string, string>) : {
           'z--': challenge.code?.solutionCode || '',
         }),
         hints: JSON.stringify(challenge.code?.hints || []),

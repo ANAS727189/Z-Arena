@@ -11,7 +11,8 @@ const http = rateLimit(axios.create(), {
 });
 
 export const compileWithJudge0 = async ({ language_id, source_code, stdin }) => {
-  const response = await http.post(
+  try {
+     const response = await http.post(
     `${JUDGE0_BASE_URL}/submissions?base64_encoded=false&wait=true`,{
       language_id,
       source_code,
@@ -21,4 +22,8 @@ export const compileWithJudge0 = async ({ language_id, source_code, stdin }) => 
   );
 
   return response.data;
+  }catch(err) {
+     console.error('Judge0 error:', err.response?.status, err.response?.data);
+     throw new Error('Failed to compile with Judge0');
+  }
 };

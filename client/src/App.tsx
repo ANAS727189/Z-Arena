@@ -55,11 +55,7 @@ function App() {
           />
           <Route
             path="/compete-wars"
-            element={
-              <Layout>
-                <WarPage />
-              </Layout>
-            }
+            element={<WarPage />}
           />
 
           <Route

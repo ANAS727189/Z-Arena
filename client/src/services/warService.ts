@@ -6,7 +6,7 @@ import type {
   WarLeaderboard, 
   WarMatchHistory, 
   WarChallengeAttempt,
-  Challenge 
+  Challenge
 } from '@/types';
 
 export class WarService {
@@ -21,6 +21,7 @@ export class WarService {
     // Remove any existing queue entries for this user
     await this.leaveQueue(userId);
 
+    // Create new queue entry
     const queueEntry = await databases.createDocument(
       DATABASE_ID,
       COLLECTIONS.WAR_QUEUE,
@@ -28,12 +29,12 @@ export class WarService {
       {
         userId,
         eloRating,
-        queuedAt: new Date().toISOString(),
+        preferredLanguages: preferredLanguages,
         status: 'waiting',
-        preferredLanguages,
-        region: 'global',
-        maxWaitTime: 120000, // 2 minutes
-        expandedRange: 200,
+        queuedAt: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        region: 'global'
       }
     );
 
@@ -60,11 +61,20 @@ export class WarService {
   }
 
   /**
+   * Remove a user from the queue (alias for leaveQueue)
+   */
+  static async removeFromQueue(userId: string): Promise<void> {
+    return this.leaveQueue(userId);
+  }
+
+  /**
    * Find a match for a player
    */
   static async findMatch(userId: string, userElo: number): Promise<WarQueue | null> {
     const waitTime = 0; // You can calculate actual wait time
     const eloRange = ELOCalculator.getMatchingRange(userElo, waitTime);
+
+    console.log(`Finding match for user ${userId} with ELO ${userElo}, range: ${eloRange.min}-${eloRange.max}`);
 
     const potentialOpponents = await databases.listDocuments(
       DATABASE_ID,
@@ -77,6 +87,8 @@ export class WarService {
       ]
     );
 
+    console.log(`Found ${potentialOpponents.documents.length} potential opponents:`, potentialOpponents.documents);
+
     return (potentialOpponents.documents[0] as unknown as WarQueue) || null;
   }
 
@@ -84,7 +96,8 @@ export class WarService {
    * Create a war match between two players
    */
   static async createMatch(
-    player1: WarQueue, 
+    player1UserId: string,
+    player1Elo: number,
     player2: WarQueue
   ): Promise<WarMatch> {
     // Select 5 random challenges
@@ -96,38 +109,43 @@ export class WarService {
       'unique()',
       {
         matchId: `match_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        player1Id: player1.userId,
+        player1Id: player1UserId,
         player2Id: player2.userId,
         status: 'active',
-        challenges: challenges.map((c: any, index) => ({
-          challengeId: c.$id,
-          challengeIndex: index,
-          player1Score: 0,
-          player2Score: 0,
-          player1Time: 0,
-          player2Time: 0,
-          player1Status: 'pending',
-          player2Status: 'pending'
-        })),
+        challenges: challenges.map((c: Challenge) => c.id), // Use c.id instead of c.$id
         startTime: new Date().toISOString(),
         player1FinalScore: 0,
         player2FinalScore: 0,
         player1EloChange: 0,
         player2EloChange: 0,
-        player1EloBefore: player1.eloRating,
+        player1EloBefore: player1Elo,
         player2EloBefore: player2.eloRating,
         timeLimit: 300000, // 5 minutes
-        region: 'global'
+        region: 'global',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       }
     );
 
-    // Update queue status to matched
-    await databases.updateDocument(
+    // Find and update player1's queue status
+    const player1Queue = await databases.listDocuments(
       DATABASE_ID,
       COLLECTIONS.WAR_QUEUE,
-      player1.$id,
-      { status: 'matched' }
+      [
+        Query.equal('userId', player1UserId),
+        Query.equal('status', 'waiting')
+      ]
     );
+
+    // Update queue status to matched
+    if (player1Queue.documents.length > 0) {
+      await databases.updateDocument(
+        DATABASE_ID,
+        COLLECTIONS.WAR_QUEUE,
+        player1Queue.documents[0].$id,
+        { status: 'matched' }
+      );
+    }
 
     await databases.updateDocument(
       DATABASE_ID,
@@ -143,19 +161,30 @@ export class WarService {
    * Select random challenges for war match
    */
   private static async selectRandomChallenges(count: number): Promise<Challenge[]> {
-    // Get all active challenges
-    const allChallenges = await databases.listDocuments(
-      DATABASE_ID,
-      COLLECTIONS.CHALLENGES,
-      [
-        Query.equal('isActive', true),
-        Query.limit(100) // Get more than needed to randomize
-      ]
-    );
+    try {
+      // Use challengeService to get properly formatted challenges
+      const { challengeService } = await import('./challengeService');
+      const challenges = await challengeService.getChallenges({
+        limit: 100 // Get more than needed to randomize
+      });
 
-    // Shuffle and select the required count
-    const shuffled = allChallenges.documents.sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, count) as unknown as Challenge[];
+      if (challenges.length === 0) {
+        throw new Error('No active challenges found for war match');
+      }
+
+      // Shuffle and select the required count
+      const shuffled = challenges.sort(() => 0.5 - Math.random());
+      const selected = shuffled.slice(0, count);
+
+      if (selected.length < count) {
+        console.warn(`Only found ${selected.length} challenges, needed ${count}`);
+      }
+
+      return selected;
+    } catch (error) {
+      console.error('Error selecting random challenges:', error);
+      throw new Error('Failed to select challenges for war match');
+    }
   }
 
   /**
@@ -185,7 +214,9 @@ export class WarService {
         runtime: 0,
         submittedAt: new Date().toISOString(),
         timeSpent: 0,
-        attempts: 1
+        attempts: 1,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       }
     );
 
@@ -193,16 +224,252 @@ export class WarService {
   }
 
   /**
+   * Submit a challenge attempt for battle room (simplified version)
+   */
+  static async submitBattleAttempt(attemptData: {
+    matchId: string;
+    userId: string;
+    challengeId: string;
+    challengeIndex: number;
+    completedAt: Date;
+    isCorrect: boolean;
+    code?: string;
+    language?: string;
+  }): Promise<WarChallengeAttempt> {
+    console.log('📤 WarService.submitBattleAttempt called with:', {
+      matchId: attemptData.matchId,
+      userId: attemptData.userId,
+      challengeId: attemptData.challengeId,
+      challengeIndex: attemptData.challengeIndex,
+      isCorrect: attemptData.isCorrect,
+      status: attemptData.isCorrect ? 'correct' : 'incorrect',
+      hasCode: !!attemptData.code,
+      language: attemptData.language
+    });
+
+    const attempt = await databases.createDocument(
+      DATABASE_ID,
+      COLLECTIONS.WAR_CHALLENGE_ATTEMPTS,
+      'unique()',
+      {
+        matchId: attemptData.matchId,
+        userId: attemptData.userId,
+        challengeId: attemptData.challengeId,
+        challengeIndex: attemptData.challengeIndex,
+        status: attemptData.isCorrect ? 'completed' : 'failed',
+        score: attemptData.isCorrect ? 100 : 0,
+        submittedAt: attemptData.completedAt.toISOString(),
+        code: attemptData.code || '', // Add code field with fallback
+        language: attemptData.language || 'javascript', // Add language field with fallback
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    );
+
+    console.log('✅ Battle attempt saved successfully:', {
+      id: attempt.$id,
+      status: attempt.status,
+      challengeId: attempt.challengeId
+    });
+
+    return attempt as unknown as WarChallengeAttempt;
+  }
+
+  /**
+   * Get real-time match data
+   */
+  static async getMatchData(matchId: string): Promise<WarMatch> {
+    const match = await databases.getDocument(
+      DATABASE_ID,
+      COLLECTIONS.WAR_MATCHES,
+      matchId
+    );
+
+    return match as unknown as WarMatch;
+  }
+
+  /**
+   * Get opponent progress in a match
+   */
+  static async getOpponentProgress(matchId: string, opponentId: string): Promise<any> {
+    console.log('🔍 WarService.getOpponentProgress called with:', { matchId, opponentId });
+    
+    const attempts = await databases.listDocuments(
+      DATABASE_ID,
+      COLLECTIONS.WAR_CHALLENGE_ATTEMPTS,
+      [
+        Query.equal('matchId', matchId),
+        Query.equal('userId', opponentId),
+        Query.orderDesc('submittedAt')
+      ]
+    );
+
+    console.log('🔍 Found challenge attempts:', {
+      totalAttempts: attempts.documents.length,
+      attempts: attempts.documents.map(doc => ({
+        challengeId: doc.challengeId,
+        status: doc.status,
+        submittedAt: doc.submittedAt,
+        challengeIndex: doc.challengeIndex
+      }))
+    });
+
+    if (attempts.documents.length === 0) {
+      console.log('🔍 No attempts found, returning 0 challenges');
+      return {
+        challengesCompleted: 0,
+        currentChallenge: 0,
+        lastActivity: null,
+        isOnline: false
+      };
+    }
+
+    const latestAttempt = attempts.documents[0] as any;
+    const completedChallenges = attempts.documents.filter((attempt: any) => 
+      attempt.status === 'completed'
+    ).length;
+
+    console.log('🔍 Progress calculation:', {
+      totalAttempts: attempts.documents.length,
+      completedChallenges,
+      latestAttemptStatus: latestAttempt.status,
+      latestChallengeIndex: latestAttempt.challengeIndex
+    });
+
+    return {
+      challengesCompleted: completedChallenges,
+      currentChallenge: latestAttempt.challengeIndex || 0,
+      lastActivity: new Date(latestAttempt.submittedAt),
+      isOnline: new Date().getTime() - new Date(latestAttempt.submittedAt).getTime() < 60000 // Online if active within last minute
+    };
+  }
+
+  /**
+   * Update match status
+   */
+  static async updateMatchStatus(
+    matchId: string, 
+    status: 'active' | 'completed' | 'cancelled',
+    winnerId?: string
+  ): Promise<WarMatch> {
+    const updateData: any = { status };
+    
+    if (winnerId) {
+      updateData.winnerId = winnerId;
+      updateData.completedAt = new Date().toISOString();
+    }
+
+    const match = await databases.updateDocument(
+      DATABASE_ID,
+      COLLECTIONS.WAR_MATCHES,
+      matchId,
+      updateData
+    );
+
+    return match as unknown as WarMatch;
+  }
+
+  /**
+   * Get current user's queue status
+   */
+  static async getMyQueueStatus(userId: string): Promise<WarQueue | null> {
+    try {
+      const queueDocs = await databases.listDocuments(
+        DATABASE_ID,
+        COLLECTIONS.WAR_QUEUE,
+        [
+          Query.equal('userId', userId),
+          Query.limit(1)
+        ]
+      );
+
+      return queueDocs.documents.length > 0 
+        ? (queueDocs.documents[0] as unknown as WarQueue)
+        : null;
+    } catch (error) {
+      console.error('Error getting queue status:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Find user's active match
+   */
+  static async findMyActiveMatch(userId: string): Promise<WarMatch | null> {
+    try {
+      const matchDocs = await databases.listDocuments(
+        DATABASE_ID,
+        COLLECTIONS.WAR_MATCHES,
+        [
+          Query.or([
+            Query.equal('player1Id', userId),
+            Query.equal('player2Id', userId)
+          ]),
+          Query.equal('status', 'active'),
+          Query.limit(1)
+        ]
+      );
+
+      return matchDocs.documents.length > 0 
+        ? (matchDocs.documents[0] as unknown as WarMatch)
+        : null;
+    } catch (error) {
+      console.error('Error finding active match:', error);
+      return null;
+    }
+  }
+
+  /**
    * Complete a war match and calculate ELO changes
    */
-  static async completeMatch(matchId: string): Promise<WarMatch> {
+  static async completeMatch(matchId: string, winnerId?: string, winnerScore?: number, loserScore?: number): Promise<WarMatch> {
+    console.log('WarService.completeMatch called with:', { matchId, winnerId, winnerScore, loserScore });
+    
+    // Get the match document
     const match = await databases.getDocument(
       DATABASE_ID,
       COLLECTIONS.WAR_MATCHES,
       matchId
     ) as unknown as WarMatch;
+    
+    console.log('Retrieved match:', match);
 
-    // Calculate final scores (sum of all challenge scores)
+    // Check if match is already completed to prevent duplicate processing
+    if (match.status === 'completed') {
+      console.log('Match already completed, skipping...');
+      return match;
+    }
+
+    // Atomically update status to prevent duplicate processing
+    try {
+      await databases.updateDocument(
+        DATABASE_ID,
+        COLLECTIONS.WAR_MATCHES,
+        matchId,
+        { status: 'completed', endTime: new Date().toISOString() }
+      );
+      console.log('Successfully marked match as completed');
+      
+      // Add a small delay to ensure database consistency across replicas
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+    } catch (updateError) {
+      // If update fails, another process might have already completed it
+      console.log('Failed to mark as completed, checking status:', updateError);
+      const updatedMatch = await databases.getDocument(
+        DATABASE_ID,
+        COLLECTIONS.WAR_MATCHES,
+        matchId
+      ) as unknown as WarMatch;
+      
+      if (updatedMatch.status === 'completed') {
+        console.log('Match already completed by another process, skipping...');
+        return updatedMatch;
+      }
+      throw updateError;
+    }
+
+    // Calculate final scores and challenge counts
     const player1Attempts = await databases.listDocuments(
       DATABASE_ID,
       COLLECTIONS.WAR_CHALLENGE_ATTEMPTS,
@@ -221,19 +488,44 @@ export class WarService {
       ]
     );
 
+    // Calculate actual challenges completed (not score-based)
+    const player1ChallengesCompleted = player1Attempts.documents.filter(attempt => attempt.status === 'completed').length;
+    const player2ChallengesCompleted = player2Attempts.documents.filter(attempt => attempt.status === 'completed').length;
+    
+    // Use scores for ELO calculation but challenges completed for winner determination
     const player1FinalScore = player1Attempts.documents.reduce((sum, attempt) => sum + attempt.score, 0);
     const player2FinalScore = player2Attempts.documents.reduce((sum, attempt) => sum + attempt.score, 0);
+    
+    console.log('📊 Match completion scores:', {
+      player1: { challenges: player1ChallengesCompleted, score: player1FinalScore },
+      player2: { challenges: player2ChallengesCompleted, score: player2FinalScore }
+    });
 
     // Determine winner and calculate ELO
     let player1Result = 0.5; // Default to draw
-    let winnerId = undefined;
+    let finalWinnerId = winnerId; // Use provided winnerId or calculate from scores
 
-    if (player1FinalScore > player2FinalScore) {
-      player1Result = 1; // Player 1 wins
-      winnerId = match.player1Id;
-    } else if (player2FinalScore > player1FinalScore) {
-      player1Result = 0; // Player 1 loses
-      winnerId = match.player2Id;
+    if (!finalWinnerId) {
+      // Use challenges completed for winner determination (more accurate than score)
+      if (player1ChallengesCompleted > player2ChallengesCompleted) {
+        player1Result = 1; // Player 1 wins
+        finalWinnerId = match.player1Id;
+      } else if (player2ChallengesCompleted > player1ChallengesCompleted) {
+        player1Result = 0; // Player 1 loses
+        finalWinnerId = match.player2Id;
+      }
+      // else: challenges completed are equal, player1Result remains 0.5 (draw), finalWinnerId remains undefined
+    } else {
+      // Use provided winner - if undefined it means draw
+      if (finalWinnerId === match.player1Id) {
+        player1Result = 1;
+      } else if (finalWinnerId === match.player2Id) {
+        player1Result = 0;
+      } else {
+        // winnerId is defined but not matching either player (shouldn't happen, but handle gracefully)
+        player1Result = 0.5;
+        finalWinnerId = undefined;
+      }
     }
 
     // Get current user stats for games played
@@ -261,15 +553,13 @@ export class WarService {
       player2Games
     );
 
-    // Update match with results
+    // Update match with final results (status already set to completed earlier)
     const updatedMatch = await databases.updateDocument(
       DATABASE_ID,
       COLLECTIONS.WAR_MATCHES,
       matchId,
       {
-        status: 'completed',
-        endTime: new Date().toISOString(),
-        winnerId,
+        winnerId: finalWinnerId,
         player1FinalScore,
         player2FinalScore,
         player1EloChange: eloResults.player1.change,
@@ -277,14 +567,28 @@ export class WarService {
       }
     );
 
+    console.log('✅ Match updated to completed status successfully');
+
     // Update user stats
+    console.log('Updating user stats for players:', { player1Id: match.player1Id, player2Id: match.player2Id });
     await this.updateUserWarStats(match.player1Id, player1Result, eloResults.player1);
     await this.updateUserWarStats(match.player2Id, 1 - player1Result, eloResults.player2);
 
-    // Create match history entries
-    await this.createMatchHistoryEntry(match, match.player1Id, match.player2Id, player1Result, player1FinalScore, player2FinalScore, eloResults.player1);
-    await this.createMatchHistoryEntry(match, match.player2Id, match.player1Id, 1 - player1Result, player2FinalScore, player1FinalScore, eloResults.player2);
+    // Create match history entries with correct challenge counts
+    console.log('Creating match history entries');
+    await this.createMatchHistoryEntry(match, match.player1Id, match.player2Id, player1Result, player1FinalScore, player2FinalScore, eloResults.player1, player1ChallengesCompleted);
+    await this.createMatchHistoryEntry(match, match.player2Id, match.player1Id, 1 - player1Result, player2FinalScore, player1FinalScore, eloResults.player2, player2ChallengesCompleted);
 
+    // Clean up queue entries for both players
+    console.log('Cleaning up queue entries for both players');
+    try {
+      await this.removeFromQueue(match.player1Id);
+      await this.removeFromQueue(match.player2Id);
+    } catch (error) {
+      console.error('Failed to clean up queue entries:', error);
+    }
+
+    console.log('Match completion successful:', updatedMatch);
     return updatedMatch as unknown as WarMatch;
   }
 
@@ -350,34 +654,53 @@ export class WarService {
     result: number,
     userScore: number,
     opponentScore: number,
-    eloResult: { newRating: number; change: number }
+    eloResult: { newRating: number; change: number },
+    userChallengesCompleted: number
   ): Promise<void> {
     const resultString = result === 1 ? 'win' : result === 0.5 ? 'draw' : 'loss';
     
-    await databases.createDocument(
-      DATABASE_ID,
-      COLLECTIONS.WAR_MATCH_HISTORY,
-      'unique()',
-      {
-        matchId: match.matchId,
-        userId,
-        opponentId,
-        result: resultString,
-        userScore,
-        opponentScore,
-        userEloBefore: result === 1 ? match.player1EloBefore : match.player2EloBefore,
-        userEloAfter: eloResult.newRating,
-        eloChange: eloResult.change,
-        opponentEloBefore: result === 1 ? match.player2EloBefore : match.player1EloBefore,
-        challengesSolved: Math.floor(userScore / 20), // Assuming 20 points per challenge
-        totalChallenges: 5,
-        matchDuration: match.endTime ? 
-          new Date(match.endTime).getTime() - new Date(match.startTime).getTime() : 
-          300000, // Default 5 minutes
-        averageTime: 60000, // Default 1 minute per challenge
-        matchDate: new Date().toISOString()
+    // Use a shorter, predictable ID to prevent duplicates (max 36 chars)
+    const shortMatchId = match.$id.substring(0, 16); // Use document ID instead of matchId
+    const shortUserId = userId.substring(0, 16);
+    const historyId = `${shortMatchId}_${shortUserId}`;
+    
+    try {
+      await databases.createDocument(
+        DATABASE_ID,
+        COLLECTIONS.WAR_MATCH_HISTORY,
+        historyId,
+        {
+          matchId: match.matchId,
+          userId,
+          opponentId,
+          result: resultString,
+          userScore,
+          opponentScore,
+          userEloBefore: userId === match.player1Id ? match.player1EloBefore : match.player2EloBefore,
+          userEloAfter: eloResult.newRating,
+          eloChange: eloResult.change,
+          opponentEloBefore: opponentId === match.player1Id ? match.player1EloBefore : match.player2EloBefore,
+          challengesSolved: userChallengesCompleted, // Use actual challenge count instead of score/20
+          totalChallenges: match.challenges.length,
+          matchDuration: match.endTime ? 
+            new Date(match.endTime).getTime() - new Date(match.startTime).getTime() : 
+            300000, // Default 5 minutes
+          averageTime: match.endTime ? 
+            (new Date(match.endTime).getTime() - new Date(match.startTime).getTime()) / match.challenges.length :
+            60000, // Default 1 minute per challenge
+          matchDate: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      );
+    } catch (error: any) {
+      // If document already exists, skip (prevents duplicates)
+      if (error.code === 409 || error.message?.includes('Document with the requested ID already exists')) {
+        console.log(`Match history entry already exists for user ${userId}, skipping...`);
+        return;
       }
-    );
+      throw error;
+    }
   }
 
   /**
@@ -395,6 +718,46 @@ export class WarService {
     );
 
     return leaderboard.documents as unknown as WarLeaderboard[];
+  }
+
+  /**
+   * Get user's match statistics
+   */
+  static async getUserMatchStats(userId: string): Promise<{ 
+    totalGames: number; 
+    wins: number; 
+    losses: number; 
+    draws: number;
+    winRate: number;
+    currentStreak: number;
+  }> {
+    try {
+      // Get user stats from users collection
+      const userDocs = await databases.listDocuments(
+        DATABASE_ID,
+        COLLECTIONS.USERS,
+        [Query.equal('userId', userId)]
+      );
+
+      if (userDocs.documents.length === 0) {
+        return { totalGames: 0, wins: 0, losses: 0, draws: 0, winRate: 0, currentStreak: 0 };
+      }
+
+      const user = userDocs.documents[0];
+      const totalGames = user.warGamesPlayed || 0;
+      const wins = user.warWins || 0;
+      const losses = user.warLosses || 0;
+      const draws = user.warDraws || 0;
+      const winRate = totalGames > 0 ? (wins / totalGames) * 100 : 0;
+      const currentStreak = user.warStreak || 0;
+
+      console.log('User match stats:', { totalGames, wins, losses, draws, winRate, currentStreak });
+      
+      return { totalGames, wins, losses, draws, winRate, currentStreak };
+    } catch (error) {
+      console.error('Error getting user match stats:', error);
+      return { totalGames: 0, wins: 0, losses: 0, draws: 0, winRate: 0, currentStreak: 0 };
+    }
   }
 
   /**

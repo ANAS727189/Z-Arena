@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { Clock, Trophy, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { databases, DATABASE_ID, COLLECTIONS, Query } from '@/lib/appwrite';
-import { ELOCalculator } from '@/utils/eloCalculator';
 import type { WarMatchHistory } from '@/types';
 
 const RecentWars = () => {
@@ -103,7 +102,7 @@ const RecentWars = () => {
     }
   };
 
-  const getResultIcon = (result: string, eloChange: number) => {
+  const getResultIcon = (result: string) => {
     switch (result) {
       case 'win':
         return <TrendingUp className="w-4 h-4 text-green-400" />;
@@ -221,7 +220,7 @@ const RecentWars = () => {
           >
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 flex items-center justify-center rounded bg-[var(--background-secondary)]">
-                {getResultIcon(match.result, match.eloChange)}
+                {getResultIcon(match.result)}
               </div>
               <div>
                 <div className="flex items-center gap-2">

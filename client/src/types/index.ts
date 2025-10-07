@@ -104,7 +104,7 @@ export interface WarMatch {
   player1Id: string;
   player2Id: string;
   status: 'waiting' | 'active' | 'completed' | 'cancelled';
-  challenges: WarChallenge[];
+  challenges: string[]; // Array of challenge IDs
   startTime: string;
   endTime?: string;
   winnerId?: string;

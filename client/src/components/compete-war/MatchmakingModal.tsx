@@ -4,17 +4,20 @@ import { X, Search, Users, Clock, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { WarService } from '@/services/warService';
 import { databases, DATABASE_ID, COLLECTIONS, Query } from '@/lib/appwrite';
+import type { WarMatch } from '@/types';
 
 interface MatchmakingModalProps {
   setOpenModal: React.Dispatch<React.SetStateAction<boolean>>;
   onQueueJoined?: () => void;
   onQueueLeft?: () => void;
+  onMatchFound?: (match: WarMatch) => void;
 }
 
 const MatchmakingModal: React.FC<MatchmakingModalProps> = ({ 
   setOpenModal, 
   onQueueJoined, 
-  onQueueLeft 
+  onQueueLeft,
+  onMatchFound 
 }) => {
   const { user } = useAuth();
   const [status, setStatus] = useState<'idle' | 'searching' | 'found' | 'error'>('idle');
@@ -69,21 +72,92 @@ const MatchmakingModal: React.FC<MatchmakingModalProps> = ({
       await WarService.joinQueue(user.$id, userElo, ['javascript', 'python', 'cpp']);
       onQueueJoined?.();
 
-      // Start looking for matches (this would be handled by real-time subscriptions in production)
-      setTimeout(() => {
-        // Simulate finding a match for testing
-        setStatus('found');
-        setTimeout(() => {
-          setOpenModal(false);
-          onQueueLeft?.();
-          alert('Match found! (This is a demo - actual battle room would load here)');
-        }, 2000);
-      }, 5000); // Simulate 5 second wait
+      // Start looking for matches
+      const matchInterval = setInterval(async () => {
+        try {
+          // First check if we're already matched (another player found us)
+          const myQueueStatus = await WarService.getMyQueueStatus(user.$id);
+          
+          if (myQueueStatus && myQueueStatus.status === 'matched') {
+            // We were matched by another player, find our match
+            const myMatch = await WarService.findMyActiveMatch(user.$id);
+            if (myMatch) {
+              setStatus('found');
+              clearInterval(matchInterval);
+              
+              setTimeout(() => {
+                setOpenModal(false);
+                onQueueLeft?.();
+                onMatchFound?.(myMatch);
+              }, 2000);
+              return;
+            }
+          }
+
+          // Look for opponents
+          const opponent = await WarService.findMatch(user.$id, userElo);
+          
+          if (opponent) {
+            // Found a match, create the match
+            const match = await WarService.createMatch(
+              user.$id,
+              userElo,
+              opponent
+            );
+            
+            setStatus('found');
+            clearInterval(matchInterval);
+            
+            setTimeout(() => {
+              setOpenModal(false);
+              onQueueLeft?.();
+              onMatchFound?.(match);
+            }, 2000);
+          } else {
+            console.log(`No opponent found for user ${user.$id} with ELO ${userElo}, waiting...`);
+          }
+        } catch (error) {
+          console.error('Error finding match:', error);
+          clearInterval(matchInterval);
+          setStatus('error');
+          setErrorMessage('Failed to find a match. Please try again.');
+          // Cleanup: remove from queue on error
+          try {
+            await WarService.leaveQueue(user.$id);
+            onQueueLeft?.();
+          } catch (cleanupError) {
+            console.error('Error cleaning up queue:', cleanupError);
+          }
+        }
+      }, 3000); // Check every 3 seconds (reduced frequency)
+
+      // Auto-cancel after 2 minutes
+      setTimeout(async () => {
+        clearInterval(matchInterval);
+        if (status === 'searching') {
+          setStatus('error');
+          setErrorMessage('No opponents found. Please try again later.');
+          // Cleanup: remove from queue on timeout
+          try {
+            await WarService.leaveQueue(user.$id);
+            onQueueLeft?.();
+          } catch (cleanupError) {
+            console.error('Error cleaning up queue:', cleanupError);
+          }
+        }
+      }, 120000);
 
     } catch (error) {
       console.error('Error starting matchmaking:', error);
       setStatus('error');
       setErrorMessage('Failed to join matchmaking queue. Please try again.');
+      // Cleanup: remove from queue on error
+      try {
+        await WarService.leaveQueue(user.$id);
+        onQueueLeft?.();
+      } catch (cleanupError) {
+        console.error('Error cleaning up queue:', cleanupError);
+      }
     }
   };
 
