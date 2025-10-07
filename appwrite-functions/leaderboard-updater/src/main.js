@@ -13,7 +13,8 @@ const COLLECTIONS = {
   USERS: 'users',
   USER_RANKINGS: 'user_rankings',
   LEADERBOARD: 'leaderboard',
-  STARS: 'stars'
+  STARS: 'stars',
+  WAR_LEADERBOARD: 'war_leaderboard'
 };
 
 /**
@@ -39,6 +40,9 @@ export default async ({ req, res, log, error }) => {
     
     // Generate and cache leaderboard data
     const leaderboardStats = await updateLeaderboardCache(log);
+    
+    // Update war leaderboard
+    const warLeaderboardStats = await updateWarLeaderboard(log);
 
     const executionTime = Date.now() - startTime;
 
@@ -51,7 +55,8 @@ export default async ({ req, res, log, error }) => {
         weekly: weeklyStats,
         monthly: monthlyStats,
         stars: starStats,
-        leaderboard: leaderboardStats
+        leaderboard: leaderboardStats,
+        warLeaderboard: warLeaderboardStats
       },
       timestamp: new Date().toISOString()
     };
@@ -499,4 +504,102 @@ async function generateLeaderboardData(type, filter) {
     isPublic: user.isPublic,
     profilePicture: user.profilePicture
   }));
+}
+
+/**
+ * Update war leaderboard with ELO ratings
+ */
+async function updateWarLeaderboard(log) {
+  try {
+    log('⚔️ Updating war leaderboard...');
+
+    // Get all users with war games played
+    const users = await databases.listDocuments(
+      DATABASE_ID,
+      COLLECTIONS.USERS,
+      [
+        Query.greaterThan('warGamesPlayed', 0),
+        Query.orderDesc('eloRating'),
+        Query.orderDesc('warWins'),
+        Query.limit(1000)
+      ]
+    );
+
+    let updateCount = 0;
+    
+    // Update war leaderboard entries
+    for (let i = 0; i < users.documents.length; i++) {
+      const user = users.documents[i];
+      const warRank = i + 1;
+      
+      // Calculate win percentage
+      const totalGames = (user.warWins || 0) + (user.warLosses || 0) + (user.warDraws || 0);
+      const winPercentage = totalGames > 0 ? ((user.warWins || 0) / totalGames) * 100 : 0;
+      
+      // Check if war leaderboard entry exists
+      const existingEntry = await databases.listDocuments(
+        DATABASE_ID,
+        COLLECTIONS.WAR_LEADERBOARD,
+        [Query.equal('userId', user.userId)]
+      );
+      
+      const leaderboardData = {
+        userId: user.userId,
+        eloRating: user.eloRating || 1200,
+        warWins: user.warWins || 0,
+        warLosses: user.warLosses || 0,
+        warDraws: user.warDraws || 0,
+        warStreak: user.warStreak || 0,
+        bestWarStreak: user.bestWarStreak || 0,
+        warRank,
+        totalWarGames: user.warGamesPlayed || 0,
+        winPercentage: Math.round(winPercentage * 100) / 100,
+        avgOpponentElo: user.eloRating || 1200, // Simplified for now
+        lastMatchAt: user.warLastMatchAt || null,
+        isProvisional: user.provisionalRating !== false,
+        lastUpdated: new Date().toISOString()
+      };
+      
+      if (existingEntry.documents.length > 0) {
+        await databases.updateDocument(
+          DATABASE_ID,
+          COLLECTIONS.WAR_LEADERBOARD,
+          existingEntry.documents[0].$id,
+          leaderboardData
+        );
+      } else {
+        await databases.createDocument(
+          DATABASE_ID,
+          COLLECTIONS.WAR_LEADERBOARD,
+          'unique()',
+          leaderboardData
+        );
+      }
+      
+      // Update user's war rank
+      if (user.warRank !== warRank) {
+        await databases.updateDocument(
+          DATABASE_ID,
+          COLLECTIONS.USERS,
+          user.$id,
+          {
+            warRank,
+            updatedAt: new Date().toISOString()
+          }
+        );
+      }
+      
+      updateCount++;
+    }
+
+    log(`⚔️ Updated ${updateCount} war leaderboard entries`);
+    
+    return {
+      totalWarPlayers: users.documents.length,
+      updatedEntries: updateCount
+    };
+
+  } catch (err) {
+    throw new Error(`Failed to update war leaderboard: ${err.message}`);
+  }
 }

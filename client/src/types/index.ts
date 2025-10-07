@@ -96,3 +96,115 @@ export interface User {
   rank: number;
   joinedAt: Date;
 }
+
+// War Feature Interfaces
+export interface WarMatch {
+  $id: string;
+  matchId: string;
+  player1Id: string;
+  player2Id: string;
+  status: 'waiting' | 'active' | 'completed' | 'cancelled';
+  challenges: WarChallenge[];
+  startTime: string;
+  endTime?: string;
+  winnerId?: string;
+  player1FinalScore: number;
+  player2FinalScore: number;
+  player1EloChange: number;
+  player2EloChange: number;
+  player1EloBefore: number;
+  player2EloBefore: number;
+  timeLimit: number;
+  matchType?: string;
+  region: string;
+  $createdAt: string;
+  $updatedAt: string;
+}
+
+export interface WarChallenge {
+  challengeId: string;
+  challengeIndex: number;
+  player1Code?: string;
+  player2Code?: string;
+  player1Score: number;
+  player2Score: number;
+  player1Time: number;
+  player2Time: number;
+  player1Status: 'pending' | 'submitted' | 'completed';
+  player2Status: 'pending' | 'submitted' | 'completed';
+}
+
+export interface WarQueue {
+  $id: string;
+  userId: string;
+  eloRating: number;
+  queuedAt: string;
+  status: 'waiting' | 'matched' | 'cancelled';
+  preferredLanguages: string[];
+  region: string;
+  maxWaitTime?: number;
+  expandedRange: number;
+  $createdAt: string;
+  $updatedAt: string;
+}
+
+export interface WarLeaderboard {
+  $id: string;
+  userId: string;
+  eloRating: number;
+  warWins: number;
+  warLosses: number;
+  warDraws: number;
+  warStreak: number;
+  bestWarStreak: number;
+  warRank: number;
+  totalWarGames: number;
+  winPercentage: number;
+  avgOpponentElo: number;
+  lastMatchAt?: string;
+  isProvisional: boolean;
+  lastUpdated: string;
+  $createdAt: string;
+  $updatedAt: string;
+}
+
+export interface WarMatchHistory {
+  $id: string;
+  matchId: string;
+  userId: string;
+  opponentId: string;
+  result: 'win' | 'loss' | 'draw';
+  userScore: number;
+  opponentScore: number;
+  userEloBefore: number;
+  userEloAfter: number;
+  eloChange: number;
+  opponentEloBefore: number;
+  challengesSolved: number;
+  totalChallenges: number;
+  matchDuration: number;
+  averageTime: number;
+  matchDate: string;
+  $createdAt: string;
+  $updatedAt: string;
+}
+
+export interface WarChallengeAttempt {
+  $id: string;
+  matchId: string;
+  userId: string;
+  challengeId: string;
+  challengeIndex: number;
+  code: string;
+  language: string;
+  status: 'pending' | 'submitted' | 'completed' | 'failed';
+  score: number;
+  runtime: number;
+  testResults?: string;
+  submittedAt?: string;
+  completedAt?: string;
+  timeSpent: number;
+  attempts: number;
+  $createdAt: string;
+  $updatedAt: string;
+}
