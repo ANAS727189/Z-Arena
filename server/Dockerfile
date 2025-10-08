@@ -18,9 +18,9 @@ COPY server/package.json server/package-lock.json ./
 RUN npm ci
 
 # Set working directory for compiler
-WORKDIR /app/Compiler
-COPY Compiler/package.json ./package.json
-COPY Compiler/package-lock.json ./package-lock.json
+WORKDIR /app/compiler
+COPY compiler/package.json ./package.json
+COPY compiler/package-lock.json ./package-lock.json
 RUN npm ci --ignore-scripts
 
 
@@ -35,7 +35,7 @@ RUN mkdir -p /root/.cmake-js/node-x64/v20.0.0/include/node && \
 RUN npm run compile-llvm --prefix .
 
 # Copy compiler source
-COPY Compiler/src ./src
+COPY compiler/src ./src
 
 # Stage 2: Final runtime 
 FROM node:20-slim
@@ -49,9 +49,9 @@ COPY --from=builder /app/server/node_modules ./node_modules
 COPY server/ .
 
 WORKDIR /app
-COPY --from=builder /app/Compiler ./Compiler
+COPY --from=builder /app/compiler ./compiler
 
-ENV COMPILER_PATH=/app/Compiler/src/index.js
+ENV COMPILER_PATH=/app/compiler/src/index.js
 
 CMD ["node", "server/src/server.js"]
 
