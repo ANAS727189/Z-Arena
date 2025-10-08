@@ -123,7 +123,7 @@ export const BattleRoom: React.FC<BattleRoomProps> = ({
   const loadInitialOpponentProgress = async (opponentId: string) => {
     try {
       const progress = await WarService.getOpponentProgress(match.$id, opponentId);
-      console.log('📊 Initial opponent progress loaded:', progress);
+
       setOpponentProgress({
         userId: opponentId,
         challengesCompleted: progress.challengesCompleted,
@@ -138,14 +138,6 @@ export const BattleRoom: React.FC<BattleRoomProps> = ({
 
   const loadCurrentChallenge = async (index?: number) => {
     const challengeIndex = index ?? currentChallengeIndex;
-    console.log('🔍 loadCurrentChallenge called with:', {
-      challengesExist: !!match.challenges,
-      challengesLength: match.challenges?.length,
-      challenges: match.challenges,
-      currentIndex: challengeIndex,
-      passedIndex: index
-    });
-
     try {
       const challengeId = match.challenges[challengeIndex];
       console.log('🎯 Attempting to load challenge ID:', challengeId);
@@ -388,37 +380,16 @@ export const BattleRoom: React.FC<BattleRoomProps> = ({
     let actualOpponentCompleted = opponentCompleted;
     
     try {
-      console.log('🔍 Getting actual challenge counts from database...');
-      console.log('🔍 Match ID:', match.$id);
-      console.log('🔍 My User ID:', user!.$id);
-      console.log('🔍 Opponent ID:', opponentId);
-      
       const myProgress = await WarService.getOpponentProgress(match.$id, user!.$id);
-      console.log('🔍 Raw my progress from API:', myProgress);
-      
       const opponentProgress = await WarService.getOpponentProgress(match.$id, opponentId);
-      console.log('🔍 Raw opponent progress from API:', opponentProgress);
       
       actualMyCompleted = myProgress.challengesCompleted;
       actualOpponentCompleted = opponentProgress.challengesCompleted;
-      
-      console.log('📊 Database challenge counts:', {
-        myCompleted: actualMyCompleted,
-        opponentCompleted: actualOpponentCompleted,
-        localMyCompleted: myCompleted,
-        localOpponentCompleted: opponentCompleted
-      });
     } catch (error) {
       console.error('Failed to get actual challenge counts:', error);
     }
     
-    console.log('🏁 Final battle results:', {
-      myCompleted: actualMyCompleted,
-      opponentCompleted: actualOpponentCompleted,
-      myUserId: user!.$id,
-      opponentId,
-      battleDuration
-    });
+
 
     // Store final results for display
     setFinalResults({
@@ -433,18 +404,18 @@ export const BattleRoom: React.FC<BattleRoomProps> = ({
       result = 'victory';
       winnerId = user!.$id;
       setBattleResult('victory');
-      console.log('🎉 Player victory!', { myCompleted: actualMyCompleted, opponentCompleted: actualOpponentCompleted });
+
     } else if (actualMyCompleted < actualOpponentCompleted) {
       result = 'defeat';
       winnerId = opponentId;
       setBattleResult('defeat');
-      console.log('😞 Player defeat!', { myCompleted: actualMyCompleted, opponentCompleted: actualOpponentCompleted });
+
     } else {
       // Handle draw case properly - no winner
       result = 'draw';
       winnerId = undefined; // No winner for draws
       setBattleResult('draw');
-      console.log('🤝 Match is a draw!', { myCompleted: actualMyCompleted, opponentCompleted: actualOpponentCompleted });
+
     }
 
     // Complete the match in database
@@ -463,14 +434,7 @@ export const BattleRoom: React.FC<BattleRoomProps> = ({
     // **EXPLANATION**: Handle when user completes a challenge
     const newCompleted = myProgress.challengesCompleted + 1;
     
-    console.log('🎉 handleChallengeComplete called:', {
-      previousCompleted: myProgress.challengesCompleted,
-      newCompleted: newCompleted,
-      challengeIndex: currentChallengeIndex,
-      challengeId: match.challenges[currentChallengeIndex],
-      matchId: match.$id,
-      userId: user!.$id
-    });
+
     
     setMyProgress(prev => ({
       ...prev,
@@ -479,15 +443,7 @@ export const BattleRoom: React.FC<BattleRoomProps> = ({
 
     // Submit attempt to database for real-time sync
     try {
-      console.log('📤 Submitting challenge attempt to database:', {
-        matchId: match.$id,
-        userId: user!.$id,
-        challengeId: match.challenges[currentChallengeIndex],
-        challengeIndex: currentChallengeIndex,
-        challengesCompleted: newCompleted,
-        language: selectedLanguage,
-        code: code ? `${code.substring(0, 50)}...` : 'empty'
-      });
+
       
       const attemptResult = await WarService.submitBattleAttempt({
         matchId: match.$id,
@@ -655,33 +611,11 @@ export const BattleRoom: React.FC<BattleRoomProps> = ({
       // Check if all test cases passed
       const allPassed = result.testResults?.every((test: any) => test.passed) ?? false;
       
-      console.log('🔍 DETAILED Challenge submission result:', {
-        allPassed,
-        challengeId: match.challenges[currentChallengeIndex],
-        currentIndex: currentChallengeIndex,
-        totalTests: result.testResults?.length || 0,
-        passedTests: result.testResults?.filter((test: any) => test.passed).length || 0,
-        failedTests: result.testResults?.filter((test: any) => !test.passed).length || 0,
-        code: code.substring(0, 100) + '...', // First 100 chars of code
-        language: selectedLanguage,
-        detailedResults: result.testResults?.map((test: any, idx: number) => ({
-          testIndex: idx,
-          passed: test.passed,
-          input: test.input?.substring(0, 50) || 'No input',
-          expected: test.expectedOutput?.substring(0, 100) || 'No expected output',
-          actual: test.actualOutput?.substring(0, 100) || 'No actual output',
-          error: test.error?.substring(0, 200) || 'No error',
-          executionTime: test.executionTime || 0
-        })) || []
-      });
-      
       if (allPassed) {
         // Challenge completed successfully
-        console.log('✅ All test cases passed - calling handleChallengeComplete');
         handleChallengeComplete();
       } else {
         // Show submission results
-        console.log('❌ Some test cases failed:', result.testResults);
         setTestResults(result.testResults || []);
         setShowTestResults(true);
         alert('Some test cases failed. Please check your solution and try again.');
@@ -756,17 +690,6 @@ export const BattleRoom: React.FC<BattleRoomProps> = ({
                 {formatTime(battleTimer.timeRemaining)}
               </span>
             </div>
-
-            {/* DEBUG: Manual Complete Button */}
-            <button
-              onClick={() => {
-                console.log('🎯 MANUAL: Completing challenge', myProgress.challengesCompleted + 1);
-                handleChallengeComplete();
-              }}
-              className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-sm font-semibold"
-            >
-              Complete Challenge (DEBUG)
-            </button>
 
             {/* Sound Toggle */}
             <button 

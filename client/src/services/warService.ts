@@ -236,17 +236,6 @@ export class WarService {
     code?: string;
     language?: string;
   }): Promise<WarChallengeAttempt> {
-    console.log('📤 WarService.submitBattleAttempt called with:', {
-      matchId: attemptData.matchId,
-      userId: attemptData.userId,
-      challengeId: attemptData.challengeId,
-      challengeIndex: attemptData.challengeIndex,
-      isCorrect: attemptData.isCorrect,
-      status: attemptData.isCorrect ? 'correct' : 'incorrect',
-      hasCode: !!attemptData.code,
-      language: attemptData.language
-    });
-
     const attempt = await databases.createDocument(
       DATABASE_ID,
       COLLECTIONS.WAR_CHALLENGE_ATTEMPTS,
@@ -259,18 +248,12 @@ export class WarService {
         status: attemptData.isCorrect ? 'completed' : 'failed',
         score: attemptData.isCorrect ? 100 : 0,
         submittedAt: attemptData.completedAt.toISOString(),
-        code: attemptData.code || '', // Add code field with fallback
-        language: attemptData.language || 'javascript', // Add language field with fallback
+        code: attemptData.code || '',
+        language: attemptData.language || 'javascript',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       }
     );
-
-    console.log('✅ Battle attempt saved successfully:', {
-      id: attempt.$id,
-      status: attempt.status,
-      challengeId: attempt.challengeId
-    });
 
     return attempt as unknown as WarChallengeAttempt;
   }
@@ -292,8 +275,6 @@ export class WarService {
    * Get opponent progress in a match
    */
   static async getOpponentProgress(matchId: string, opponentId: string): Promise<any> {
-    console.log('🔍 WarService.getOpponentProgress called with:', { matchId, opponentId });
-    
     const attempts = await databases.listDocuments(
       DATABASE_ID,
       COLLECTIONS.WAR_CHALLENGE_ATTEMPTS,
@@ -304,18 +285,7 @@ export class WarService {
       ]
     );
 
-    console.log('🔍 Found challenge attempts:', {
-      totalAttempts: attempts.documents.length,
-      attempts: attempts.documents.map(doc => ({
-        challengeId: doc.challengeId,
-        status: doc.status,
-        submittedAt: doc.submittedAt,
-        challengeIndex: doc.challengeIndex
-      }))
-    });
-
     if (attempts.documents.length === 0) {
-      console.log('🔍 No attempts found, returning 0 challenges');
       return {
         challengesCompleted: 0,
         currentChallenge: 0,
@@ -328,13 +298,6 @@ export class WarService {
     const completedChallenges = attempts.documents.filter((attempt: any) => 
       attempt.status === 'completed'
     ).length;
-
-    console.log('🔍 Progress calculation:', {
-      totalAttempts: attempts.documents.length,
-      completedChallenges,
-      latestAttemptStatus: latestAttempt.status,
-      latestChallengeIndex: latestAttempt.challengeIndex
-    });
 
     return {
       challengesCompleted: completedChallenges,

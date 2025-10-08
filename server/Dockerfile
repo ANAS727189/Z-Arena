@@ -1,5 +1,5 @@
 # Stage 1: Build dependencies and compiler
-FROM node:18 AS builder
+FROM node:20 AS builder
 
 # Installing build tools, LLVM, and Node.js development headers
 RUN apt-get update \
@@ -12,9 +12,6 @@ RUN apt-get update \
       libnode-dev \
  && rm -rf /var/lib/apt/lists/*
 
-# Debug: Checking for node_api.h in system paths
-RUN find / -name node_api.h || echo "node_api.h not found"
-
 # Set working directory for server
 WORKDIR /app/server
 COPY server/package.json server/package-lock.json ./
@@ -26,13 +23,12 @@ COPY Compiler/package.json ./package.json
 COPY Compiler/package-lock.json ./package-lock.json
 RUN npm ci --ignore-scripts
 
-# Debug: Check for CMakeLists.txt
-RUN find /app/Compiler/node_modules/llvm-bindings -name CMakeLists.txt || echo "CMakeLists.txt not found"
+
 
 # Manually copy node_api.h to cmake-js header directory
-RUN mkdir -p /root/.cmake-js/node-x64/v18.20.8/include/node && \
-    cp /usr/include/node/node_api.h /root/.cmake-js/node-x64/v18.20.8/include/node/ || \
-    cp /usr/include/nodejs/src/node_api.h /root/.cmake-js/node-x64/v18.20.8/include/node/ || \
+RUN mkdir -p /root/.cmake-js/node-x64/v20.0.0/include/node && \
+    cp /usr/include/node/node_api.h /root/.cmake-js/node-x64/v20.0.0/include/node/ || \
+    cp /usr/include/nodejs/src/node_api.h /root/.cmake-js/node-x64/v20.0.0/include/node/ || \
     echo "Failed to copy node_api.h"
 
 # Compile llvm-bindings using cmake-js
@@ -42,7 +38,7 @@ RUN npm run compile-llvm --prefix .
 COPY Compiler/src ./src
 
 # Stage 2: Final runtime 
-FROM node:18-slim
+FROM node:20-slim
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends llvm && \
