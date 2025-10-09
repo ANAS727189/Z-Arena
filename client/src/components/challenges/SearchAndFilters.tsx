@@ -31,13 +31,11 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
   onLanguageChange,
 }) => {
   return (
-    // UPDATED: Wrapped in a themed container for a cohesive "control panel" look
-    <div className="flex flex-col md:flex-row items-center gap-4 rounded-xl border border-white/10 bg-gray-900/30 p-4 backdrop-blur-sm">
+    <div className="flex flex-col md:flex-row items-center gap-4 rounded-xl border border-white/10 bg-black p-4 backdrop-blur-sm">
       
       {/* --- Search Input --- */}
       <div className="relative flex-1 w-full">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-        {/* UPDATED: Using a styled Input component */}
         <Input
           type="text"
           placeholder="Search challenges, tags, or topics..."
@@ -73,7 +71,6 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
 
         {/* Language Filter */}
         <div className="flex-1">
-          {/* UPDATED: Using a styled Select component */}
           <Select
             value={selectedLanguage}
             onValueChange={(value) => onLanguageChange(value)}

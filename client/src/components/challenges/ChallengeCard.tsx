@@ -37,10 +37,10 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({
     <motion.div
       variants={itemVariants}
       onClick={() => onChallengeClick(challenge.id)}
-      className="group relative flex flex-col h-full rounded-xl border border-white/10 bg-gray-900/40 p-6 backdrop-blur-sm transition-all duration-300 hover:border-green-400/60 hover:-translate-y-1 cursor-pointer"
+      className="group relative flex flex-col h-full rounded-xl border border-white/10 bg-black p-6 backdrop-blur-sm transition-colors group duration-300 hover:bg-green-500/5 hover:-translate-y-1 cursor-pointer"
     >
       {/* Glow effect on hover */}
-      <div className="absolute top-0 left-0 h-full w-full bg-green-400/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100 rounded-xl z-0"></div>
+      <div className="absolute top-0 left-0 h-full w-full opacity-0 transition-opacity duration-300 group-hover:opacity-100 rounded-xl z-0"></div>
 
       {/* Main content container */}
       <div className="relative z-10 flex flex-col h-full">

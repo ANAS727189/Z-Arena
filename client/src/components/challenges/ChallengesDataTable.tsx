@@ -343,7 +343,7 @@ export const ChallengesDataTable: React.FC<ChallengesDataTableProps> = ({
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  className="border-b border-white/10 hover:bg-white/5 cursor-pointer group transition-colors"
+                  className="border-b border-white/10 hover:bg-green-500/5 cursor-pointer group transition-colors"
                   onClick={() => onChallengeClick(row.original)}
                 >
                     {row.getVisibleCells().map((cell) => {
