@@ -4,49 +4,49 @@ const FeaturesSection = () => {
   const features = [
     {
       icon: Code2,
-      title: 'Multi-Language Support',
+      title: 'Multi-Language Challenges',
       description:
-        'Execute challenges in Z--, C++, Python, Java, JavaScript, and Rust',
-      command: 'z-lang --list',
-      output: '6 languages loaded ✓',
+        'Solve 49 challenges across Z--, C++, Python, Go, JavaScript, and mixed-language problems',
+      command: 'z-arena --languages',
+      output: 'Z--: 15 | Go: 8 | Python: 10 | C++: 5 | Mixed: 2 | JS: 4',
     },
     {
       icon: Zap,
-      title: 'Lightning Execution',
+      title: 'Real-time Battle System',
       description:
-        'Sub-second code compilation and execution with detailed metrics',
-      command: 'z-exec --benchmark',
-      output: 'avg: 0.12s | 99th: 0.45s',
+        'Compete head-to-head in live coding battles with ELO rating system',
+      command: 'z-arena --war status',
+      output: 'battle-room: active | elo: 1247',
     },
     {
       icon: Trophy,
       title: 'Global Leaderboards',
       description:
-        'Real-time ranking system with competitive scoring algorithms',
-      command: 'z-rank --global',
-      output: 'your_rank: #247 📈',
+        'Track your progress with achievements, streaks, and competitive rankings',
+      command: 'z-arena --leaderboard',
+      output: 'achievements: unlocked | streak: 7 days',
     },
     {
       icon: Users,
-      title: 'Community Solutions',
-      description: 'Browse optimized solutions and learn from top performers',
-      command: 'z-solutions --top',
-      output: '1.2M solutions shared',
+      title: 'Z-- Language Focus',
+      description: 'Master the innovative Z-- programming language with 15 dedicated challenges',
+      command: 'z-compiler --version',
+      output: 'Z-- compiler v1.0 | runtime: node.js',
     },
     {
       icon: Shield,
-      title: 'Secure Sandbox',
+      title: 'Appwrite Backend',
       description:
-        'Isolated execution environment with resource limits and monitoring',
-      command: 'z-security --status',
-      output: 'sandbox: active 🛡️',
+        'Secure authentication, real-time updates, and cloud functions integration',
+      command: 'z-arena --backend status',
+      output: 'appwrite: connected ✓ | realtime: active',
     },
     {
       icon: Globe,
-      title: 'Open Platform',
-      description: 'Community-driven development with transparent algorithms',
-      command: 'z-contrib --stats',
-      output: '47 contributors active',
+      title: 'Judge0 Integration',
+      description: 'Execute code in multiple languages with industry-standard Judge0 API',
+      command: 'z-arena --judge0 ping',
+      output: 'judge0-ce: online | 6 languages supported',
     },
   ];
 

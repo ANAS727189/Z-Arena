@@ -12,12 +12,12 @@ const ShowcaseSection = () => {
   const navigate = useNavigate();
 
   const languages = [
-    { name: 'Z--', color: 'text-yellow-400', challenges: 25, featured: true },
-    { name: 'C++', color: 'text-blue-400', challenges: 42 },
-    { name: 'Python', color: 'text-green-400', challenges: 38 },
-    { name: 'Java', color: 'text-orange-400', challenges: 33 },
-    { name: 'JavaScript', color: 'text-purple-400', challenges: 29 },
-    { name: 'Rust', color: 'text-red-400', challenges: 18 },
+    { name: 'Z--', color: 'text-yellow-400', challenges: 15, featured: true },
+    { name: 'Go', color: 'text-cyan-400', challenges: 8 },
+    { name: 'Python', color: 'text-green-400', challenges: 10 },
+    { name: 'C++', color: 'text-blue-400', challenges: 5 },
+    { name: 'JavaScript', color: 'text-purple-400', challenges: 4 },
+    { name: 'Mixed', color: 'text-red-400', challenges: 2 },
   ];
 
   const sampleChallenges = [
@@ -25,8 +25,8 @@ const ShowcaseSection = () => {
       id: 'hello-world-z',
       title: 'Hello Z-- World',
       difficulty: 'Easy',
-      points: 10,
-      description: 'Welcome to Z--! Learn basic syntax and program structure.',
+      points: 1,
+      description: 'Welcome to Z--! Your first challenge to learn basic syntax and print statements.',
       solved: 1247,
       difficultyColor: 'text-green-400 bg-green-400/10',
     },
@@ -34,17 +34,17 @@ const ShowcaseSection = () => {
       id: 'two-sum-array',
       title: 'Two Sum Problem',
       difficulty: 'Medium',
-      points: 50,
-      description: 'Find two numbers in array that add up to target sum.',
+      points: 2,
+      description: 'Find two numbers in array that add up to target sum using hash maps.',
       solved: 823,
       difficultyColor: 'text-yellow-400 bg-yellow-400/10',
     },
     {
-      id: 'reverse-string',
-      title: 'Reverse String',
+      id: 'fibonacci-sequence',
+      title: 'Fibonacci Sequence',
       difficulty: 'Easy',
-      points: 20,
-      description: 'Reverse a string using Z-- language features.',
+      points: 1,
+      description: 'Generate Fibonacci numbers using loops and mathematical sequences.',
       solved: 956,
       difficultyColor: 'text-green-400 bg-green-400/10',
     },

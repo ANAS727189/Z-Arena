@@ -63,12 +63,12 @@ const Navigation = () => {
             className="flex items-center space-x-3 cursor-pointer"
             onClick={() => navigate('/')}
           >
-            <div className="w-10 h-10 bg-gradient-to-r from-[var(--accent-purple)] to-[var(--accent-cyan)] rounded-xl flex items-center justify-center shadow-lg shadow-[var(--accent-purple)]/20">
-              <Code2 className="w-6 h-6 text-white" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--accent-green)] shadow-lg shadow-[var(--accent-green)]/20">
+              <Code2 className="h-6 w-6 text-black" />
             </div>
             <div>
               <h1 className="font-heading text-xl font-bold text-white">
-                Z-Challenge
+                Z-Arena
               </h1>
               <p className="text-xs text-[var(--text-secondary)] font-accent">
                 Code. Compete. Conquer.
