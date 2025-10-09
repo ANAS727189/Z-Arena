@@ -1,73 +1,113 @@
-import { TrendingUp, Users, Code, Award } from 'lucide-react';
+import { motion, useInView, useSpring } from 'framer-motion';
+import { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+
+// --- Reusable Animated Counter Component ---
+
+// 1. Define the type for the methods we will expose via the ref.
+export interface CounterRef {
+  restart: () => void;
+}
+
+const AnimatedCounter = forwardRef<CounterRef, { value: number; isInView: boolean }>(
+  ({ value, isInView }, ref) => {
+    const spanRef = useRef<HTMLSpanElement>(null);
+    
+    const springValue = useSpring(0, {
+      stiffness: 40,
+      damping: 40,
+    });
+
+    // 2. Expose a `restart` function to the parent component.
+    useImperativeHandle(ref, () => ({
+      restart: () => {
+        springValue.set(0); // Reset the spring to 0
+        springValue.set(value); // Start the animation again to the target value
+      },
+    }));
+
+    // This useEffect handles the initial animation when the section scrolls into view.
+    useEffect(() => {
+      if (isInView) {
+        springValue.set(value);
+      }
+    }, [isInView, value, springValue]);
+
+    useEffect(() => {
+      const unsubscribe = springValue.on("change", (latest) => {
+        if (spanRef.current) {
+          spanRef.current.textContent = Math.round(latest).toLocaleString();
+        }
+      });
+      return () => unsubscribe();
+    }, [springValue]);
+
+    return <span ref={spanRef}>0</span>;
+  }
+);
 
 const StatsSection = () => {
   const stats = [
-    {
-      icon: Code,
-      value: '49',
-      label: 'Total Challenges',
-      metric: 'across 6 languages',
-      color: 'text-blue-400',
-    },
-    {
-      icon: Users,
-      value: '15',
-      label: 'Z-- Challenges',
-      metric: 'custom language focus',
-      color: 'text-yellow-400',
-    },
-    {
-      icon: TrendingUp,
-      value: '8',
-      label: 'Go Challenges',
-      metric: 'concurrency & servers',
-      color: 'text-cyan-400',
-    },
-    {
-      icon: Award,
-      value: '10',
-      label: 'Python Challenges',
-      metric: 'ML & algorithms',
-      color: 'text-green-400',
-    },
+    { value: 50, label: 'Total Challenges', metric: 'across 6 languages' },
+    { value: 15, label: 'Z-- Challenges', metric: 'custom language focus' },
+    { value: 10, label: 'Go Challenges', metric: 'concurrency & servers' },
+    { value: 15, label: 'Python Challenges', metric: 'ML & algorithms' },
   ];
 
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const isInView = useInView(sectionRef, { once: true, amount: 0.5 });
+
+  // 3. Create an array of refs, one for each counter.
+  const counterRefs = useRef<(CounterRef | null)[]>([]);
+
   return (
-    <section className="py-20">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="text-center mb-16">
-          {/* <div className="inline-block rounded-lg px-4 py-2 mb-6">
-                <span className="text-gray-400 font-mono text-sm">$ z-monitor --stats --live</span>
-            </div> */}
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Challenge Distribution
+    <section className="py-24 bg-black text-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div 
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="inline-block rounded-full bg-green-500/10 px-4 py-1.5 mb-4">
+            <span className="font-semibold text-sm text-green-400">By The Numbers</span>
+          </div>
+          <h2 className="text-4xl md:text-5xl font-bold font-heading mb-4">
+            The Arena at a Glance
           </h2>
           <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Comprehensive coverage from beginner Z-- syntax to advanced algorithms
+            A growing ecosystem of challenges and competitive features.
           </p>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {stats.map(stat => (
-            <div
-              key={stat.label}
-              className="border border-gray-700 rounded-lg p-6 text-center hover:border-gray-600 transition-colors"
-            >
-              <div className="flex items-center justify-center mb-4">
-                <stat.icon className={`w-8 h-8 ${stat.color}`} />
-              </div>
-
+        <motion.div 
+          ref={sectionRef}
+          className="rounded-xl border border-white/10 bg-gray-900/30 backdrop-blur-sm shadow-2xl shadow-green-500/10"
+          initial={{ opacity: 0, y: 50 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+        >
+          <div className="grid grid-cols-2 md:grid-cols-4">
+            {stats.map((stat, i) => (
               <div
-                className={`text-3xl md:text-4xl font-bold ${stat.color} mb-2 font-mono`}
+                key={stat.label}
+                className="p-8 text-center border-l border-white/10 first:border-l-0"
+                // 4. Add the onMouseEnter event to trigger the restart function.
+                onMouseEnter={() => counterRefs.current[i]?.restart()}
               >
-                {stat.value}
+                <div className="text-5xl md:text-6xl font-bold font-mono text-green-400 mb-2 drop-shadow-[0_0_10px_rgba(34,197,94,0.5)]">
+                  <AnimatedCounter
+                    // 5. Assign the ref from our array to the component instance.
+                    ref={(el) => { counterRefs.current[i] = el; }}
+                    value={stat.value}
+                    isInView={isInView}
+                  />+
+                </div>
+                <div className="text-white font-semibold mb-1">{stat.label}</div>
               </div>
-
-              <div className="text-white font-semibold mb-1">{stat.label}</div>
-              <div className="text-gray-400 text-sm">{stat.metric}</div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </motion.div>
       </div>
     </section>
   );

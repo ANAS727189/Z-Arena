@@ -4,7 +4,8 @@ import {
   FeaturesSection,
   ShowcaseSection,
   StatsSection,
-  CTASection,
+  FAQSection,
+  Footer
 } from '@/components/sections';
 
 export const LandingPage: React.FC = () => {
@@ -15,7 +16,8 @@ export const LandingPage: React.FC = () => {
       <FeaturesSection />
       <ShowcaseSection />
       <StatsSection />
-      <CTASection />
+      <FAQSection />
+      <Footer />
     </div>
   );
 };

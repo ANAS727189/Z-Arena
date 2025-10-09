@@ -1,189 +1,309 @@
-import {
-  Code,
-  Play,
-  ArrowRight,
-  CheckCircle,
-  Clock,
-  Trophy,
-} from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Swords, User, Trophy } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { SiPython, SiRust, SiCplusplus} from 'react-icons/si';
+import React, { useState, useEffect, useRef, useCallback, forwardRef } from 'react';
+import type { IconType } from 'react-icons';
+
+
+interface Language {
+  id: string;
+  name: string;
+  icon: IconType | React.FC<any>;
+}
+
+interface Player {
+  name: string;
+  languages: Language[];
+  codeSnippet: string;
+}
+
+interface Challenge {
+  title: string;
+  difficulty: string;
+  difficultyColor: string;
+  languages: Language[];
+  winner: string;
+  winnerColor: string;
+}
+
+
+const ZIcon = (props: React.ComponentProps<'svg'>) => (
+  <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 4H3L12 12L3 20H21" />
+  </svg>
+);
+
+// --- Richer Data ---
+const challengerData: Player = {
+  name: "Challenger Blue",
+  languages: [
+    { id: 'python', name: 'Python', icon: SiPython },
+    { id: 'rust', name: 'Rust', icon: SiRust },
+  ],
+  codeSnippet: `def solve(arr):\n  # Optimal solution...\n  return result`
+};
+
+const opponentData: Player = {
+  name: "Opponent Purple",
+  languages: [
+    { id: 'cpp', name: 'C++', icon: SiCplusplus },
+    { id: 'z--', name: 'Z--', icon: ZIcon },
+  ],
+  codeSnippet: `fn solve(arr) {\n  // Blazing fast...\n  return result;\n}`
+};
+
+const centralChallengeData: Challenge = {
+  title: "Hello World",
+  difficulty: "Easy",
+  difficultyColor: "border-green-400/50 text-green-400",
+  languages: [...challengerData.languages, ...opponentData.languages],
+  winner: challengerData.name,
+  winnerColor: 'text-blue-400'
+};
 
 const ShowcaseSection = () => {
-  const navigate = useNavigate();
+  const [paths, setPaths] = useState<string[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const challengerRef = useRef<HTMLDivElement>(null);
+  const opponentRef = useRef<HTMLDivElement>(null);
+  const centralCardRef = useRef<HTMLDivElement>(null);
 
-  const languages = [
-    { name: 'Z--', color: 'text-yellow-400', challenges: 15, featured: true },
-    { name: 'Go', color: 'text-cyan-400', challenges: 8 },
-    { name: 'Python', color: 'text-green-400', challenges: 10 },
-    { name: 'C++', color: 'text-blue-400', challenges: 5 },
-    { name: 'JavaScript', color: 'text-purple-400', challenges: 4 },
-    { name: 'Mixed', color: 'text-red-400', challenges: 2 },
-  ];
+const calculatePaths = useCallback(() => {
+  if (!containerRef.current || !challengerRef.current || !opponentRef.current || !centralCardRef.current) return;
 
-  const sampleChallenges = [
-    {
-      id: 'hello-world-z',
-      title: 'Hello Z-- World',
-      difficulty: 'Easy',
-      points: 1,
-      description: 'Welcome to Z--! Your first challenge to learn basic syntax and print statements.',
-      solved: 1247,
-      difficultyColor: 'text-green-400 bg-green-400/10',
-    },
-    {
-      id: 'two-sum-array',
-      title: 'Two Sum Problem',
-      difficulty: 'Medium',
-      points: 2,
-      description: 'Find two numbers in array that add up to target sum using hash maps.',
-      solved: 823,
-      difficultyColor: 'text-yellow-400 bg-yellow-400/10',
-    },
-    {
-      id: 'fibonacci-sequence',
-      title: 'Fibonacci Sequence',
-      difficulty: 'Easy',
-      points: 1,
-      description: 'Generate Fibonacci numbers using loops and mathematical sequences.',
-      solved: 956,
-      difficultyColor: 'text-green-400 bg-green-400/10',
-    },
-  ];
+  const containerRect = containerRef.current.getBoundingClientRect();
+  const challengerRect = challengerRef.current.getBoundingClientRect();
+  const opponentRect = opponentRef.current.getBoundingClientRect();
+  const centralRect = centralCardRef.current.getBoundingClientRect();
+
+  const verticalCenter = (centralRect.top + centralRect.bottom) / 2 - containerRect.top;
+
+  // top connections
+  const path1 = `M ${challengerRect.right - containerRect.left} ${verticalCenter - 100}
+                 C ${challengerRect.right + 60 - containerRect.left} ${verticalCenter - 100},
+                   ${centralRect.left - 60 - containerRect.left} ${verticalCenter - 20},
+                   ${centralRect.left - containerRect.left} ${verticalCenter - 20}`;
+
+  const path2 = `M ${opponentRect.left - containerRect.left} ${verticalCenter - 100}
+                 C ${opponentRect.left - 60 - containerRect.left} ${verticalCenter - 100},
+                   ${centralRect.right + 60 - containerRect.left} ${verticalCenter - 20},
+                   ${centralRect.right - containerRect.left} ${verticalCenter - 20}`;
+
+
+  const verticalOffset = 70;
+
+  // path3 (bottom-left): mirrors path2 direction (right → left)
+  const path3 = `M ${centralRect.right - containerRect.left} ${verticalCenter + verticalOffset}
+                 C ${centralRect.right + 60 - containerRect.left} ${verticalCenter + verticalOffset},
+                   ${opponentRect.left - 60 - containerRect.left} ${verticalCenter + verticalOffset + 60},
+                   ${opponentRect.left - containerRect.left} ${verticalCenter + verticalOffset + 80}`;
+
+  // path4 (bottom-right): mirrors path1 direction (left → right)
+  const path4 = `M ${centralRect.left - containerRect.left} ${verticalCenter + verticalOffset}
+                 C ${centralRect.left - 40 - containerRect.left} ${verticalCenter + verticalOffset},
+                   ${challengerRect.right + 80 - containerRect.left} ${verticalCenter + verticalOffset + 80},
+                   ${challengerRect.right - containerRect.left} ${verticalCenter + verticalOffset + 80}`;
+
+
+  setPaths([path1, path2, path3, path4]);
+}, []);
+
+
+
+  useEffect(() => {
+    const observer = new ResizeObserver(() => {
+      calculatePaths();
+    });
+    const currentContainer = containerRef.current;
+    if (currentContainer) {
+      observer.observe(currentContainer);
+      setTimeout(calculatePaths, 100);
+    }
+    return () => {
+      if (currentContainer) {
+        observer.unobserve(currentContainer);
+      }
+    };
+  }, [calculatePaths]);
+
   return (
-    <section className="py-20">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="text-center mb-16">
-          {/* <div className="inline-block rounded-lg px-4 py-2 mb-6">
-                <span className="text-gray-400 font-mono text-sm">$ z-showcase --languages --challenges</span>
-            </div> */}
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            49 Challenges Across 6 Languages
+    <section id="showcase" className="py-24 bg-black text-white overflow-x-clip">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div 
+          className="text-center mb-20"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="inline-block rounded-full bg-green-500/10 px-4 py-1.5 mb-4">
+            <span className="font-semibold text-sm text-green-400">Warzone</span>
+          </div>
+          <h2 className="text-4xl md:text-5xl font-bold font-heading mb-4">
+            Real-Time Coding Duels
           </h2>
           <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            From Z-- fundamentals to advanced Go concurrency and Python machine learning challenges
+            Challenge opponents, bring your best skills, and solve problems under pressure.
           </p>
-        </div>
+        </motion.div>
 
-        <div className="grid lg:grid-cols-2 gap-12">
-          <div>
-            <h3 className="text-2xl font-bold text-white mb-8 flex items-center gap-2">
-              <Code className="w-6 h-6 text-yellow-400" />
-              Supported Languages
-            </h3>
-            <div className="grid grid-cols-2 gap-4">
-              {languages.map(lang => (
-                <div
-                  key={lang.name}
-                  className="group border border-gray-700 rounded-lg p-4 hover:border-gray-600 transition-all cursor-pointer"
-                >
-                  <div className="flex items-center justify-between mb-3">
-                    <span className={`font-mono font-bold ${lang.color}`}>
-                      {lang.name}
-                    </span>
-                    {lang.featured && (
-                      <span className="px-2 py-1 bg-yellow-400 text-black text-xs rounded-full font-bold">
-                        NEW
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-gray-400 text-sm mb-2">
-                    {lang.challenges} challenges available
-                  </div>
-                  <div className="flex items-center gap-2 text-xs">
-                    <CheckCircle className="w-3 h-3 text-green-400" />
-                    <span className="text-green-400">Judge0 enabled</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-6 border border-gray-700 rounded-lg p-4">
-              <div className="text-sm text-gray-400 mb-2">Language Stats:</div>
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div>
-                  <div className="text-lg font-bold text-yellow-400">6</div>
-                  <div className="text-xs text-gray-500">Total Languages</div>
-                </div>
-                <div>
-                  <div className="text-lg font-bold text-blue-400">185</div>
-                  <div className="text-xs text-gray-500">Total Challenges</div>
-                </div>
-                <div>
-                  <div className="text-lg font-bold text-green-400">0.15s</div>
-                  <div className="text-xs text-gray-500">Avg Compile Time</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <h3 className="text-2xl font-bold text-white mb-8 flex items-center gap-2">
-              <Trophy className="w-6 h-6 text-yellow-400" />
-              Featured Challenges
-            </h3>
-            <div className="space-y-4">
-              {sampleChallenges.map(challenge => (
-                <div
-                  key={challenge.title}
-                  className="group border border-gray-700 rounded-lg p-4 hover:border-gray-600 transition-all cursor-pointer"
-                  onClick={() => navigate('/challenges')}
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <h4 className="font-semibold text-white group-hover:text-yellow-400 transition-colors">
-                        {challenge.title}
-                      </h4>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${challenge.difficultyColor}`}
-                        >
-                          {challenge.difficulty}
-                        </span>
-                        <span className="text-yellow-400 text-sm font-mono">
-                          {challenge.points}pts
-                        </span>
-                      </div>
-                    </div>
-                    <ArrowRight className="w-4 h-4 text-gray-500 group-hover:text-yellow-400 group-hover:translate-x-1 transition-all" />
-                  </div>
-
-                  <p className="text-gray-400 text-sm mb-3">
-                    {challenge.description}
-                  </p>
-
-                  <div className="flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-4 text-gray-500">
-                      <span className="flex items-center gap-1">
-                        <CheckCircle className="w-3 h-3 text-green-400" />
-                        {challenge.solved.toLocaleString()}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        ~10min
-                      </span>
-                    </div>
-                    <span className="text-yellow-400 font-mono">
-                      <Play className="w-3 h-3 inline mr-1" />
-                      Start
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-6 text-center">
-              <button
-                onClick={() => navigate('/challenges')}
-                className="bg-yellow-400 text-black px-6 py-3 rounded-lg font-bold hover:bg-yellow-300 transition-colors inline-flex items-center gap-2"
-              >
-                Browse All Challenges
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
+        <div className="relative" ref={containerRef}>
+          <ConnectorSVG paths={paths} />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+            <PlayerCard ref={challengerRef} player={challengerData} alignment="left" />
+            <ChallengeCard ref={centralCardRef} challenge={centralChallengeData} />
+            <PlayerCard ref={opponentRef} player={opponentData} alignment="right" />
           </div>
         </div>
       </div>
     </section>
+  );
+};
+
+// --- Child Components with Typing and forwardRef ---
+
+interface PlayerCardProps {
+  player: Player;
+  alignment: 'left' | 'right';
+}
+
+const PlayerCard = forwardRef<HTMLDivElement, PlayerCardProps>(({ player }, ref) => {
+  const isChallenger = player.name === "Challenger Blue";
+  const colorClass = isChallenger 
+    ? { border: 'border-blue-400/50', bg: 'bg-blue-500/10', text: 'text-blue-400' }
+    : { border: 'border-purple-400/50', bg: 'bg-purple-500/10', text: 'text-purple-400' };
+
+  return (
+    <div
+      ref={ref}
+      className="h-full rounded-xl border border-white/10 bg-gray-900/40 p-6 backdrop-blur-sm flex flex-col"
+    >
+      <div className="flex items-center gap-4 mb-6">
+        <div className={`w-12 h-12 rounded-full border-2 flex items-center justify-center ${colorClass.border} ${colorClass.bg}`}>
+          <User className={`w-6 h-6 ${colorClass.text}`} />
+        </div>
+        <div>
+          <h4 className="font-bold text-lg text-white">{player.name}</h4>
+          <p className="text-sm text-gray-400">Chosen Languages</p>
+        </div>
+      </div>
+      <div className="space-y-3">
+        {player.languages.map((lang) => (
+          <div key={lang.id} className="flex items-center justify-between rounded-lg p-3 bg-black/30 border border-white/5">
+            <div className="flex items-center gap-2">
+              <lang.icon className="w-5 h-5 text-gray-300" />
+              <span className="font-medium text-gray-200">{lang.name}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-6 pt-4 border-t border-white/10 flex-grow flex flex-col">
+        <p className="text-sm text-gray-400 mb-2">Submission Snippet:</p>
+        <pre className="text-xs bg-black/40 rounded-md p-3 flex-grow text-gray-300"><code className="language-js">{player.codeSnippet}</code></pre>
+      </div>
+    </div>
+  );
+});
+
+interface ChallengeCardProps {
+  challenge: Challenge;
+}
+
+const ChallengeCard = forwardRef<HTMLDivElement, ChallengeCardProps>(({ challenge }, ref) => (
+  <div
+    ref={ref}
+    className="relative aspect-square rounded-full border-2 border-green-400/50 bg-gray-900/50 
+               p-6 backdrop-blur-sm shadow-2xl shadow-green-500/10 flex flex-col 
+               items-center justify-center text-center overflow-hidden"
+  >
+    {/* Icon */}
+    <div className="flex flex-col items-center justify-center">
+      <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mb-3">
+        <Swords className="w-8 h-8 text-green-400" />
+      </div>
+
+      {/* Title & Difficulty */}
+      <h3 className="font-bold text-lg text-white mb-2">{challenge.title}</h3>
+      <span
+        className={`inline-block px-3 py-1 rounded-full text-xs font-medium border ${challenge.difficultyColor}`}
+      >
+        {challenge.difficulty}
+      </span>
+
+      {/* Divider */}
+      <div className="w-2/3 h-[1px] bg-white/10 my-3"></div>
+
+      {/* Languages */}
+      <div className="grid grid-cols-2 gap-2 w-3/4">
+        {challenge.languages.map((lang) => (
+          <div
+            key={lang.id}
+            className="flex items-center justify-center gap-1 p-2 rounded-lg bg-black/30 border border-white/5"
+          >
+            <lang.icon className="w-4 h-4 text-gray-300" />
+            <span className="text-xs text-gray-400">{lang.name}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Result */}
+      <div className="mt-4 pt-2 border-t border-white/10 w-3/4">
+        <p className="text-sm text-gray-400 mb-1">Match Result</p>
+        <div className="flex items-center justify-center gap-2 rounded-lg bg-black/40 p-2">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 2.8, duration: 0.6 }}
+        >
+          <Trophy className={`w-5 h-5 ${challenge.winnerColor}`} />
+          <span className="font-bold text-sm text-white">
+            {challenge.winner} <span className="text-gray-400 font-normal">Wins!</span>
+          </span>
+          </motion.div>
+        </div>
+      </div>
+    </div>
+  </div>
+));
+
+
+
+
+const ConnectorSVG = ({ paths }: { paths: string[] }) => {
+  return (
+    <motion.svg className="absolute inset-0 z-50 pointer-events-none " style={{ width: '100%', height: '100%' }}>
+      <defs>
+        <linearGradient id="line-gradient" x1="0%" y1="50%" x2="100%" y2="50%">
+          <stop offset="0%" stopColor="#22c55e" stopOpacity="0" />
+          <stop offset="50%" stopColor="#22c55e" stopOpacity="1" />
+          <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
+        </linearGradient>
+        <filter id="glow"><feGaussianBlur stdDeviation="2.5" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      {paths.map((path, i) => (
+  <motion.path
+    key={i}
+    d={path}
+    fill="none"
+    stroke={i < 2 ? "gray" : "url(#line-gradient)"}
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    filter="url(#glow)"
+    initial={{ pathLength: 0, opacity: 0 }}
+    animate={{
+      pathLength: 1,
+      opacity: 1,
+      stroke: i === 0 || i === 1 ? "#22c55e" : "gray"
+    }}
+    transition={{
+      duration: 1.2,
+      delay: i * 0.8,
+      ease: "easeInOut"
+    }}
+  />
+))}
+
+    </motion.svg>
   );
 };
 

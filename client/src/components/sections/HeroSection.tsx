@@ -9,9 +9,11 @@ import {
   SiExpress, SiDocker, SiAppwrite, SiAxios 
 } from "react-icons/si";
 import LogoLoop from '../ui/logo-loop';
+import { useRef } from 'react';
 
 const HeroSection = () => {
   const navigate = useNavigate();
+  const heroSectionRef = useRef<HTMLElement>(null) as React.RefObject<HTMLElement>;
 
   const techLogos = [
     { node: <SiReact />, title: "React" },
@@ -44,7 +46,11 @@ const HeroSection = () => {
 
   return (
     <section className="relative w-full overflow-hidden bg-black text-white">
-      <TargetCursor spinDuration={2} hideDefaultCursor={true} />
+      {/* <TargetCursor 
+      spinDuration={2} 
+      hideDefaultCursor={true} 
+      boundaryRef={heroSectionRef}
+      /> */}
       <DotGrid
         dotSize={1.5}
         gap={25}

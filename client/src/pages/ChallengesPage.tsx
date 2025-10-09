@@ -119,6 +119,7 @@ export const ChallengesPage: React.FC = () => {
                       key={challenge.id}
                       challenge={challenge}
                       onChallengeClick={handleChallengeClick}
+                      solved={solvedChallenges.includes(challenge.id)}
                     />
                   ))}
                 </div>

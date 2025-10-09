@@ -85,21 +85,21 @@ const WarHeader = ({ onMatchFound }: WarHeaderProps) => {
     setOpenModal(true);
   };
 
-  return (
+   return (
     <>
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-r from-red-900/20 to-orange-900/20 border border-red-500/20 rounded-lg p-6 mb-6"
+        className="relative rounded-xl border-2 border-green-400/50 bg-gray-900/50 p-6 backdrop-blur-sm shadow-2xl shadow-green-500/10 mb-8"
       >
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-orange-500 rounded-full flex items-center justify-center">
-              <Swords className="w-6 h-6 text-white" />
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 bg-gradient-to-br from-green-500/20 to-green-500/10 rounded-full flex items-center justify-center border border-green-400/30">
+              <Swords className="w-8 h-8 text-green-400" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-white">War Arena</h1>
-              <p className="text-[var(--text-secondary)]">Real-time competitive programming battles</p>
+              <h1 className="text-3xl font-bold font-heading text-white">War Arena</h1>
+              <p className="text-gray-400">Real-time 1v1 competitive programming battles.</p>
             </div>
           </div>
           
@@ -107,51 +107,32 @@ const WarHeader = ({ onMatchFound }: WarHeaderProps) => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleJoinWar}
-            disabled={loading || isInQueue}
-            className={`px-8 py-3 rounded-lg font-bold text-white transition-all ${
+            disabled={isInQueue}
+            className={`w-full md:w-auto px-8 py-4 rounded-lg font-bold text-lg text-black transition-all duration-300 ${
               isInQueue 
-                ? 'bg-yellow-600 cursor-not-allowed' 
-                : 'bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 shadow-lg shadow-red-500/25'
+                ? 'bg-yellow-500 cursor-not-allowed' 
+                : 'bg-green-500 hover:bg-green-400 hover:shadow-[0_0_20px_theme(colors.green.500)]'
             }`}
           >
-            {isInQueue ? 'In Queue...' : loading ? 'Starting...' : 'Join Battle'}
+            {isInQueue ? 'In Queue...' : 'Find Match'}
           </motion.button>
         </div>
 
-        <div className="grid grid-cols-3 gap-4 text-center">
-          <div className="bg-[var(--background-secondary)]/50 rounded p-3">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Users className="w-4 h-4 text-blue-400" />
-              <span className="text-sm text-[var(--text-secondary)]">Active Battles</span>
-            </div>
-            <div className="text-2xl font-bold text-white">{activeMatches}</div>
-          </div>
-          
-          <div className="bg-[var(--background-secondary)]/50 rounded p-3">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Clock className="w-4 h-4 text-green-400" />
-              <span className="text-sm text-[var(--text-secondary)]">Match Duration</span>
-            </div>
-            <div className="text-2xl font-bold text-white">5 min</div>
-          </div>
-          
-          <div className="bg-[var(--background-secondary)]/50 rounded p-3">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Zap className="w-4 h-4 text-yellow-400" />
-              <span className="text-sm text-[var(--text-secondary)]">Challenges</span>
-            </div>
-            <div className="text-2xl font-bold text-white">5</div>
-          </div>
-        </div>
+        <div className="w-full h-[1px] bg-white/10 my-6"></div>
 
-        <div className="mt-4 p-4 bg-[var(--background-primary)]/50 rounded border border-[var(--border-primary)]">
-          <h3 className="text-white font-semibold mb-2">How War Works:</h3>
-          <ul className="text-sm text-[var(--text-secondary)] space-y-1">
-            <li>• Get matched with a player within ±200 ELO of your rating</li>
-            <li>• Solve 5 random challenges in 5 minutes</li>
-            <li>• Earn points for correct solutions and fast completion</li>
-            <li>• Win, lose, or draw affects your ELO rating</li>
-          </ul>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+            <div className="p-3 rounded-lg bg-black/30">
+                <p className="text-sm text-gray-400 mb-1">Active Battles</p>
+                <p className="text-2xl font-bold text-white">{activeMatches}</p>
+            </div>
+            <div className="p-3 rounded-lg bg-black/30">
+                <p className="text-sm text-gray-400 mb-1">Match Duration</p>
+                <p className="text-2xl font-bold text-white">5 min</p>
+            </div>
+            <div className="p-3 rounded-lg bg-black/30">
+                <p className="text-sm text-gray-400 mb-1">ELO Rating</p>
+                <p className="text-2xl font-bold text-white">±200 Range</p>
+            </div>
         </div>
       </motion.div>
 

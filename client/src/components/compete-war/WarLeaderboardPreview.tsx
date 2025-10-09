@@ -142,67 +142,34 @@ const WarLeaderboardPreview = () => {
     <motion.div 
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
-      className="bg-[var(--background-secondary)] rounded-lg p-6 border border-[var(--border-primary)] flex-1 mr-4"
+      className="h-full rounded-xl border border-white/10 bg-gray-900/40 p-6 backdrop-blur-sm"
     >
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2">
-          <Trophy className="w-5 h-5 text-yellow-400" />
-          <h3 className="text-xl font-bold text-white">War Leaderboard</h3>
-        </div>
+        <h3 className="text-xl font-bold text-white flex items-center gap-3">
+          <Trophy className="w-6 h-6 text-green-400" />
+          War Leaderboard
+        </h3>
         <button
-          onClick={() => navigate('/war-leaderboard')} // You'd need to create this route
-          className="flex items-center gap-1 text-blue-400 hover:text-blue-300 transition-colors text-sm"
+          onClick={() => navigate('/leaderboard')}
+          className="flex items-center gap-1 text-green-400 hover:text-green-300 transition-colors text-sm font-medium"
         >
-          View All <ExternalLink className="w-3 h-3" />
+          View All <ExternalLink className="w-4 h-4" />
         </button>
       </div>
 
-      <div className="space-y-2">
-        {topPlayers.slice(0, 8).map((player, index) => (
-          <motion.div
-            key={player.$id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className="flex items-center justify-between p-3 rounded bg-[var(--background-primary)]/50 hover:bg-[var(--background-primary)]/70 transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 flex items-center justify-center">
-                {getRankIcon(player.warRank)}
-              </div>
-              <div>
-                <div className="text-white font-medium text-sm">
-                  {getUserDisplayName(player.userId)}
-                </div>
-                <div className="text-xs text-[var(--text-secondary)]">
-                  {player.warWins}W - {player.warLosses}L 
-                  {player.warDraws > 0 && ` - ${player.warDraws}D`}
-                </div>
-              </div>
+      <div className="space-y-1">
+        {topPlayers.slice(0, 5).map((player, index) => (
+          <div key={player.$id} className="flex items-center justify-between p-3 rounded-lg hover:bg-black/30 transition-colors">
+            <div className="flex items-center gap-4">
+              <div className="w-8 flex items-center justify-center">{getRankIcon(player.warRank)}</div>
+              <p className="text-white font-medium">{getUserDisplayName(player.userId)}</p>
             </div>
-            
-            <div className="text-right">
-              <div 
-                className="font-bold text-sm"
-                style={{ color: ELOCalculator.getRatingColor(player.eloRating) }}
-              >
-                {ELOCalculator.formatRating(player.eloRating)}
-              </div>
-              <div className="text-xs text-[var(--text-secondary)]">
-                {player.winPercentage.toFixed(1)}% WR
-              </div>
-            </div>
-          </motion.div>
+            <p className="font-mono font-bold text-lg" style={{ color: ELOCalculator.getRatingColor(player.eloRating) }}>
+              {ELOCalculator.formatRating(player.eloRating)}
+            </p>
+          </div>
         ))}
       </div>
-
-      {topPlayers.length === 0 && (
-        <div className="text-center py-8">
-          <Trophy className="w-12 h-12 text-[var(--text-secondary)] mx-auto mb-3" />
-          <p className="text-[var(--text-secondary)]">No war battles yet</p>
-          <p className="text-sm text-[var(--text-secondary)] mt-1">Be the first to compete!</p>
-        </div>
-      )}
     </motion.div>
   );
 };

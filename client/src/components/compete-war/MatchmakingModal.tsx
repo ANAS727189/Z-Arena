@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Search, Users, Clock, Loader2 } from 'lucide-react';
+import { X, Loader2, Swords, CheckCircle  } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { WarService } from '@/services/warService';
 import { databases, DATABASE_ID, COLLECTIONS, Query } from '@/lib/appwrite';
@@ -187,118 +187,116 @@ const MatchmakingModal: React.FC<MatchmakingModalProps> = ({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+ const matchDetails = [
+    "Matched with players in your ELO range (±200)",
+    "Solve random challenges against the clock",
+    "Win or lose affects your ELO rating",
+    "Prove your skills in the Arena!",
+  ];
+
   return (
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+        className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
         onClick={closeModal}
       >
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="bg-[var(--background-secondary)] rounded-lg p-6 max-w-md w-full mx-4 border border-[var(--border-primary)]"
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          className="relative bg-gray-900/50 rounded-xl max-w-md w-full border border-white/10 shadow-2xl shadow-green-500/10"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-white">War Matchmaking</h2>
-            <button
-              onClick={closeModal}
-              className="text-[var(--text-secondary)] hover:text-white transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
+          <div className="p-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold font-heading text-white">War Matchmaking</h2>
+              <button onClick={closeModal} className="text-gray-500 hover:text-white transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* --- IDLE STATE --- */}
+            {status === 'idle' && (
+              <div className="text-center">
+                <div className="w-20 h-20 bg-green-500/10 rounded-xl flex items-center justify-center mx-auto mb-4 border border-green-500/20">
+                  <Swords className="w-10 h-10 text-green-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-white mb-2">Ready for Battle?</h3>
+                <p className="text-gray-400 mb-6">You'll be matched with a player close to your ELO rating ({userElo}).</p>
+                <div className="text-left bg-black/30 rounded-lg p-4 mb-6 border border-white/10 space-y-2">
+                    {matchDetails.map((detail, i) => (
+                        <div key={i} className="flex items-start gap-3">
+                            <CheckCircle className="w-4 h-4 text-green-400 mt-1 flex-shrink-0" />
+                            <p className="text-sm text-gray-300">{detail}</p>
+                        </div>
+                    ))}
+                </div>
+                <button
+                  onClick={startMatchmaking}
+                  className="w-full bg-green-500 hover:bg-green-400 text-black font-bold py-3 px-6 rounded-lg transition-all duration-300 hover:shadow-[0_0_20px_theme(colors.green.500)]"
+                >
+                  Find Match
+                </button>
+              </div>
+            )}
+
+            {/* --- SEARCHING STATE --- */}
+            {status === 'searching' && (
+              <div className="text-center">
+                <div className="relative w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+                    {/* Pulsing rings */}
+                    {[...Array(3)].map((_, i) => (
+                        <motion.div key={i} className="absolute inset-0 rounded-full border border-green-500"
+                            initial={{ scale: 0.5, opacity: 0 }}
+                            animate={{ scale: 1.5, opacity: [0, 0.5, 0] }}
+                            transition={{ duration: 2, repeat: Infinity, delay: i * 0.5, ease: 'linear' }}
+                        />
+                    ))}
+                    <Loader2 className="w-8 h-8 text-green-400 animate-spin" />
+                </div>
+                <h3 className="text-lg font-semibold text-white mb-2">Searching for Opponent...</h3>
+                <p className="text-gray-400 mb-4">Finding players with ELO {userElo - 200} - {userElo + 200}</p>
+                <div className="bg-black/30 rounded-lg p-4 mb-6 border border-white/10">
+                    <p className="text-3xl text-white font-mono">{formatTime(waitTime)}</p>
+                    <p className="text-xs text-gray-500 uppercase tracking-widest">Elapsed Time</p>
+                </div>
+                <button onClick={cancelMatchmaking} className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg transition-colors">
+                  Cancel Search
+                </button>
+              </div>
+            )}
+            
+            {/* --- FOUND & ERROR STATES --- */}
+            {status === 'found' && (
+                <div className="text-center py-8">
+                    <motion.div
+                        className="w-20 h-20 bg-green-500/10 rounded-xl flex items-center justify-center mx-auto mb-4 border border-green-500/20"
+                        animate={{ scale: [1, 1.2, 1] }}
+                        transition={{ duration: 0.5, repeat: Infinity }}
+                    >
+                        <CheckCircle className="w-10 h-10 text-green-400" />
+                    </motion.div>
+                    <h3 className="text-lg font-semibold text-white">Match Found!</h3>
+                    <p className="text-gray-400">Preparing battle room...</p>
+                </div>
+            )}
+            {status === 'error' && (
+                <div className="text-center">
+                    <div className="w-20 h-20 bg-red-500/10 rounded-xl flex items-center justify-center mx-auto mb-4 border border-red-500/20">
+                        <X className="w-10 h-10 text-red-400" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-white">Matchmaking Failed</h3>
+                    <p className="text-red-400 mb-6">{errorMessage}</p>
+                    <button onClick={() => setStatus('idle')} className="w-full bg-green-500 hover:bg-green-400 text-black font-bold py-3 px-6 rounded-lg transition-colors">
+                        Try Again
+                    </button>
+                </div>
+            )}
           </div>
-
-          {status === 'idle' && (
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Ready for Battle?</h3>
-              <p className="text-[var(--text-secondary)] mb-4">
-                You'll be matched with a player close to your ELO rating ({userElo})
-              </p>
-              <div className="bg-[var(--background-primary)] rounded p-3 mb-6">
-                <div className="text-sm text-[var(--text-secondary)] mb-2">Match Details:</div>
-                <ul className="text-sm text-white space-y-1">
-                  <li>• 5 random challenges</li>
-                  <li>• 5 minute time limit</li>
-                  <li>• ELO rating at stake</li>
-                  <li>• Real-time competition</li>
-                </ul>
-              </div>
-              <button
-                onClick={startMatchmaking}
-                className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-lg transition-all"
-              >
-                Start Matchmaking
-              </button>
-            </div>
-          )}
-
-          {status === 'searching' && (
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Loader2 className="w-8 h-8 text-white animate-spin" />
-              </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Searching for Opponent</h3>
-              <p className="text-[var(--text-secondary)] mb-4">
-                Looking for players with ELO {userElo - 200} - {userElo + 200}
-              </p>
-              <div className="bg-[var(--background-primary)] rounded p-3 mb-6">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <Clock className="w-4 h-4 text-blue-400" />
-                  <span className="text-white font-mono text-lg">{formatTime(waitTime)}</span>
-                </div>
-                <div className="text-sm text-[var(--text-secondary)]">
-                  {waitTime < 30 ? 'Finding perfect match...' : 
-                   waitTime < 60 ? 'Expanding search range...' : 
-                   'Looking for any available opponent...'}
-                </div>
-              </div>
-              <button
-                onClick={cancelMatchmaking}
-                className="w-full bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-6 rounded-lg transition-all"
-              >
-                Cancel Search
-              </button>
-            </div>
-          )}
-
-          {status === 'found' && (
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Search className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Match Found!</h3>
-              <p className="text-[var(--text-secondary)] mb-4">
-                Preparing battle room...
-              </p>
-              <div className="flex justify-center">
-                <Loader2 className="w-6 h-6 text-blue-400 animate-spin" />
-              </div>
-            </div>
-          )}
-
-          {status === 'error' && (
-            <div className="text-center">
-              <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <X className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Error</h3>
-              <p className="text-red-400 mb-4">{errorMessage}</p>
-              <button
-                onClick={() => setStatus('idle')}
-                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-lg transition-all"
-              >
-                Try Again
-              </button>
-            </div>
-          )}
         </motion.div>
       </motion.div>
     </AnimatePresence>

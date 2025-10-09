@@ -202,59 +202,29 @@ const RecentWars = () => {
     <motion.div 
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
-      className="bg-[var(--background-secondary)] rounded-lg p-6 border border-[var(--border-primary)] flex-1"
+      className="h-full rounded-xl border border-white/10 bg-gray-900/40 p-6 backdrop-blur-sm"
     >
-      <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-        <Clock className="w-5 h-5 text-blue-400" />
-        Recent Wars
+      <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
+        <Clock className="w-6 h-6 text-green-400" />
+        Your Recent Wars
       </h3>
 
-      <div className="space-y-3">
-        {recentMatches.map((match, index) => (
-          <motion.div
-            key={match.$id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className="flex items-center justify-between p-3 rounded bg-[var(--background-primary)]/50 hover:bg-[var(--background-primary)]/70 transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 flex items-center justify-center rounded bg-[var(--background-secondary)]">
-                {getResultIcon(match.result)}
-              </div>
+      <div className="space-y-1">
+        {recentMatches.slice(0, 5).map((match) => (
+          <div key={match.$id} className="flex items-center justify-between p-3 rounded-lg hover:bg-black/30 transition-colors">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center justify-center w-8">{getResultIcon(match.result)}</div>
               <div>
-                <div className="flex items-center gap-2">
-                  <span className={`font-medium text-sm ${getResultColor(match.result)}`}>
-                    {match.result.toUpperCase()}
-                  </span>
-                  <span className="text-xs text-[var(--text-secondary)]">vs</span>
-                  <span className="text-white text-sm">{getOpponentName(match.opponentId)}</span>
-                </div>
-                <div className="text-xs text-[var(--text-secondary)]">
-                  {match.userScore}-{match.opponentScore} • {formatDuration(match.matchDuration)} • {formatTimeAgo(match.matchDate)}
-                </div>
+                <p className={`font-semibold ${getResultColor(match.result)}`}>{match.result.toUpperCase()}</p>
+                <p className="text-xs text-gray-400">vs {getOpponentName(match.opponentId)} • {formatTimeAgo(match.matchDate)}</p>
               </div>
             </div>
-            
-            <div className="text-right">
-              <div className={`font-bold text-sm ${match.eloChange > 0 ? 'text-green-400' : match.eloChange < 0 ? 'text-red-400' : 'text-yellow-400'}`}>
-                {match.eloChange > 0 ? '+' : ''}{match.eloChange}
-              </div>
-              <div className="text-xs text-[var(--text-secondary)]">
-                {match.challengesSolved}/{match.totalChallenges}
-              </div>
+            <div className={`text-right font-mono font-bold text-lg ${match.eloChange > 0 ? 'text-green-400' : match.eloChange < 0 ? 'text-red-400' : 'text-gray-400'}`}>
+              {match.eloChange >= 0 ? '+' : ''}{match.eloChange}
             </div>
-          </motion.div>
+          </div>
         ))}
       </div>
-
-      {recentMatches.length === 0 && (
-        <div className="text-center py-8">
-          <Trophy className="w-12 h-12 text-[var(--text-secondary)] mx-auto mb-3" />
-          <p className="text-[var(--text-secondary)]">No battles yet</p>
-          <p className="text-sm text-[var(--text-secondary)] mt-1">Start your first war to see match history here!</p>
-        </div>
-      )}
     </motion.div>
   );
 };
