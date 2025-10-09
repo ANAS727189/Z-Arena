@@ -57,11 +57,10 @@ const ShowcaseSection = () => {
                 <span className="text-gray-400 font-mono text-sm">$ z-showcase --languages --challenges</span>
             </div> */}
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Language & Challenge Hub
+            49 Challenges Across 6 Languages
           </h2>
           <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            From Z-- fundamentals to advanced multi-language algorithmic
-            challenges
+            From Z-- fundamentals to advanced Go concurrency and Python machine learning challenges
           </p>
         </div>
 

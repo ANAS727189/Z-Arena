@@ -4,31 +4,31 @@ const StatsSection = () => {
   const stats = [
     {
       icon: Code,
-      value: '185',
+      value: '49',
       label: 'Total Challenges',
-      metric: 'problems available',
+      metric: 'across 6 languages',
       color: 'text-blue-400',
     },
     {
       icon: Users,
-      value: '2.4K',
-      label: 'Active Developers',
-      metric: 'monthly submissions',
-      color: 'text-green-400',
-    },
-    {
-      icon: TrendingUp,
-      value: '98.2%',
-      label: 'Success Rate',
-      metric: 'judge accuracy',
+      value: '15',
+      label: 'Z-- Challenges',
+      metric: 'custom language focus',
       color: 'text-yellow-400',
     },
     {
+      icon: TrendingUp,
+      value: '8',
+      label: 'Go Challenges',
+      metric: 'concurrency & servers',
+      color: 'text-cyan-400',
+    },
+    {
       icon: Award,
-      value: '0.14s',
-      label: 'Avg Response',
-      metric: 'execution time',
-      color: 'text-purple-400',
+      value: '10',
+      label: 'Python Challenges',
+      metric: 'ML & algorithms',
+      color: 'text-green-400',
     },
   ];
 
@@ -40,10 +40,10 @@ const StatsSection = () => {
                 <span className="text-gray-400 font-mono text-sm">$ z-monitor --stats --live</span>
             </div> */}
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Platform Analytics
+            Challenge Distribution
           </h2>
           <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Real-time metrics from our competitive programming infrastructure
+            Comprehensive coverage from beginner Z-- syntax to advanced algorithms
           </p>
         </div>
 
