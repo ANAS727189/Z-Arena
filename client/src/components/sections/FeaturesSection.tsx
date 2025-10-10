@@ -79,9 +79,9 @@ const FeaturesSection = () => {
             </div>
 
             {/* Decorative Icon Grid Background */}
-            <div className="absolute inset-0 w-full h-full grid grid-cols-8 gap-0 opacity-10 blur-[2px] [mask-image:linear-gradient(to_bottom,transparent_20%,black_70%)]">
+            <div className="absolute inset-0 w-full h-full grid grid-cols-8 gap-0 opacity-30 blur-[2px] [mask-image:linear-gradient(to_bottom,transparent_20%,black_70%)]">
               {repeatedLanguageIcons.map((Icon, i) => (
-                <div key={i} className="flex items-center justify-center text-4xl text-gray-500">
+                <div key={i} className="flex items-center justify-center text-4xl text-gray-200">
                   {Icon}
                 </div>
               ))}

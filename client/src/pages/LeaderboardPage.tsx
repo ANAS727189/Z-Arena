@@ -1,7 +1,7 @@
-import { useState } from 'react';
+
 import { motion } from 'framer-motion';
-import { 
-  Trophy, Medal, Award, Crown, Filter, Calendar, ChevronDown, Loader2, Users, Target, TrendingUp, Star
+import {
+  Trophy, Medal, Award, Crown, Filter, Loader2, Users, Target, TrendingUp
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useLeaderboard } from '../hooks/useLeaderboard';
@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 export const LeaderboardPage: React.FC = () => {
   const { user } = useAuth();
   const { leaderboard, currentUserRank, stats, loading, filters, setFilters } = useLeaderboard();
-  const [showFilters, setShowFilters] = useState(false);
+  // showFilters, setShowFilters removed (unused)
 
   const getRankIcon = (rank: number) => {
     if (rank === 1) return <Crown className="w-6 h-6 text-yellow-400" />;

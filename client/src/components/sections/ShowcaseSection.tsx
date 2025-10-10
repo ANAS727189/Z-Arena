@@ -1,4 +1,4 @@
-import { Swords, User, Trophy } from 'lucide-react';
+import { User, Trophy, AlarmClock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { SiPython, SiRust, SiCplusplus} from 'react-icons/si';
 import React, { useState, useEffect, useRef, useCallback, forwardRef } from 'react';
@@ -35,7 +35,7 @@ const ZIcon = (props: React.ComponentProps<'svg'>) => (
 
 // --- Richer Data ---
 const challengerData: Player = {
-  name: "Challenger Blue",
+  name: "Challenger Luffy",
   languages: [
     { id: 'python', name: 'Python', icon: SiPython },
     { id: 'rust', name: 'Rust', icon: SiRust },
@@ -44,7 +44,7 @@ const challengerData: Player = {
 };
 
 const opponentData: Player = {
-  name: "Opponent Purple",
+  name: "Opponent Davy",
   languages: [
     { id: 'cpp', name: 'C++', icon: SiCplusplus },
     { id: 'z--', name: 'Z--', icon: ZIcon },
@@ -218,12 +218,25 @@ const ChallengeCard = forwardRef<HTMLDivElement, ChallengeCardProps>(({ challeng
   >
     {/* Icon */}
     <div className="flex flex-col items-center justify-center">
-      <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mb-3">
-        <Swords className="w-8 h-8 text-green-400" />
+    <motion.div
+      className="absolute top-2 z-20"
+      animate={{
+        rotate: [-10, 10, -10],
+      }}
+      transition={{
+        repeat: Infinity,
+        repeatType: "mirror",
+        duration: 0.4,
+        ease: "easeInOut",
+      }}
+    >
+      <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center border border-green-400/50 shadow-lg shadow-green-500/30 mb-4">
+        <AlarmClock className="w-7 h-7 text-green-400" />
       </div>
+    </motion.div>
 
       {/* Title & Difficulty */}
-      <h3 className="font-bold text-lg text-white mb-2">{challenge.title}</h3>
+      <h3 className="font-bold text-lg text-white mb-2 mt-4">{challenge.title}</h3>
       <span
         className={`inline-block px-3 py-1 rounded-full text-xs font-medium border ${challenge.difficultyColor}`}
       >
@@ -247,17 +260,19 @@ const ChallengeCard = forwardRef<HTMLDivElement, ChallengeCardProps>(({ challeng
       </div>
 
       {/* Result */}
-      <div className="mt-4 pt-2 border-t border-white/10 w-3/4">
+      <div className="mt-4 pt-2   w-3/4">
         <p className="text-sm text-gray-400 mb-1">Match Result</p>
-        <div className="flex items-center justify-center gap-2 rounded-lg bg-black/40 p-2">
+        <div className="flex items-center justify-center gap-2 rounded-lg p-2">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 2.8, duration: 0.6 }}
         >
-          <Trophy className={`w-5 h-5 ${challenge.winnerColor}`} />
-          <span className="font-bold text-sm text-white">
-            {challenge.winner} <span className="text-gray-400 font-normal">Wins!</span>
+          <span className="font-bold flex items-center gap-2 text-lg text-white">
+            <Trophy className={`w-5 h-5 ${challenge.winnerColor}`} />
+            Winner
+          </span>
+           <span className="text-gray-400 text-sm whitespace-nowrap"> {challenge.winner}
           </span>
           </motion.div>
         </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, TrendingUp, TrendingDown } from 'lucide-react';
+import { Trophy } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { databases, DATABASE_ID, COLLECTIONS, Query } from '@/lib/appwrite';
 import { ELOCalculator } from '@/utils/eloCalculator';

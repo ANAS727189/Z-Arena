@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, Trophy, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { Clock, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { databases, DATABASE_ID, COLLECTIONS, Query } from '@/lib/appwrite';
 import type { WarMatchHistory } from '@/types';
@@ -128,12 +128,7 @@ const RecentWars = () => {
     }
   };
 
-  const formatDuration = (ms: number) => {
-    const seconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
+  // formatDuration removed (unused)
 
   const formatTimeAgo = (dateString: string) => {
     const now = new Date();

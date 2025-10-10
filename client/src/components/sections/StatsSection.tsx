@@ -17,15 +17,13 @@ const AnimatedCounter = forwardRef<CounterRef, { value: number; isInView: boolea
       damping: 40,
     });
 
-    // 2. Expose a `restart` function to the parent component.
     useImperativeHandle(ref, () => ({
       restart: () => {
-        springValue.set(0); // Reset the spring to 0
-        springValue.set(value); // Start the animation again to the target value
+        springValue.set(0);
+        springValue.set(value);
       },
     }));
 
-    // This useEffect handles the initial animation when the section scrolls into view.
     useEffect(() => {
       if (isInView) {
         springValue.set(value);
@@ -55,8 +53,6 @@ const StatsSection = () => {
 
   const sectionRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(sectionRef, { once: true, amount: 0.5 });
-
-  // 3. Create an array of refs, one for each counter.
   const counterRefs = useRef<(CounterRef | null)[]>([]);
 
   return (
@@ -82,7 +78,7 @@ const StatsSection = () => {
 
         <motion.div 
           ref={sectionRef}
-          className="rounded-xl border border-white/10 bg-gray-900/30 backdrop-blur-sm shadow-2xl shadow-green-500/10"
+          className="rounded-xl backdrop-blur-md shadow-2xl shadow-green-500/10"
           initial={{ opacity: 0, y: 50 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
@@ -91,13 +87,11 @@ const StatsSection = () => {
             {stats.map((stat, i) => (
               <div
                 key={stat.label}
-                className="p-8 text-center border-l border-white/10 first:border-l-0"
-                // 4. Add the onMouseEnter event to trigger the restart function.
+                className="p-8 text-center"
                 onMouseEnter={() => counterRefs.current[i]?.restart()}
               >
                 <div className="text-5xl md:text-6xl font-bold font-mono text-green-400 mb-2 drop-shadow-[0_0_10px_rgba(34,197,94,0.5)]">
                   <AnimatedCounter
-                    // 5. Assign the ref from our array to the component instance.
                     ref={(el) => { counterRefs.current[i] = el; }}
                     value={stat.value}
                     isInView={isInView}

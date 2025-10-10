@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Swords, Users, Clock, Zap } from 'lucide-react';
+import { Swords } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import MatchmakingModal from './MatchmakingModal';
 import { databases, DATABASE_ID, COLLECTIONS, Query, client } from '@/lib/appwrite';
@@ -15,7 +15,7 @@ const WarHeader = ({ onMatchFound }: WarHeaderProps) => {
   const [openModal, setOpenModal] = useState(false);
   const [isInQueue, setIsInQueue] = useState(false);  
   const [activeMatches, setActiveMatches] = useState(0);
-  const [loading, setLoading] = useState(false);
+  // loading state removed (unused)
 
   useEffect(() => {
     if (user) {
@@ -81,7 +81,7 @@ const WarHeader = ({ onMatchFound }: WarHeaderProps) => {
       return;
     }
 
-    setLoading(true);
+  // setLoading(true) removed (loading state unused)
     setOpenModal(true);
   };
 

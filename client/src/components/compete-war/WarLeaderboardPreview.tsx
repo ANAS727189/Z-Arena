@@ -158,7 +158,7 @@ const WarLeaderboardPreview = () => {
       </div>
 
       <div className="space-y-1">
-        {topPlayers.slice(0, 5).map((player, index) => (
+  {topPlayers.slice(0, 5).map(player => (
           <div key={player.$id} className="flex items-center justify-between p-3 rounded-lg hover:bg-black/30 transition-colors">
             <div className="flex items-center gap-4">
               <div className="w-8 flex items-center justify-center">{getRankIcon(player.warRank)}</div>
