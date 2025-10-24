@@ -23,14 +23,12 @@ const WarPage = () => {
 
   const handleMatchComplete = (result: 'victory' | 'defeat' | 'draw') => {
     console.log('Match completed with result:', result);
-    // Could show a results screen here
-    setTimeout(() => {
-      setCurrentMatch(null);
-      setBattleView('lobby');
-    }, 3000); // Show result for 3 seconds then return to lobby
+    // Don't auto-navigate - let user click the button
+    // The modal will handle user navigation
   };
 
   const handleLeaveMatch = () => {
+    console.log('User leaving match, returning to lobby');
     setCurrentMatch(null);
     setBattleView('lobby');
   };

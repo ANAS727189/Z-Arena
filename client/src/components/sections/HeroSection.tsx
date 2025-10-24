@@ -157,12 +157,8 @@ const HeroSection = () => {
 
       <div className="relative z-20 w-full px-4 pb-20">
        <div className="group mx-auto max-w-5xl [perspective:1500px]">
-  <motion.div
+  <div
     className="rounded-xl border border-white/10 bg-black/50 p-2 shadow-2xl shadow-green-500/20 backdrop-blur-md transition-transform duration-500 group-hover:[transform:rotateX(5deg)]"
-    initial={{ opacity: 0, y: 50, rotateX: 15 }}
-    whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
-    viewport={{ once: true, amount: 0.3 }}
-    transition={{ duration: 0.8, ease: "easeOut" }}
   >
     {/* Browser Header */}
     <div className="flex h-8 items-center gap-2 rounded-t-lg bg-gray-900/80 px-4">
@@ -177,7 +173,7 @@ const HeroSection = () => {
       alt='Z-Arena Application Showcase'
       className="rounded-b-lg w-full border-t border-white/10"
     />
-  </motion.div>
+  </div>
 </div>
          {/* Logo Loop */}
           <div className="mt-8">

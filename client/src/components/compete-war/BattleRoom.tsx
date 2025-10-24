@@ -48,6 +48,7 @@ export const BattleRoom: React.FC<BattleRoomProps> = ({
     isActive: true,
     showWarning: false,
   });
+  // Removed matchCompletionInProgress - rely on server-side protection only
   
   // Opponent tracking
   const [opponentProgress, setOpponentProgress] = useState<OpponentProgress | null>(null);
@@ -60,6 +61,7 @@ export const BattleRoom: React.FC<BattleRoomProps> = ({
   const [battleCompleted, setBattleCompleted] = useState(false);
   const [battleResult, setBattleResult] = useState<'victory' | 'defeat' | 'draw' | null>(null);
   const [matchCompleting, setMatchCompleting] = useState(false); // Guard against multiple completion calls
+  const [calculatingResult, setCalculatingResult] = useState(false); // Show loading during result calculation
   const [finalResults, setFinalResults] = useState<{
     myCompleted: number;
     opponentCompleted: number;
@@ -180,13 +182,14 @@ export const BattleRoom: React.FC<BattleRoomProps> = ({
   };
 
   const setupRealtimeSubscriptions = () => {
-    // **EXPLANATION**: Set up WebSocket subscriptions to track opponent progress in real-time
+    // **EXPLANATION**: Set up WebSocket subscriptions to track opponent progress AND match completion
     if (!user || !match) return;
 
     const opponentId = match.player1Id === user.$id ? match.player2Id : match.player1Id;
 
     try {
-      const unsubscribe = client.subscribe(
+      // Subscribe to opponent's challenge attempts
+      const attemptsUnsubscribe = client.subscribe(
         [`databases.${import.meta.env.VITE_APPWRITE_DATABASE_ID}.collections.war_challenge_attempts.documents`],
         (response) => {
           console.log('Real-time subscription event:', response.events, response.payload);
@@ -203,9 +206,103 @@ export const BattleRoom: React.FC<BattleRoomProps> = ({
         }
       );
 
-      return unsubscribe;
+      // Subscribe to match status changes (for when opponent completes match)
+      const matchUnsubscribe = client.subscribe(
+        [`databases.${import.meta.env.VITE_APPWRITE_DATABASE_ID}.collections.war_matches.documents.${match.$id}`],
+        (response) => {
+          console.log('🎯 Match status update:', response.events, response.payload);
+          
+          if (response.events.includes('databases.*.collections.*.documents.*.update')) {
+            const matchPayload = response.payload as any;
+            
+            // Check if match was completed
+            if (matchPayload.status === 'completed' && !battleCompleted && !matchCompleting) {
+              console.log('⚡ Match completed by opponent or timeout!', {
+                winnerId: matchPayload.winnerId,
+                myId: user.$id,
+                opponentId
+              });
+              
+              // Handle match completion from server
+              handleMatchCompletionFromServer(matchPayload);
+            }
+          }
+        }
+      );
+
+      // Store both unsubscribe functions
+      const combinedUnsubscribe = () => {
+        attemptsUnsubscribe();
+        matchUnsubscribe();
+      };
+
+      return combinedUnsubscribe;
     } catch (error) {
       console.error('Failed to setup real-time subscriptions:', error);
+    }
+  };
+
+  const handleMatchCompletionFromServer = async (matchPayload: any) => {
+    // **EXPLANATION**: Handle when match is completed by opponent or server
+    if (battleCompleted || matchCompleting) {
+      console.log('🚫 Already handling match completion, ignoring');
+      return;
+    }
+
+    setMatchCompleting(true);
+    setCalculatingResult(true);
+
+    try {
+      const opponentId = match.player1Id === user!.$id ? match.player2Id : match.player1Id;
+      
+      // Get fresh final scores from database
+      const [myProgressData, opponentProgressData] = await Promise.all([
+        WarService.getOpponentProgress(match.$id, user!.$id),
+        WarService.getOpponentProgress(match.$id, opponentId)
+      ]);
+
+      const actualMyCompleted = myProgressData.challengesCompleted;
+      const finalOpponentCompleted = opponentProgressData.challengesCompleted;
+
+      console.log('🔄 Final scores from server:', {
+        myCompleted: actualMyCompleted,
+        opponentCompleted: finalOpponentCompleted,
+        serverWinnerId: matchPayload.winnerId
+      });
+
+      // Store final results
+      setFinalResults({
+        myCompleted: actualMyCompleted,
+        opponentCompleted: finalOpponentCompleted
+      });
+
+      // Determine MY result from SERVER's confirmed winnerId
+      let confirmedResult: 'victory' | 'defeat' | 'draw';
+      if (matchPayload.winnerId === user!.$id) {
+        confirmedResult = 'victory';
+        console.log('🎉 CONFIRMED FROM SERVER: I WON!');
+      } else if (matchPayload.winnerId === opponentId) {
+        confirmedResult = 'defeat';
+        console.log('😢 CONFIRMED FROM SERVER: I LOST!');
+      } else if (!matchPayload.winnerId) {
+        confirmedResult = 'draw';
+        console.log('🤝 CONFIRMED FROM SERVER: DRAW!');
+      } else {
+        // Fallback - should never happen
+        confirmedResult = 'draw';
+        console.warn('⚠️ Unknown winnerId from server:', matchPayload.winnerId);
+      }
+
+      // Update UI with CONFIRMED result
+      setCalculatingResult(false);
+      setBattleResult(confirmedResult);
+      setBattleCompleted(true);
+      onMatchComplete(confirmedResult);
+
+    } catch (error) {
+      console.error('❌ Failed to handle server match completion:', error);
+      setCalculatingResult(false);
+      setMatchCompleting(false);
     }
   };
 
@@ -266,31 +363,81 @@ export const BattleRoom: React.FC<BattleRoomProps> = ({
         battleHasStarted) {
       
       console.log('🏆 Opponent won the battle!');
-      setBattleCompleted(true);
-      setBattleResult('defeat');
-      setMatchCompleting(true);
+      setMatchCompleting(true); // Set guard FIRST
+      setCalculatingResult(true); // Show loading state
 
-      // Store final results for display
-      setFinalResults({
-        myCompleted: myProgress.challengesCompleted,
-        opponentCompleted: opponentCompleted
-      });
-      
-      // Complete the match in database
       try {
-        console.log('Opponent completed all challenges - completing match:', {
+        // Get FRESH data from database
+        const latestOpponentProgressData = await WarService.getOpponentProgress(match.$id, attemptData.userId);
+        const finalOpponentCompleted = latestOpponentProgressData.challengesCompleted;
+        const finalMyCompleted = myProgress.challengesCompleted;
+        
+        console.log('🔄 Updated progress for opponent victory:', {
+          myCompleted: finalMyCompleted,
+          opponentCompleted: finalOpponentCompleted
+        });
+
+        // Store final results for display
+        setFinalResults({
+          myCompleted: finalMyCompleted,
+          opponentCompleted: finalOpponentCompleted
+        });
+        
+        // Complete the match in database and GET CONFIRMED RESULT
+        const opponentId = match.player1Id === user!.$id ? match.player2Id : match.player1Id;
+        
+        console.log('🏆 Opponent completed all challenges - completing match:', {
           matchId: match.$id,
           winnerId: attemptData.userId,
-          opponentCompleted: opponentCompleted,
-          myCompleted: myProgress.challengesCompleted
+          opponentCompleted: finalOpponentCompleted,
+          myCompleted: finalMyCompleted,
+          myId: user!.$id,
+          opponentId
         });
-        await WarService.completeMatch(match.$id, attemptData.userId, opponentCompleted, myProgress.challengesCompleted);
-        console.log('Match completed successfully after opponent victory');
+        
+        const completedMatch = await WarService.completeMatch(match.$id, attemptData.userId, finalOpponentCompleted, finalMyCompleted);
+        
+        console.log('✅ Match completed, server returned:', {
+          winnerId: completedMatch.winnerId,
+          myId: user!.$id,
+          opponentId,
+          isMyIdMatch: completedMatch.winnerId === user!.$id,
+          isOpponentIdMatch: completedMatch.winnerId === opponentId
+        });
+        
+        // Determine MY result from SERVER's confirmed winnerId
+        let confirmedResult: 'victory' | 'defeat' | 'draw';
+        
+        if (!completedMatch.winnerId || completedMatch.winnerId === null || completedMatch.winnerId === undefined) {
+          confirmedResult = 'draw';
+          console.log('🤝 CONFIRMED: DRAW (winnerId is null/undefined)');
+        } else if (completedMatch.winnerId === user!.$id) {
+          confirmedResult = 'victory';
+          console.log('🎉 CONFIRMED: I WON!');
+        } else if (completedMatch.winnerId === opponentId) {
+          confirmedResult = 'defeat';
+          console.log('😢 CONFIRMED: I LOST!');
+        } else {
+          console.error('⚠️ UNEXPECTED: winnerId mismatch!', {
+            winnerId: completedMatch.winnerId,
+            myId: user!.$id,
+            opponentId
+          });
+          confirmedResult = 'draw';
+        }
+        
+        // Update UI with CONFIRMED result
+        setCalculatingResult(false);
+        setBattleResult(confirmedResult);
+        setBattleCompleted(true);
+        onMatchComplete(confirmedResult);
+        
       } catch (error) {
-        console.error('Failed to complete match:', error);
+        console.error('❌ Failed to complete match:', error);
+        setCalculatingResult(false);
+        setMatchCompleting(false);
+        alert('Failed to complete match. Please refresh and check your match history.');
       }
-      
-      onMatchComplete('defeat');
     }
 
     // Play sound notification if enabled
@@ -367,75 +514,115 @@ export const BattleRoom: React.FC<BattleRoomProps> = ({
       return;
     }
     
-    setBattleCompleted(true);
-    setMatchCompleting(true);
+    setMatchCompleting(true); // Set guard FIRST
+    setCalculatingResult(true); // Show loading state
     
-    // Determine winner based on challenges completed
-    const opponentCompleted = opponentProgress?.challengesCompleted || 0;
-    const myCompleted = myProgress.challengesCompleted;
     const opponentId = match.player1Id === user!.$id ? match.player2Id : match.player1Id;
     
-    // Get actual challenge counts from database for accuracy  
-    let actualMyCompleted = myCompleted;
-    let actualOpponentCompleted = opponentCompleted;
-    
     try {
-      const myProgress = await WarService.getOpponentProgress(match.$id, user!.$id);
-      const opponentProgress = await WarService.getOpponentProgress(match.$id, opponentId);
+      // Get FRESH actual challenge counts from database for accuracy  
+      const [myProgressData, opponentProgressData] = await Promise.all([
+        WarService.getOpponentProgress(match.$id, user!.$id),
+        WarService.getOpponentProgress(match.$id, opponentId)
+      ]);
       
-      actualMyCompleted = myProgress.challengesCompleted;
-      actualOpponentCompleted = opponentProgress.challengesCompleted;
+      const actualMyCompleted = myProgressData.challengesCompleted;
+      const finalOpponentCompleted = opponentProgressData.challengesCompleted;
+      
+      console.log('🔄 Fresh challenge counts from database:', {
+        myCompleted: actualMyCompleted,
+        opponentCompleted: finalOpponentCompleted
+      });
+
+      // Store final results for display
+      setFinalResults({
+        myCompleted: actualMyCompleted,
+        opponentCompleted: finalOpponentCompleted
+      });
+      
+      let winnerId: string | undefined;
+      
+      console.log('🎯 Calculating result:', {
+        myCompleted: actualMyCompleted,
+        opponentCompleted: finalOpponentCompleted
+      });
+      
+      if (actualMyCompleted > finalOpponentCompleted) {
+        winnerId = user!.$id;
+        console.log('✅ Predicted Result: VICTORY');
+      } else if (actualMyCompleted < finalOpponentCompleted) {
+        winnerId = opponentId;
+        console.log('❌ Predicted Result: DEFEAT');
+      } else {
+        winnerId = undefined; // Draw - no winner
+        console.log('🤝 Predicted Result: DRAW');
+      }
+
+      // Complete the match in database and GET THE CONFIRMED RESULT
+      console.log('⏰ Completing match on timeout, sending:', {
+        winnerId,
+        myId: user!.$id,
+        opponentId,
+        myCompleted: actualMyCompleted,
+        opponentCompleted: finalOpponentCompleted
+      });
+      
+      const completedMatch = await WarService.completeMatch(match.$id, winnerId, actualMyCompleted, finalOpponentCompleted);
+      
+      console.log('✅ Match completed successfully, server returned:', {
+        winnerId: completedMatch.winnerId,
+        myId: user!.$id,
+        opponentId,
+        isMyIdMatch: completedMatch.winnerId === user!.$id,
+        isOpponentIdMatch: completedMatch.winnerId === opponentId,
+        isUndefined: completedMatch.winnerId === undefined || completedMatch.winnerId === null
+      });
+      
+      // Determine MY result from the SERVER's confirmed winnerId
+      let confirmedResult: 'victory' | 'defeat' | 'draw';
+      
+      if (!completedMatch.winnerId || completedMatch.winnerId === null || completedMatch.winnerId === undefined) {
+        // No winner = draw
+        confirmedResult = 'draw';
+        console.log('🤝 CONFIRMED: DRAW (winnerId is null/undefined)');
+      } else if (completedMatch.winnerId === user!.$id) {
+        confirmedResult = 'victory';
+        console.log('🎉 CONFIRMED: I WON!');
+      } else if (completedMatch.winnerId === opponentId) {
+        confirmedResult = 'defeat';
+        console.log('😢 CONFIRMED: I LOST!');
+      } else {
+        // Fallback: this shouldn't happen
+        console.error('⚠️ UNEXPECTED: winnerId does not match either player!', {
+          winnerId: completedMatch.winnerId,
+          myId: user!.$id,
+          opponentId
+        });
+        confirmedResult = 'draw';
+      }
+      
+      // Update UI with CONFIRMED result from server
+      setCalculatingResult(false);
+      setBattleResult(confirmedResult);
+      setBattleCompleted(true);
+      onMatchComplete(confirmedResult);
+      
     } catch (error) {
-      console.error('Failed to get actual challenge counts:', error);
+      console.error('❌ Failed to complete match on timeout:', error);
+      setCalculatingResult(false);
+      setMatchCompleting(false);
+      // On error, still try to show something
+      alert('Failed to complete match. Please refresh and check your match history.');
     }
-    
-
-
-    // Store final results for display
-    setFinalResults({
-      myCompleted: actualMyCompleted,
-      opponentCompleted: actualOpponentCompleted
-    });
-    
-    let result: 'victory' | 'defeat' | 'draw';
-    let winnerId: string | undefined;
-    
-    if (actualMyCompleted > actualOpponentCompleted) {
-      result = 'victory';
-      winnerId = user!.$id;
-      setBattleResult('victory');
-
-    } else if (actualMyCompleted < actualOpponentCompleted) {
-      result = 'defeat';
-      winnerId = opponentId;
-      setBattleResult('defeat');
-
-    } else {
-      // Handle draw case properly - no winner
-      result = 'draw';
-      winnerId = undefined; // No winner for draws
-      setBattleResult('draw');
-
-    }
-
-    // Complete the match in database
-    try {
-      console.log('Completing match with winnerId:', winnerId);
-      await WarService.completeMatch(match.$id, winnerId, actualMyCompleted, actualOpponentCompleted);
-      console.log('Match completed successfully');
-    } catch (error) {
-      console.error('Failed to complete match on timeout:', error);
-    }
-
-    onMatchComplete(result);
   };
 
   const handleChallengeComplete = async () => {
     // **EXPLANATION**: Handle when user completes a challenge
+    console.log('🎯 Challenge completed! Moving to next or finishing match');
+    
     const newCompleted = myProgress.challengesCompleted + 1;
     
-
-    
+    // Update progress FIRST
     setMyProgress(prev => ({
       ...prev,
       challengesCompleted: newCompleted,
@@ -443,8 +630,6 @@ export const BattleRoom: React.FC<BattleRoomProps> = ({
 
     // Submit attempt to database for real-time sync
     try {
-
-      
       const attemptResult = await WarService.submitBattleAttempt({
         matchId: match.$id,
         userId: user!.$id,
@@ -452,8 +637,8 @@ export const BattleRoom: React.FC<BattleRoomProps> = ({
         challengeIndex: currentChallengeIndex,
         completedAt: new Date(),
         isCorrect: true,
-        code: code, // Add the current code solution
-        language: selectedLanguage, // Add the selected language
+        code: code,
+        language: selectedLanguage,
       });
       
       console.log('✅ Challenge attempt submitted successfully:', attemptResult);
@@ -463,40 +648,96 @@ export const BattleRoom: React.FC<BattleRoomProps> = ({
 
     // Check if ALL challenges completed
     if (newCompleted >= match.challenges.length && !battleCompleted && !matchCompleting) {
-      setBattleCompleted(true);
-      setBattleResult('victory');
-      setMatchCompleting(true);
+      console.log('🏆 All challenges completed! Finishing match...');
 
-      // Store final results for display
-      const opponentCompleted = opponentProgress?.challengesCompleted || 0;
-      setFinalResults({
-        myCompleted: newCompleted,
-        opponentCompleted: opponentCompleted
-      });
+      setMatchCompleting(true); // Set guard FIRST
+      setCalculatingResult(true); // Show loading state
       
-      // Complete the match in database
+      const opponentId = match.player1Id === user!.$id ? match.player2Id : match.player1Id;
+
       try {
-        console.log('Player completed all challenges - completing match:', {
+        // Get FRESH opponent progress from database
+        const latestOpponentProgressData = await WarService.getOpponentProgress(match.$id, opponentId);
+        const finalOpponentCompleted = latestOpponentProgressData.challengesCompleted;
+        console.log('🔄 Updated opponent progress for player victory:', finalOpponentCompleted);
+
+        // Store final results for display
+        setFinalResults({
+          myCompleted: newCompleted,
+          opponentCompleted: finalOpponentCompleted
+        });
+        
+        // Complete the match in database and GET CONFIRMED RESULT
+        console.log('🏆 Player completed all challenges - completing match:', {
           matchId: match.$id,
           winnerId: user!.$id,
           myCompleted: newCompleted,
-          opponentCompleted: opponentCompleted
+          opponentCompleted: finalOpponentCompleted
         });
-        await WarService.completeMatch(match.$id, user!.$id, newCompleted, opponentCompleted);
-        console.log('Match completed successfully after player victory');
+        const completedMatch = await WarService.completeMatch(match.$id, user!.$id, newCompleted, finalOpponentCompleted);
+        
+        console.log('✅ Match completed, server returned:', {
+          winnerId: completedMatch.winnerId,
+          myId: user!.$id,
+          opponentId,
+          isMyIdMatch: completedMatch.winnerId === user!.$id,
+          isOpponentIdMatch: completedMatch.winnerId === opponentId
+        });
+        
+        // Determine MY result from SERVER's confirmed winnerId
+        let confirmedResult: 'victory' | 'defeat' | 'draw';
+        
+        if (!completedMatch.winnerId || completedMatch.winnerId === null || completedMatch.winnerId === undefined) {
+          confirmedResult = 'draw';
+          console.log('🤝 CONFIRMED: DRAW (winnerId is null/undefined)');
+        } else if (completedMatch.winnerId === user!.$id) {
+          confirmedResult = 'victory';
+          console.log('🎉 CONFIRMED: I WON!');
+        } else if (completedMatch.winnerId === opponentId) {
+          confirmedResult = 'defeat';
+          console.log('😢 CONFIRMED: I LOST!');
+        } else {
+          console.error('⚠️ UNEXPECTED: winnerId mismatch!', {
+            winnerId: completedMatch.winnerId,
+            myId: user!.$id,
+            opponentId
+          });
+          confirmedResult = 'draw';
+        }
+        
+        // Update UI with CONFIRMED result
+        setCalculatingResult(false);
+        setBattleResult(confirmedResult);
+        setBattleCompleted(true);
+        onMatchComplete(confirmedResult);
+        
       } catch (error) {
-        console.error('Failed to complete match:', error);
+        console.error('❌ Failed to complete match:', error);
+        setCalculatingResult(false);
+        setMatchCompleting(false);
+        alert('Failed to complete match. Please refresh and check your match history.');
       }
-      
-      onMatchComplete('victory');
       return;
     }
 
-    // Move to next challenge
+    // Move to next challenge - wait a bit for state to update
+    console.log('📝 Current challenge completed, moving to next...', {
+      currentIndex: currentChallengeIndex,
+      totalChallenges: match.challenges.length,
+      newCompleted
+    });
+    
     if (currentChallengeIndex < match.challenges.length - 1) {
       const nextIndex = currentChallengeIndex + 1;
-      setCurrentChallengeIndex(nextIndex);
-      loadCurrentChallenge(nextIndex); // Pass the new index directly
+      console.log('➡️ Loading next challenge:', nextIndex);
+      
+      // Update index and load next challenge
+      setTimeout(() => {
+        setCurrentChallengeIndex(nextIndex);
+        loadCurrentChallenge(nextIndex);
+      }, 100); // Small delay to ensure state updates
+    } else {
+      console.log('⚠️ No more challenges to load');
     }
   };
 
@@ -789,9 +1030,71 @@ export const BattleRoom: React.FC<BattleRoomProps> = ({
         </div>
       </div>
 
-      {/* Battle Completion Modal */}
+      {/* Calculating Results Modal */}
       <AnimatePresence>
-        {battleCompleted && (
+        {calculatingResult && !battleCompleted && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="bg-gray-900/95 backdrop-blur-sm border border-purple-500/50 rounded-2xl p-8 max-w-md w-full mx-4"
+            >
+              <div className="text-center">
+                <div className="relative w-24 h-24 mx-auto mb-6">
+                  <motion.div
+                    className="absolute inset-0 border-4 border-purple-500/30 rounded-full"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                  />
+                  <motion.div
+                    className="absolute inset-2 border-4 border-t-purple-500 border-r-transparent border-b-transparent border-l-transparent rounded-full"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  />
+                  <motion.div
+                    className="absolute inset-4 border-4 border-t-blue-500 border-r-transparent border-b-transparent border-l-transparent rounded-full"
+                    animate={{ rotate: -360 }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Sword className="w-10 h-10 text-purple-400" />
+                  </div>
+                </div>
+                <h2 className="text-2xl font-bold text-purple-400 mb-2">Calculating Results...</h2>
+                <p className="text-gray-400 mb-4">
+                  Verifying final scores and determining winner
+                </p>
+                <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+                  <motion.div
+                    className="w-2 h-2 bg-purple-500 rounded-full"
+                    animate={{ scale: [1, 1.5, 1], opacity: [1, 0.5, 1] }}
+                    transition={{ duration: 1, repeat: Infinity, delay: 0 }}
+                  />
+                  <motion.div
+                    className="w-2 h-2 bg-purple-500 rounded-full"
+                    animate={{ scale: [1, 1.5, 1], opacity: [1, 0.5, 1] }}
+                    transition={{ duration: 1, repeat: Infinity, delay: 0.2 }}
+                  />
+                  <motion.div
+                    className="w-2 h-2 bg-purple-500 rounded-full"
+                    animate={{ scale: [1, 1.5, 1], opacity: [1, 0.5, 1] }}
+                    transition={{ duration: 1, repeat: Infinity, delay: 0.4 }}
+                  />
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Battle Completion Modal - Only show when we have final results */}
+      <AnimatePresence>
+        {battleCompleted && finalResults && battleResult && !calculatingResult && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -810,7 +1113,7 @@ export const BattleRoom: React.FC<BattleRoomProps> = ({
                     <Crown className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
                     <h2 className="text-2xl font-bold text-yellow-400 mb-2">Victory!</h2>
                     <p className="text-gray-300 mb-6">
-                      You completed {finalResults?.myCompleted || myProgress.challengesCompleted} challenges vs opponent's {finalResults?.opponentCompleted || opponentProgress?.challengesCompleted || 0}!
+                      You completed {finalResults?.myCompleted ?? 0} challenges vs opponent's {finalResults?.opponentCompleted ?? 0}!
                     </p>
                   </>
                 ) : battleResult === 'draw' ? (
@@ -818,7 +1121,7 @@ export const BattleRoom: React.FC<BattleRoomProps> = ({
                     <Sword className="w-16 h-16 text-blue-400 mx-auto mb-4" />
                     <h2 className="text-2xl font-bold text-blue-400 mb-2">Draw</h2>
                     <p className="text-gray-300 mb-6">
-                      Both players completed {finalResults?.myCompleted || myProgress.challengesCompleted} challenges. A well-fought battle!
+                      Both players completed {finalResults?.myCompleted ?? 0} challenges. A well-fought battle!
                     </p>
                   </>
                 ) : (
@@ -826,20 +1129,26 @@ export const BattleRoom: React.FC<BattleRoomProps> = ({
                     <Target className="w-16 h-16 text-red-400 mx-auto mb-4" />
                     <h2 className="text-2xl font-bold text-red-400 mb-2">Defeat</h2>
                     <p className="text-gray-300 mb-6">
-                      Your opponent completed {finalResults?.opponentCompleted || opponentProgress?.challengesCompleted || 0} challenges vs your {finalResults?.myCompleted || myProgress.challengesCompleted}!
+                      Your opponent completed {finalResults?.opponentCompleted ?? 0} challenges vs your {finalResults?.myCompleted ?? 0}!
                     </p>
                   </>
                 )}
 
                 <div className="flex gap-3">
                   <button
-                    onClick={onLeaveMatch}
+                    onClick={() => {
+                      console.log('User clicking Leave Battle button');
+                      onLeaveMatch();
+                    }}
                     className="flex-1 bg-gray-700/50 hover:bg-gray-600/50 text-white px-4 py-2 rounded-lg font-medium transition-colors"
                   >
                     Leave Battle
                   </button>
                   <button
-                    onClick={() => window.location.href = '/war'}
+                    onClick={() => {
+                      console.log('User clicking New Battle button');
+                      onLeaveMatch(); // Use proper React state cleanup instead of hard reload
+                    }}
                     className="flex-1 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-400 hover:to-blue-400 text-white px-4 py-2 rounded-lg font-medium transition-all"
                   >
                     New Battle

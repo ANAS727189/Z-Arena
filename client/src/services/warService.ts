@@ -386,39 +386,46 @@ export class WarService {
    * Complete a war match and calculate ELO changes
    */
   static async completeMatch(matchId: string, winnerId?: string, winnerScore?: number, loserScore?: number): Promise<WarMatch> {
-    console.log('WarService.completeMatch called with:', { matchId, winnerId, winnerScore, loserScore });
+    console.log('🎯 WarService.completeMatch called with:', { matchId, winnerId, winnerScore, loserScore });
     
-    // Get the match document
-    const match = await databases.getDocument(
-      DATABASE_ID,
-      COLLECTIONS.WAR_MATCHES,
-      matchId
-    ) as unknown as WarMatch;
+    // Get the match document first
+    let match;
+    try {
+      match = await databases.getDocument(
+        DATABASE_ID,
+        COLLECTIONS.WAR_MATCHES,
+        matchId
+      ) as unknown as WarMatch;
+    } catch (error) {
+      console.error('❌ Failed to get match document:', error);
+      throw error;
+    }
     
-    console.log('Retrieved match:', match);
+    console.log('📄 Retrieved match:', { status: match.status, player1Id: match.player1Id, player2Id: match.player2Id });
 
-    // Check if match is already completed to prevent duplicate processing
+    // If match is already completed, return it immediately
     if (match.status === 'completed') {
-      console.log('Match already completed, skipping...');
+      console.log('✅ Match already completed, returning existing result');
       return match;
     }
 
-    // Atomically update status to prevent duplicate processing
+    // Simple atomic update - just mark as completed
     try {
       await databases.updateDocument(
         DATABASE_ID,
         COLLECTIONS.WAR_MATCHES,
         matchId,
-        { status: 'completed', endTime: new Date().toISOString() }
+        { 
+          status: 'completed', 
+          endTime: new Date().toISOString()
+        }
       );
-      console.log('Successfully marked match as completed');
+      console.log('✅ Successfully marked match as completed');
       
-      // Add a small delay to ensure database consistency across replicas
-      await new Promise(resolve => setTimeout(resolve, 500));
+    } catch (updateError: any) {
+      console.log('❌ Failed to mark as completed, checking if another process completed it:', updateError);
       
-    } catch (updateError) {
-      // If update fails, another process might have already completed it
-      console.log('Failed to mark as completed, checking status:', updateError);
+      // Check if another process completed it
       const updatedMatch = await databases.getDocument(
         DATABASE_ID,
         COLLECTIONS.WAR_MATCHES,
@@ -426,9 +433,10 @@ export class WarService {
       ) as unknown as WarMatch;
       
       if (updatedMatch.status === 'completed') {
-        console.log('Match already completed by another process, skipping...');
+        console.log('✅ Match was completed by another process, returning that result');
         return updatedMatch;
       }
+      
       throw updateError;
     }
 
@@ -538,7 +546,7 @@ export class WarService {
     await this.updateUserWarStats(match.player2Id, 1 - player1Result, eloResults.player2);
 
     // Create match history entries with correct challenge counts
-    console.log('Creating match history entries');
+    console.log('📝 Creating match history entries');
     await this.createMatchHistoryEntry(match, match.player1Id, match.player2Id, player1Result, player1FinalScore, player2FinalScore, eloResults.player1, player1ChallengesCompleted);
     await this.createMatchHistoryEntry(match, match.player2Id, match.player1Id, 1 - player1Result, player2FinalScore, player1FinalScore, eloResults.player2, player2ChallengesCompleted);
 
@@ -622,10 +630,12 @@ export class WarService {
   ): Promise<void> {
     const resultString = result === 1 ? 'win' : result === 0.5 ? 'draw' : 'loss';
     
-    // Use a shorter, predictable ID to prevent duplicates (max 36 chars)
-    const shortMatchId = match.$id.substring(0, 16); // Use document ID instead of matchId
-    const shortUserId = userId.substring(0, 16);
+    // Use simple unique ID based on match and user
+    const shortMatchId = match.$id.substring(0, 12);
+    const shortUserId = userId.substring(0, 12);
     const historyId = `${shortMatchId}_${shortUserId}`;
+    
+    console.log('📝 Creating match history entry:', { historyId, userId, result: resultString });
     
     try {
       await databases.createDocument(
@@ -652,16 +662,19 @@ export class WarService {
             (new Date(match.endTime).getTime() - new Date(match.startTime).getTime()) / match.challenges.length :
             60000, // Default 1 minute per challenge
           matchDate: new Date().toISOString(),
+          // completionKey removed for simplicity
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         }
       );
+      console.log('Successfully created match history entry:', historyId);
     } catch (error: any) {
       // If document already exists, skip (prevents duplicates)
       if (error.code === 409 || error.message?.includes('Document with the requested ID already exists')) {
-        console.log(`Match history entry already exists for user ${userId}, skipping...`);
+        console.log(`Match history entry already exists for user ${userId} with ID ${historyId}, skipping...`);
         return;
       }
+      console.error('Failed to create match history entry:', error);
       throw error;
     }
   }
