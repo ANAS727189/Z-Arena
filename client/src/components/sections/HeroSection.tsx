@@ -112,6 +112,7 @@ const HeroSection = () => {
               Code.
             </FuzzyText>
           </span>
+            <br />
           <Shuffle
             text="Dominate the Arena."
             shuffleDirection="right"
