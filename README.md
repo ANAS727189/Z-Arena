@@ -49,26 +49,6 @@
 
 ---
 
-## Architecture
-
-```mermaid
-graph TD
-    A[Frontend (React + Vite)] -->|REST/WebSocket| B[Backend (Node.js)]
-    B -->|Executes| C[Z-- Compiler]
-    B -->|Integrates| D[Judge0 API]
-    B -->|Stores| E[Appwrite DB]
-    E -->|Realtime| A
-    B -->|Triggers| F[Appwrite Functions]
-```
-
-- **Frontend**: SPA, communicates with backend and Appwrite
-- **Backend**: API, code execution, challenge logic
-- **Compiler**: Z-- runtime (Node.js script)
-- **Appwrite**: Auth, DB, real-time, storage, functions
-- **CI/CD**: GitHub Actions (see `.github/workflows/`)
-
----
-
 ## Screenshots
 
 > _Add screenshots or GIFs here for landing page, challenge view, battle room, leaderboard, etc._
