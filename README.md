@@ -14,8 +14,6 @@
 ## 📚 Table of Contents
 - [Introduction](#introduction)
 - [Features](#features)
-- [Architecture](#architecture)
-- [Screenshots](#screenshots)
 - [Directory Structure](#directory-structure)
 - [Getting Started](#getting-started)
 - [Configuration & Environment](#configuration--environment)
@@ -46,12 +44,6 @@
 - 🛠️ **Developer-friendly**: TypeScript, modular code, clear API/service layers
 - ☁️ **Cloud-native**: Vercel (client), Render/Docker (server), Appwrite integration
 - 📦 **Appwrite Functions**: Custom backend logic, challenge seeding, leaderboard updates
-
----
-
-## Screenshots
-
-> _Add screenshots or GIFs here for landing page, challenge view, battle room, leaderboard, etc._
 
 ---
 
